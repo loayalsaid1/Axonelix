@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Advanced Question Editor | Medical Learning Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    .editor-min-h { min-height: 200px; }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Sticky Top Navigation / Action Bar -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg">
+<span class="material-icons-outlined text-primary">edit_note</span>
+</div>
+<div>
+<h1 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Editor Mode</h1>
+<div class="flex items-center gap-2">
+<span class="text-lg font-bold">Q-ID: MED-8842-X</span>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">DRAFT</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden md:flex items-center gap-4 mr-6 text-xs text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 pr-6">
+<span>Last saved: 2 mins ago</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> JSON Valid</span>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-icons-outlined text-sm">visibility</span>
+        Preview
+      </button>
+<button class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-white rounded hover:bg-blue-600 transition-colors shadow-lg shadow-primary/20">
+<span class="material-icons-outlined text-sm">save</span>
+        Save Changes
+      </button>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+<span class="material-icons-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<main class="flex-grow p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+<!-- Taxonomy & Metadata Section -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Subject</label>
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-sm focus:ring-primary focus:border-primary">
+<option>Internal Medicine</option>
+<option>Pediatrics</option>
+<option>Surgery</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Organ System</label>
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-sm focus:ring-primary focus:border-primary">
+<option>Cardiovascular</option>
+<option>Respiratory</option>
+<option>Gastrointestinal</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Difficulty</label>
+<div class="flex p-1 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+<button class="flex-1 py-1 text-xs font-medium rounded bg-white dark:bg-slate-700 shadow-sm">Easy</button>
+<button class="flex-1 py-1 text-xs font-medium text-slate-500 dark:text-slate-400">Medium</button>
+<button class="flex-1 py-1 text-xs font-medium text-slate-500 dark:text-slate-400">Hard</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Tags</label>
+<div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded p-1.5 text-sm">
+<span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold">#USMLE-K1</span>
+<span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded font-bold">#HYIELD</span>
+<span class="material-icons-outlined text-xs text-slate-400 cursor-pointer">add_circle</span>
+</div>
+</div>
+</section>
+<!-- Question Stem Editor (Simulating TipTap) -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden flex flex-col shadow-sm">
+<div class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-1">
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">format_bold</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">format_italic</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors text-primary"><span class="material-icons-outlined text-sm">format_underlined</span></button>
+<div class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1"></div>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">format_list_bulleted</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">format_list_numbered</span></button>
+<div class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1"></div>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">subscript</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">superscript</span></button>
+<div class="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1"></div>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">grid_on</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">image</span></button>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">functions</span></button>
+<div class="ml-auto flex items-center gap-2">
+<span class="text-[10px] text-slate-400 uppercase font-mono mr-2">TipTap 2.0</span>
+<button class="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"><span class="material-icons-outlined text-sm">fullscreen</span></button>
+</div>
+</div>
+<div class="p-6 editor-min-h focus-within:ring-2 ring-primary/20 outline-none">
+<p class="text-lg leading-relaxed mb-4">A 64-year-old male presents to the emergency department with sudden-onset chest pain radiating to his back. His blood pressure is 180/110 mmHg. On physical examination, a new early diastolic decrescendo murmur is heard at the right sternal border. An ECG shows sinus tachycardia without ST-segment changes.</p>
+<div class="my-6 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden w-fit">
+<img class="max-h-64 object-cover" data-alt="Medical diagnostic chest X-ray image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcTYMJ1qq-lk_NPNFw4ejr6y_ee3jKs_iBuamp-DfGogVSkRnA1EqXvR5pkNh0ls2l86WIs6b3E8xliaonhrnL1mHa7qd2bBAgS2KXXXNKNN0tF4S-j289t_vGUNxo2zcAGRdp_6-uGnNtTqbUeN99iTrdnDWlhcmfOSQKHWcDr2BTCVSBOUTXQu8bBN_l1u8y6e5JDKOQCAKU2o40CxZ7abMjVCU5Lm1jPoWxEzB7SGL_OKjK2STCOeONAVgEaiKpLQiok13OLEg"/>
+<div class="bg-slate-50 dark:bg-slate-800 p-2 text-[10px] italic text-slate-500 border-t border-slate-200 dark:border-slate-800">Figure 1.1: Preliminary Chest Radiograph</div>
+</div>
+<p class="text-lg font-semibold">Which of the following is the most likely diagnosis?</p>
+</div>
+</section>
+<!-- MCQ Options Builder -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Answer Options</h2>
+<button class="flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+<span class="material-icons-outlined text-sm">add</span> ADD OPTION
+        </button>
+</div>
+<div class="space-y-3">
+<!-- Option A (Selected Correct) -->
+<div class="group flex items-center gap-3 bg-white dark:bg-slate-900 border-2 border-primary rounded-xl p-3 shadow-md">
+<div class="cursor-grab text-slate-300 dark:text-slate-600 group-hover:text-slate-400"><span class="material-icons-outlined">drag_indicator</span></div>
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">A</div>
+<input class="flex-grow bg-transparent border-none focus:ring-0 text-sm font-medium" type="text" value="Aortic Dissection"/>
+<div class="flex items-center gap-4">
+<label class="flex items-center cursor-pointer gap-2">
+<span class="text-[10px] font-bold text-primary">CORRECT</span>
+<div class="relative inline-flex items-center h-5 w-10 rounded-full bg-primary">
+<span class="translate-x-5 inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+</div>
+</label>
+<button class="text-slate-300 hover:text-red-500"><span class="material-icons-outlined text-sm">delete</span></button>
+</div>
+</div>
+<!-- Option B -->
+<div class="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+<div class="cursor-grab text-slate-300 dark:text-slate-600 group-hover:text-slate-400"><span class="material-icons-outlined">drag_indicator</span></div>
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-sm">B</div>
+<input class="flex-grow bg-transparent border-none focus:ring-0 text-sm" type="text" value="Acute Myocardial Infarction"/>
+<div class="flex items-center gap-4">
+<label class="flex items-center cursor-pointer gap-2 opacity-50 hover:opacity-100 transition-opacity">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Correct</span>
+<div class="relative inline-flex items-center h-5 w-10 rounded-full bg-slate-200 dark:bg-slate-700">
+<span class="translate-x-1 inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+</div>
+</label>
+<button class="text-slate-300 hover:text-red-500"><span class="material-icons-outlined text-sm">delete</span></button>
+</div>
+</div>
+<!-- Option C -->
+<div class="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+<div class="cursor-grab text-slate-300 dark:text-slate-600 group-hover:text-slate-400"><span class="material-icons-outlined">drag_indicator</span></div>
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-sm">C</div>
+<input class="flex-grow bg-transparent border-none focus:ring-0 text-sm" type="text" value="Pulmonary Embolism"/>
+<div class="flex items-center gap-4">
+<label class="flex items-center cursor-pointer gap-2 opacity-50 hover:opacity-100 transition-opacity">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Correct</span>
+<div class="relative inline-flex items-center h-5 w-10 rounded-full bg-slate-200 dark:bg-slate-700">
+<span class="translate-x-1 inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+</div>
+</label>
+<button class="text-slate-300 hover:text-red-500"><span class="material-icons-outlined text-sm">delete</span></button>
+</div>
+</div>
+<!-- Option D -->
+<div class="group flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+<div class="cursor-grab text-slate-300 dark:text-slate-600 group-hover:text-slate-400"><span class="material-icons-outlined">drag_indicator</span></div>
+<div class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center font-bold text-sm">D</div>
+<input class="flex-grow bg-transparent border-none focus:ring-0 text-sm" type="text" value="Pneumothorax"/>
+<div class="flex items-center gap-4">
+<label class="flex items-center cursor-pointer gap-2 opacity-50 hover:opacity-100 transition-opacity">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Correct</span>
+<div class="relative inline-flex items-center h-5 w-10 rounded-full bg-slate-200 dark:bg-slate-700">
+<span class="translate-x-1 inline-block w-4 h-4 transform bg-white rounded-full transition-transform"></span>
+</div>
+</label>
+<button class="text-slate-300 hover:text-red-500"><span class="material-icons-outlined text-sm">delete</span></button>
+</div>
+</div>
+</div>
+</section>
+<!-- Detailed Explanation Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+<h2 class="text-sm font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2">
+<span class="material-icons-outlined text-base">psychology</span>
+          Rationale &amp; Explanation
+        </h2>
+<span class="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">JSON FIELD: rationale_detailed</span>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+<div class="flex">
+<div class="w-1.5 bg-primary"></div>
+<div class="flex-grow">
+<div class="bg-slate-50 dark:bg-slate-800/30 p-2 border-b border-slate-200 dark:border-slate-800 flex gap-2">
+<button class="px-3 py-1 text-xs font-bold bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">Correct Explanation</button>
+<button class="px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">Incorrect Distractors</button>
+<button class="px-3 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">High-Yield Pearls</button>
+</div>
+<textarea class="w-full p-4 bg-transparent border-none focus:ring-0 text-sm leading-relaxed" placeholder="Write the detailed clinical rationale here..." rows="8"></textarea>
+<div class="p-3 bg-slate-50/50 dark:bg-slate-800/10 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<span class="text-[10px] text-slate-400 italic">Formatting tip: Use [REFERENCE:ID] to link medical papers.</span>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">link</span></button>
+<button class="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"><span class="material-icons-outlined text-sm">spellcheck</span></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Keyboard Shortcut Legend -->
+<footer class="mt-auto bg-slate-100 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 px-6 py-2">
+<div class="flex justify-between items-center text-[10px] font-medium text-slate-500 dark:text-slate-400">
+<div class="flex gap-6">
+<span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded shadow-sm">Ctrl + S</kbd> Quick Save</span>
+<span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded shadow-sm">Ctrl + Enter</kbd> Publish</span>
+<span class="flex items-center gap-1"><kbd class="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded shadow-sm">Tab</kbd> Next Field</span>
+</div>
+<div class="flex items-center gap-4">
+<span>Structure: <b>MCQ-5-OPTIONS</b></span>
+<span>Version: <b>4.2.0-STABLE</b></span>
+</div>
+</div>
+</footer>
+</body></html>

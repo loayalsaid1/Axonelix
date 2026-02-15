@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Active Test Interface - Medical QBank</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1d85ed",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#182430", // Slightly lighter than background-dark for cards
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom styles for Tiptap content simulation */
+        .tiptap-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9em;
+        }
+        .tiptap-content th, .tiptap-content td {
+            border: 1px solid #334155;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .tiptap-content th {
+            background-color: #1e293b;
+            font-weight: 600;
+        }
+        
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101922; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        /* Strike-through interaction */
+        .answer-option.strikethrough {
+            opacity: 0.5;
+            text-decoration: line-through;
+            background-color: rgba(255,255,255,0.02);
+        }
+        .answer-option.selected {
+            border-color: #1d85ed;
+            background-color: rgba(29, 133, 237, 0.1);
+        }
+        
+        /* Hide strike button by default, show on hover */
+        .strike-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .answer-option:hover .strike-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 font-display min-h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark flex items-center justify-between px-4 lg:px-6 shrink-0 z-20 shadow-sm">
+<!-- Left: Context -->
+<div class="flex items-center gap-4 w-1/4">
+<div class="flex flex-col">
+<span class="text-xs font-medium text-primary dark:text-primary uppercase tracking-wider">Cardiology • Block 3</span>
+<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+<span class="truncate max-w-[200px]">Acute Coronary Syndromes</span>
+</div>
+</div>
+</div>
+<!-- Center: Progress -->
+<div class="flex flex-col items-center justify-center w-2/4">
+<div class="w-full max-w-md flex items-center gap-3">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Q 14 of 40</span>
+<div class="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[35%] rounded-full"></div>
+</div>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">35%</span>
+</div>
+</div>
+<!-- Right: Timer & Controls -->
+<div class="flex items-center justify-end gap-3 w-1/4">
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+<span class="material-icons text-lg text-slate-500 dark:text-slate-400">timer</span>
+<span class="font-mono font-medium text-slate-700 dark:text-slate-200">00:45:22</span>
+</div>
+<div class="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-1"></div>
+<button class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" title="Suspend Test">
+<span class="material-icons text-xl">pause</span>
+</button>
+<button class="bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-red-500/20">
+                End Test
+            </button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- Question Container -->
+<div class="flex-1 flex flex-col h-full overflow-y-auto w-full max-w-7xl mx-auto px-4 lg:px-8 py-6 gap-6">
+<!-- Split View: Vignette & Question -->
+<div class="flex flex-col lg:flex-row gap-6 lg:h-full">
+<!-- Left Column: Clinical Vignette (Scrollable if long) -->
+<div class="lg:w-1/2 flex flex-col bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden h-fit lg:h-full">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+<h2 class="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+<span class="material-icons text-primary text-sm">assignment</span>
+                            Patient Vignette
+                        </h2>
+<div class="flex gap-2">
+<button class="text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition">Highlight</button>
+<button class="text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition">Notes</button>
+</div>
+</div>
+<div class="p-6 overflow-y-auto tiptap-content text-slate-700 dark:text-slate-300 leading-relaxed text-base">
+<p class="mb-4">A 58-year-old male presents to the emergency department with a 2-hour history of crushing substernal chest pain radiating to the left arm and jaw. He reports associated diaphoresis, nausea, and shortness of breath.</p>
+<p class="mb-4"><strong>Past Medical History:</strong> Hypertension, Hyperlipidemia, Type 2 Diabetes Mellitus, and a 30-pack-year smoking history.</p>
+<div class="my-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex justify-center items-center relative group">
+<img alt="ECG showing ST-elevation in leads II, III, and aVF" class="max-h-[300px] object-contain opacity-90 group-hover:opacity-100 transition-opacity" data-alt="Electrocardiogram tracing on a dark grid background showing heart rhythm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKxG2OqfYhC2QApK3dKe-2jpkkLqIeokRZv8J4d7ZcO2y4nWCCdP_FaX8rMkJ6trZ_2ZaSJGtl2RLb-KuyOFrov6rl2bLyCj2w8LIIZgYbGAodoFxfOcaHohwP_ahRHvBGmIBc9Tyg4yj2g-88WF1eCHEwGt55BkFsPVHchbbPdGmKis4-KFyXTTHlHjAghYIKt09sXv-OabUypZX1Z7AsUk39l6ifBRW02NyLZJAEVxbUS8XnXjWmTs1yCPXJY0SnXSH5eBEfAg"/>
+<button class="absolute bottom-4 right-4 bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+<span class="material-icons text-sm">zoom_in</span>
+</button>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-white mt-6 mb-2">Vital Signs:</h3>
+<table class="w-full text-sm">
+<thead>
+<tr>
+<th class="text-left py-2 px-3 bg-slate-100 dark:bg-slate-800 font-medium">Parameter</th>
+<th class="text-left py-2 px-3 bg-slate-100 dark:bg-slate-800 font-medium">Value</th>
+<th class="text-left py-2 px-3 bg-slate-100 dark:bg-slate-800 font-medium">Reference Range</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+<tr>
+<td class="py-2 px-3">Blood Pressure</td>
+<td class="py-2 px-3 font-medium text-red-500">90/60 mmHg</td>
+<td class="py-2 px-3 text-slate-500">120/80 mmHg</td>
+</tr>
+<tr>
+<td class="py-2 px-3">Heart Rate</td>
+<td class="py-2 px-3 font-medium">110 bpm</td>
+<td class="py-2 px-3 text-slate-500">60-100 bpm</td>
+</tr>
+<tr>
+<td class="py-2 px-3">Respiratory Rate</td>
+<td class="py-2 px-3">22 /min</td>
+<td class="py-2 px-3 text-slate-500">12-20 /min</td>
+</tr>
+<tr>
+<td class="py-2 px-3">O2 Saturation</td>
+<td class="py-2 px-3">94%</td>
+<td class="py-2 px-3 text-slate-500">&gt;95% on RA</td>
+</tr>
+</tbody>
+</table>
+<p class="mt-4">Physical examination reveals elevated jugular venous pressure and clear lung fields on auscultation. No murmurs, rubs, or gallops are appreciated.</p>
+</div>
+</div>
+<!-- Right Column: Question & Options -->
+<div class="lg:w-1/2 flex flex-col h-full gap-4">
+<!-- Question Stem -->
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                                Single Best Answer
+                            </span>
+<button class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1 text-sm font-medium">
+<span class="material-icons text-base">flag</span>
+                                Mark for Later
+                            </button>
+</div>
+<p class="text-lg font-medium text-slate-900 dark:text-white leading-snug">
+                            Based on the clinical presentation and ECG findings, which of the following is the most appropriate next step in management?
+                        </p>
+</div>
+<!-- Answer Options -->
+<div class="flex-1 overflow-y-auto space-y-3 pb-24 lg:pb-0">
+<!-- Option A -->
+<div class="answer-option group relative flex items-center w-full p-4 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 transition-all select-none">
+<div class="flex items-center justify-center h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold mr-4 shrink-0 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600">
+                                A
+                            </div>
+<div class="flex-1 text-slate-700 dark:text-slate-300 font-medium">
+                                Immediate administration of sublingual nitroglycerin
+                            </div>
+<!-- Strike Button -->
+<button class="strike-btn absolute right-4 p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors z-10" title="Eliminate option">
+<span class="material-icons text-lg">visibility_off</span>
+</button>
+</div>
+<!-- Option B (Struck through example) -->
+<div class="answer-option strikethrough group relative flex items-center w-full p-4 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer transition-all select-none">
+<div class="flex items-center justify-center h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 font-semibold mr-4 shrink-0 border border-slate-200 dark:border-slate-600">
+                                B
+                            </div>
+<div class="flex-1 text-slate-400 dark:text-slate-500 font-medium">
+                                Emergent coronary artery bypass grafting (CABG)
+                            </div>
+<!-- Strike Button (Undo) -->
+<button class="strike-btn absolute right-4 p-1.5 rounded-full text-red-500 hover:text-slate-400 hover:bg-slate-500/10 transition-colors z-10 opacity-100" title="Restore option">
+<span class="material-icons text-lg">visibility</span>
+</button>
+</div>
+<!-- Option C (Selected Example) -->
+<div class="answer-option selected group relative flex items-center w-full p-4 bg-white dark:bg-card-dark border rounded-lg cursor-pointer transition-all select-none shadow-md shadow-primary/5">
+<div class="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white font-semibold mr-4 shrink-0 shadow-sm">
+                                C
+                            </div>
+<div class="flex-1 text-slate-900 dark:text-white font-medium">
+                                Intravenous fluid resuscitation with normal saline
+                            </div>
+<!-- Strike Button -->
+<button class="strike-btn absolute right-4 p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors z-10" title="Eliminate option">
+<span class="material-icons text-lg">visibility_off</span>
+</button>
+</div>
+<!-- Option D -->
+<div class="answer-option group relative flex items-center w-full p-4 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-slate-300 dark:hover:border-slate-500 transition-all select-none">
+<div class="flex items-center justify-center h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-semibold mr-4 shrink-0 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600">
+                                D
+                            </div>
+<div class="flex-1 text-slate-700 dark:text-slate-300 font-medium">
+                                Administration of beta-blockers
+                            </div>
+<!-- Strike Button -->
+<button class="strike-btn absolute right-4 p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors z-10" title="Eliminate option">
+<span class="material-icons text-lg">visibility_off</span>
+</button>
+</div>
+<!-- Reveal Explanation Area -->
+<div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/50">
+<div class="flex items-center justify-between">
+<button class="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium">
+<span class="material-icons text-lg">lightbulb</span>
+                                    Reveal Explanation
+                                </button>
+<span class="text-xs text-slate-500 italic">Available after submission</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Action Bar -->
+<footer class="bg-white dark:bg-card-dark border-t border-slate-200 dark:border-slate-800 p-4 lg:px-8 z-20">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<!-- Secondary Nav -->
+<button class="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">
+<span class="material-icons text-sm">arrow_back_ios</span>
+                    Previous
+                </button>
+<!-- Center Status (Optional on desktop, useful for mobile) -->
+<div class="hidden lg:block text-xs text-slate-400 uppercase tracking-widest font-semibold">
+                    Question 14
+                </div>
+<!-- Primary Action -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium">
+                        Skip
+                    </button>
+<button class="flex items-center gap-2 px-8 py-2.5 bg-primary hover:bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/20 transition-all font-semibold transform active:scale-95">
+                        Submit Answer
+                        <span class="material-icons text-sm">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+</footer>
+</main>
+</body></html>
