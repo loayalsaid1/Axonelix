@@ -2,22 +2,17 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
+  LayoutDashboard,
   BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  FileQuestion,
+  CreditCard,
+  TrendingUp,
+  CalendarDays,
 } from "lucide-react"
 
+import { AppSidebarHeader } from "@/components/app-sidebar-header"
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -26,132 +21,73 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
+// Application data
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "Student",
+    email: "student@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
+  navGroups: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
+      label: "Main",
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Dashboard",
+          url: "/#",
+          icon: LayoutDashboard,
+          isActive: true,
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Planner",
+          url: "/#",
+          icon: CalendarDays,
         },
       ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
+      label: "Study",
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Library",
+          url: "/#",
+          icon: BookOpen,
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "QBank",
+          url: "/#",
+          icon: FileQuestion,
+          items: [
+            {
+              title: "Old Exams",
+              url: "/#",
+            },
+            {
+              title: "My Tests",
+              url: "/#",
+            },
+            {
+              title: "Generate Tests",
+              url: "/#",
+            },
+          ],
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "Flashcards",
+          url: "/#",
+          icon: CreditCard,
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
+      label: "Analytics",
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
+          title: "Performance",
+          url: "/#",
+          icon: TrendingUp,
         },
       ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 }
@@ -160,11 +96,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <AppSidebarHeader />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {data.navGroups.map((group) => (
+          <NavMain key={group.label} label={group.label} items={group.items} />
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
