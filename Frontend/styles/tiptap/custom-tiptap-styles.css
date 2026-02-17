@@ -1,0 +1,409 @@
+@reference "../../app/globals.css"
+
+/* ===================================================================
+   CUSTOM TIPTAP STYLES
+   Application-specific styles for Tiptap editor extensions
+   =================================================================== */
+
+@layer base {
+  /* Base editor overrides */
+  .tiptap {
+    /* Hide default blockquote ::before for callouts */
+    blockquote[data-callout]::before {
+      @apply hidden;
+    }
+  }
+}
+
+@layer components {
+  /* ===========================
+     Editor UI Components
+     =========================== */
+
+  .simple-editor-wrapper {
+    .tiptap-button[data-active="true"] {
+      @apply ring-2 ring-offset-2 ring-green-500;
+
+      .dark & {
+        @apply ring-red-900;
+      }
+    }
+  }
+
+  /* ===========================
+     Callout Extension Styles
+     =========================== */
+
+  /* HeadingLabel Icon Styles */
+  .tiptap span[data-custom-heading-icon] {
+    @apply inline-flex items-center select-none;
+    @apply mr-1 font-bold;
+    
+    /* Make it visually distinct when selected */
+    &::selection {
+      @apply bg-blue-200;
+    }
+  }
+
+  /* Callout Header Styles */
+  .tiptap div[data-callout-header] {
+    @apply flex items-center gap-2 text-base font-bold mb-2.5;
+    
+    .callout-icon {
+      @apply text-lg;
+    }
+  }
+
+  .tiptap {
+    blockquote[data-callout] {
+      @apply border-l-4 rounded-lg p-5 transition-all duration-200;
+      @apply my-6 first:mt-0 last:mb-0 shadow-sm;
+
+      /* Info callout - Blue theme */
+      &[data-type="info"] {
+        @apply bg-blue-50 border-blue-500 text-blue-900;
+
+        div[data-callout-header] {
+          @apply text-blue-900;
+        }
+
+        .dark & {
+          @apply bg-blue-950 border-blue-600 text-blue-100;
+
+          div[data-callout-header] {
+            @apply text-blue-100;
+          }
+        }
+      }
+
+      /* Warning callout - Yellow theme */
+      &[data-type="warning"] {
+        @apply bg-yellow-50 border-yellow-500 text-yellow-900;
+
+        div[data-callout-header] {
+          @apply text-yellow-900;
+        }
+
+        .dark & {
+          @apply bg-yellow-950 border-yellow-600 text-yellow-100;
+
+          div[data-callout-header] {
+            @apply text-yellow-100;
+          }
+        }
+      }
+
+      /* Error callout - Red theme */
+      &[data-type="error"] {
+        @apply bg-red-50 border-red-500 text-red-900;
+
+        div[data-callout-header] {
+          @apply text-red-900;
+        }
+
+        .dark & {
+          @apply bg-red-950 border-red-600 text-red-100;
+
+          div[data-callout-header] {
+            @apply text-red-100;
+          }
+        }
+      }
+
+      /* Success callout - Green theme */
+      &[data-type="success"] {
+        @apply bg-green-50 border-green-500 text-green-900;
+
+        div[data-callout-header] {
+          @apply text-green-900;
+        }
+
+        .dark & {
+          @apply bg-green-950 border-green-600 text-green-100;
+
+          div[data-callout-header] {
+            @apply text-green-100;
+          }
+        }
+      }
+
+      /* Note callout - Gray theme */
+      &[data-type="note"] {
+        @apply bg-gray-50 border-gray-500 text-gray-900;
+
+        div[data-callout-header] {
+          @apply text-gray-900;
+        }
+
+        .dark & {
+          @apply bg-gray-950 border-gray-600 text-gray-100;
+
+          div[data-callout-header] {
+            @apply text-gray-100;
+          }
+        }
+      }
+
+      /* Clinical callout - Green medical theme */
+      &[data-type="clinical"] {
+        @apply bg-green-50 border-green-500 text-green-900;
+
+        div[data-callout-header] {
+          @apply text-green-900;
+        }
+
+        .dark & {
+          @apply bg-green-950 border-green-600 text-green-100;
+
+          div[data-callout-header] {
+            @apply text-green-100;
+          }
+        }
+      }
+    }
+
+    /* ===========================
+     Custom Heading Extension Styles
+     =========================== */
+
+    [data-custom-heading] {
+      @apply transition-all duration-200;
+    }
+
+    /* Question Template Styles */
+    div[data-question-template] {
+      @apply bg-blue-50 rounded-lg font-sans p-5 my-6;
+
+      .dark & {
+        @apply bg-blue-950/50;
+      }
+    }
+
+    div[data-question-section] {
+      @apply bg-white rounded-lg border border-gray-300 shadow-sm mb-5 last:mb-0;
+
+      .dark & {
+        @apply bg-gray-900 border-gray-700;
+      }
+    }
+
+    div[data-question-section-header] {
+      @apply bg-blue-900 rounded-t-lg text-white text-base font-bold px-4 py-3;
+      @apply cursor-text;
+
+      &:focus {
+        @apply outline-none ring-2 ring-blue-500;
+      }
+
+      .dark & {
+        @apply bg-blue-800;
+      }
+    }
+
+    div[data-question-section-content] {
+      @apply text-gray-800 leading-7 p-4;
+
+      .dark & {
+        @apply text-gray-200 bg-gray-900;
+      }
+
+      /* Ensure paragraphs have minimal margin */
+      p {
+        @apply my-2 first:mt-0 last:mb-0;
+      }
+    }
+
+    /* Level 1: Main title with blue background and book icon */
+    h1[data-custom-heading][data-level="1"] {
+      @apply bg-blue-600 rounded-lg shadow-sm;
+      @apply text-white font-sans text-3xl font-extrabold text-center leading-10;
+      @apply px-8 py-7 mb-4;
+      @apply transition-all duration-200;
+
+      &:hover {
+        @apply shadow-md;
+      }
+
+      .dark & {
+        @apply bg-blue-700 text-white shadow-sm;
+      }
+    }
+
+    /* Level 2: Section title with centered text and borders on both sides */
+    h2[data-custom-heading][data-level="2"] {
+      @apply bg-blue-100 rounded-xs text-blue-900 font-sans text-2xl font-bold text-center;
+      @apply border-l-2 border-r-2 border-blue-500;
+      @apply mt-8 mb-6 first:mt-0 p-5;
+      @apply shadow-sm;
+
+      &:hover {
+        @apply shadow-md border-blue-600;
+      }
+
+      .dark & {
+        @apply bg-blue-900 text-blue-100 border-blue-500;
+      }
+    }
+
+    /* Level 3: Subtitle with gray background and left border */
+    h3[data-custom-heading][data-level="3"] {
+      @apply bg-blue-100 border-l-4 border-blue-500 rounded-xs text-blue-900 font-sans text-xl font-bold px-5 py-3;
+      @apply mt-8 mb-4 first:mt-0 shadow-sm;
+
+      h2[data-custom-heading][data-level="2"] + & {
+        @apply mt-2;
+      }
+      &:hover {
+        @apply shadow-md;
+      }
+
+      .dark & {
+        @apply bg-blue-900 text-blue-100 border-blue-500;
+      }
+    }
+
+    /* Level 4: Inline badge style with rounded pill */
+    h4[data-custom-heading][data-level="4"] {
+      @apply w-fit bg-blue-100 border border-blue-600 text-blue-700 pl-2 pr-4 py-1.5;
+      @apply rounded-l-xl rounded-r-4xl  font-bold text-base font-sans;
+      @apply mt-6 mb-3 shadow-sm;
+
+      &:hover {
+        @apply shadow-md;
+      }
+
+      .dark & {
+        @apply bg-blue-900 text-blue-100 border-blue-500;
+
+        &:hover {
+          @apply shadow-md;
+        }
+      }
+    }
+
+    /* ===========================
+     Table Extension Styles
+     =========================== */
+
+    table {
+      @apply w-full border-collapse my-6 overflow-hidden;
+      @apply rounded-lg shadow-md;
+      @apply transition-all duration-200;
+
+      &:hover {
+        @apply shadow-lg;
+      }
+    }
+
+    /* Table cells - base styles */
+    th,
+    td {
+      @apply border border-gray-300 px-4 py-3;
+      @apply text-left align-top;
+      @apply transition-colors duration-150;
+      @apply relative;
+
+      .dark & {
+        @apply border-gray-700;
+      }
+
+      /* Selected cell highlighting */
+      &.selectedCell {
+        @apply bg-blue-100 ring-2 ring-blue-500 ring-inset;
+
+        .dark & {
+          @apply bg-blue-900/50;
+        }
+      }
+    }
+
+    /* Table header cells */
+    th {
+      @apply bg-blue-600 text-white font-bold;
+      @apply text-sm uppercase tracking-wide;
+
+      .dark & {
+        @apply bg-blue-700;
+      }
+
+      /* First header cell rounded top-left */
+      &:first-child {
+        @apply rounded-tl-lg;
+      }
+
+      /* Last header cell rounded top-right */
+      &:last-child {
+        @apply rounded-tr-lg;
+      }
+    }
+
+    /* Table data cells */
+    td {
+      @apply bg-white text-gray-900;
+
+      .dark & {
+        @apply bg-gray-900 text-gray-100;
+      }
+
+      /* Hover effect on rows */
+      tr:hover & {
+        @apply bg-blue-50;
+
+        .dark & {
+          @apply bg-gray-800;
+        }
+      }
+
+      /* Alternating row colors */
+      tr:nth-child(even) & {
+        @apply bg-gray-50;
+
+        .dark & {
+          @apply bg-gray-900/50;
+        }
+      }
+
+      tr:nth-child(even):hover & {
+        @apply bg-blue-50;
+
+        .dark & {
+          @apply bg-gray-800;
+        }
+      }
+    }
+
+    /* Bottom row rounded corners */
+    tr:last-child {
+      td:first-child {
+        @apply rounded-bl-lg;
+      }
+
+      td:last-child {
+        @apply rounded-br-lg;
+      }
+    }
+
+    /* Empty paragraph in cells - minimal spacing */
+    td p,
+    th p {
+      @apply my-1 first:mt-0 last:mb-0;
+    }
+
+    /* Column resize handle styling */
+    .tableWrapper {
+      @apply overflow-x-auto;
+      @apply my-6 rounded-lg;
+    }
+
+    /* Grip/handle for column resizing */
+    .column-resize-handle {
+      @apply absolute right-0 top-0 bottom-0 w-1;
+      @apply bg-blue-500 cursor-col-resize;
+      @apply pointer-events-none;
+      
+      &:hover {
+        @apply bg-blue-600;
+      }
+    }
+  }
+}
