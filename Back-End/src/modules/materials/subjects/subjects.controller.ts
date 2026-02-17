@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   ParseIntPipe,
   HttpCode,
@@ -13,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto, UpdateSubjectDto } from './dto';
+import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
 
 @Controller('materials/subjects')
 export class SubjectsController {
@@ -30,18 +30,18 @@ export class SubjectsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@paramIntId() id: number) {
     return this.subjectsService.findOne(id);
   }
 
   @Get(':id/chapters')
-  findChapters(@Param('id', ParseIntPipe) id: number) {
+  findChapters(@paramIntId() id: number) {
     return this.subjectsService.findChapters(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @paramIntId() id: number,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
     return this.subjectsService.update(id, updateSubjectDto);
@@ -49,7 +49,7 @@ export class SubjectsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@paramIntId() id: number) {
     await this.subjectsService.remove(id);
   }
 }

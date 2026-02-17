@@ -6,12 +6,12 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto, UpdateModuleDto } from './dto';
+import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
 
 @Controller('materials/modules')
 export class ModulesController {
@@ -29,18 +29,18 @@ export class ModulesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@paramIntId() id: number) {
     return this.modulesService.findOne(id);
   }
 
   @Get(':id/hierarchy')
-  findHierarchy(@Param('id', ParseIntPipe) id: number) {
+  findHierarchy(@paramIntId() id: number) {
     return this.modulesService.findHierarchy(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @paramIntId() id: number,
     @Body() updateModuleDto: UpdateModuleDto,
   ) {
     return this.modulesService.update(id, updateModuleDto);
@@ -48,7 +48,7 @@ export class ModulesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@paramIntId() id: number) {
     await this.modulesService.remove(id);
   }
 }
