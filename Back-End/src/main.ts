@@ -2,6 +2,7 @@ import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 
 async function bootstrap() {
@@ -19,9 +20,12 @@ async function bootstrap() {
     }),
   );
 
-  // Global exception filter
+  // Global exception filters (order matters - specific to general)
   const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionFilter(httpAdapter));
+  app.useGlobalFilters(
+    new DatabaseExceptionFilter(),
+    new GlobalExceptionFilter(httpAdapter),
+  );
 
   // Global interceptor
   app.useGlobalInterceptors(new LoggerInterceptor());
