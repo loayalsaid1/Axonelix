@@ -32,7 +32,12 @@ export class LessonsService {
       where: chapterId ? eq(lessons.chapterId, chapterId) : undefined,
       orderBy: (lessons, { asc }) => [asc(lessons.orderIndex), asc(lessons.name)],
       with: {
-        chapter: true,
+        chapter: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
   }
@@ -42,10 +47,24 @@ export class LessonsService {
       where: eq(lessons.id, id),
       with: {
         chapter: {
+          columns: {
+            id: true,
+            name: true,
+          },
           with: {
             subject: {
+              columns: {
+                id: true,
+                name: true,
+                type: true,
+              },
               with: {
-                module: true,
+                module: {
+                  columns: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
