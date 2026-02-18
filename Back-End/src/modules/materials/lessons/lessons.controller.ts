@@ -9,18 +9,35 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
+import { ChaptersService } from '../chapters/chapters.service';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
 import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
 
 @Controller('materials/lessons')
 export class LessonsController {
-  constructor(private readonly lessonsService: LessonsService) {}
+  constructor(
+    private readonly lessonsService: LessonsService,
+    private readonly chaptersService: ChaptersService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createLessonDto: CreateLessonDto) {
+  async create(@Body() createLessonDto: CreateLessonDto) {
+    if (!createLessonDto.chapterId) {
+      // Misc lesson path: get or create the subject's misc chapter
+      if (createLessonDto.isMisc && createLessonDto.subjectId) {
+        const miscChapter = await this.chaptersService.getOrCreateMiscChapter(createLessonDto.subjectId);
+        createLessonDto.chapterId = miscChapter.id;
+      } else {
+        throw new BadRequestException(
+          'Provide a chapterId, or set isMisc=true with a subjectId to place the lesson in the subject\'s misc chapter.',
+        );
+      }
+    }
+
     return this.lessonsService.create(createLessonDto);
   }
 

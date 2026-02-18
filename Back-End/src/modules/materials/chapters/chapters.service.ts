@@ -3,11 +3,31 @@ import { DrizzleService } from '../../../database/drizzle.service';
 import { CreateChapterDto, UpdateChapterDto } from './dto';
 import { chapters } from '../../../database/entities/chapters';
 import { subjects } from '../../../database/entities/subjects';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 @Injectable()
 export class ChaptersService {
   constructor(private readonly drizzleService: DrizzleService) {}
+
+  async getOrCreateMiscChapter(subjectId: number) {
+    return await this.drizzleService.db.transaction(async (tx) => {
+      const existing = await tx.query.chapters.findFirst({
+        where: and(eq(chapters.subjectId, subjectId), eq(chapters.isMiscellaneous, true)),
+      });
+
+      if (existing) {
+        return existing;
+      }
+
+      const [newChapter] = await tx.insert(chapters).values({
+        subjectId,
+        name: 'Misc',
+        isMiscellaneous: true,
+      }).returning();
+
+      return newChapter;
+    });
+  }
 
   async create(createChapterDto: CreateChapterDto) {
     // Verify that the subject exists

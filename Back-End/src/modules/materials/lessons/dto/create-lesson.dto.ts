@@ -1,8 +1,17 @@
-import { IsString, IsOptional, IsNumber, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsObject, IsBoolean } from 'class-validator';
 
 export class CreateLessonDto {
   @IsNumber()
-  chapterId: number;
+  @IsOptional()
+  chapterId?: number | null;
+
+  @IsNumber()
+  @IsOptional()
+  subjectId?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isMisc?: boolean;
 
   @IsString()
   name: string;

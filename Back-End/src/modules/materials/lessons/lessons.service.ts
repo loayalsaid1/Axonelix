@@ -10,6 +10,11 @@ export class LessonsService {
   constructor(private readonly drizzleService: DrizzleService) {}
 
   async create(createLessonDto: CreateLessonDto) {
+    // Chapter must be provided by controller or caller
+    if (!createLessonDto.chapterId) {
+      throw new BadRequestException('chapterId is required');
+    }
+
     // Verify that the chapter exists
     const chapter = await this.drizzleService.db.query.chapters.findFirst({
       where: eq(chapters.id, createLessonDto.chapterId),
@@ -19,9 +24,18 @@ export class LessonsService {
       throw new BadRequestException(`Chapter with ID ${createLessonDto.chapterId} not found`);
     }
 
+    // Prepare payload only with lesson columns
+    const payload: typeof lessons.$inferInsert = {
+      chapterId: createLessonDto.chapterId,
+      name: createLessonDto.name,
+      description: createLessonDto.description,
+      content: createLessonDto.content,
+      orderIndex: createLessonDto.orderIndex,
+    };
+
     const [newLesson] = await this.drizzleService.db
       .insert(lessons)
-      .values(createLessonDto)
+      .values(payload)
       .returning();
 
     return newLesson;

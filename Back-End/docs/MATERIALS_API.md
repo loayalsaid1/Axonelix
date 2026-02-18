@@ -154,9 +154,21 @@ Lessons within chapters, containing TipTap JSON content
 | PATCH | `/lessons/:id` | Update a lesson |
 | DELETE | `/lessons/:id` | Delete a lesson |
 
+### Request Body Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | ✅ | Lesson title |
+| `chapterId` | number | Conditional | Required when not creating a misc lesson |
+| `subjectId` | number | Conditional | Required when `isMisc` is `true` |
+| `isMisc` | boolean | ❌ | When `true` and no `chapterId` provided, the lesson is placed in the subject's misc chapter (created automatically if it doesn't exist) |
+| `description` | string | ❌ | Short description |
+| `content` | object | ❌ | TipTap JSON content |
+| `orderIndex` | number | ❌ | Display order within the chapter |
+
 ### Request/Response Examples
 
-#### Create Lesson
+#### Create Lesson under a specific chapter
 ```json
 POST /api/materials/lessons
 {
@@ -168,18 +180,40 @@ POST /api/materials/lessons
     "content": [
       {
         "type": "paragraph",
-        "content": [
-          {
-            "type": "text",
-            "text": "The heart has four chambers..."
-          }
-        ]
+        "content": [{ "type": "text", "text": "The heart has four chambers..." }]
       }
     ]
   },
   "orderIndex": 1
 }
 ```
+
+#### Create a misc lesson (no chapter required)
+
+When `isMisc` is `true` and a `subjectId` is provided without a `chapterId`, the API automatically finds or creates the subject's dedicated **Misc** chapter and attaches the lesson to it. Only one Misc chapter can exist per subject.
+
+```json
+POST /api/materials/lessons
+{
+  "subjectId": 1,
+  "isMisc": true,
+  "name": "Extra Notes",
+  "description": "Miscellaneous notes for this subject",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [{ "type": "text", "text": "Additional content..." }]
+      }
+    ]
+  }
+}
+```
+
+> **Validation rules:**
+> - If `chapterId` is provided, `subjectId` and `isMisc` are ignored for placement.
+> - If `chapterId` is omitted, both `isMisc: true` and `subjectId` must be present — otherwise a `400 Bad Request` is returned.
 
 #### Response (GET /lessons/:id)
 ```json
@@ -249,5 +283,7 @@ Common status codes:
 - All timestamps are returned in ISO 8601 format
 - `orderIndex` determines the display order (lower numbers first)
 - `isMiscellaneous` chapters are for lessons that don't fit into other chapters
+- Each subject has at most **one** Misc chapter (`isMiscellaneous: true`). It is created automatically on the first misc lesson creation and reused for all subsequent ones
+- Misc lessons are created by sending `isMisc: true` + `subjectId` without a `chapterId` — the API resolves the chapter automatically
 - Deleting a parent entity cascades to children (e.g., deleting a module deletes all its subjects)
 - The `content` field in lessons stores TipTap JSON format
