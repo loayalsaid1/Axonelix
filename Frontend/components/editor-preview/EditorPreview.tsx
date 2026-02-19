@@ -85,9 +85,9 @@ export default function EditorPreview({ content }: { content: JSONContent | null
   }
 
   return (
-    <div className="max-w-5xl m-4 shadow-2xl shadow-black editor-wrapper">
+    <div className="shadow-neutral-400 shadow-sm rounded-sm editor-wrapper">
       <div className="simple-editor-wrapper">
-        <div className="max-w-5xl p-6 prose tiptap ProseMirror simple-editor-content">
+        <div className="p-6 prose tiptap ProseMirror simple-editor-content">
           {renderedContent}
         </div>
       </div>

@@ -2,10 +2,24 @@ import { NestFactory, HttpAdapterHost } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // CORS — allow the Next.js frontend (dev: 3001, prod: adjust via env)
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  });
+
+  // Enable CORS for the frontend dev server
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    credentials: true,
+  });
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -19,9 +33,12 @@ async function bootstrap() {
     }),
   );
 
-  // Global exception filter
+  // Global exception filters (order matters - specific to general)
   const { httpAdapter } = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionFilter(httpAdapter));
+  app.useGlobalFilters(
+    new DatabaseExceptionFilter(),
+    new GlobalExceptionFilter(httpAdapter),
+  );
 
   // Global interceptor
   app.useGlobalInterceptors(new LoggerInterceptor());
