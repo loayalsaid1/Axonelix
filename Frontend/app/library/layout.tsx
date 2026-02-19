@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { LibrarySidebar } from "@/components/library/LibrarySidebar";
 
 export const metadata: Metadata = {
@@ -23,24 +28,34 @@ export default function LibraryLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full min-h-screen">
-      <LibrarySidebar />
+    <ResizablePanelGroup orientation="horizontal" className="h-full min-h-screen">
+      <ResizablePanel
+        defaultSize={"300px"}
+        minSize={"250px"}
+        className="hidden md:flex"
+      >
+        <LibrarySidebar />
+      </ResizablePanel>
 
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top bar with sidebar trigger (for mobile) */}
-        <header className="flex items-center gap-2 px-4 border-border border-b h-14 shrink-0">
-          <SidebarTrigger className="md:hidden -ml-1" />
-          <Separator
-            orientation="vertical"
-            className="md:hidden mr-2 h-4 data-[orientation=vertical]:h-4"
-          />
-          {/* Breadcrumb injected per-page via slot pattern — children render their own */}
-        </header>
+      <ResizableHandle withHandle className="hidden md:flex" />
 
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </div>
+      <ResizablePanel minSize={50}>
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Top bar with sidebar trigger (for mobile) */}
+          <header className="flex items-center gap-2 px-4 border-border border-b h-14 shrink-0">
+            <SidebarTrigger className="md:hidden -ml-1" />
+            <Separator
+              orientation="vertical"
+              className="md:hidden mr-2 h-4 data-[orientation=vertical]:h-4"
+            />
+            {/* Breadcrumb injected per-page via slot pattern — children render their own */}
+          </header>
+
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }

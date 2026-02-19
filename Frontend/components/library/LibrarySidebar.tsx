@@ -42,7 +42,7 @@ async function HierarchyTree() {
 
 export function LibrarySidebar() {
   return (
-    <aside className="flex flex-col bg-sidebar border-sidebar-border border-r w-64 h-full shrink-0">
+    <aside className="flex flex-col bg-sidebar border-sidebar-border border-r h-full w-full">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 border-sidebar-border border-b h-14">
         <BookOpen className="size-4 text-sidebar-foreground/60" />
