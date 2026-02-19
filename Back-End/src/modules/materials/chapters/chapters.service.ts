@@ -64,7 +64,21 @@ export class ChaptersService {
     const chapter = await this.drizzleService.db.query.chapters.findFirst({
       where: eq(chapters.id, id),
       with: {
-        subject: true,
+        subject: {
+          columns: {
+            id: true,
+            name: true,
+            type: true,
+          },
+          with: {
+            module: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         lessons: {
           orderBy: (lessons, { asc }) => [asc(lessons.orderIndex), asc(lessons.name)],
         },

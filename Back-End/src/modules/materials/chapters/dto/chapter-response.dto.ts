@@ -32,6 +32,18 @@ export class ChapterSubjectDto {
   description?: string;
 }
 
+export class ChapterModuleDto {
+  @IsNumber()
+  id: number;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+
 export class ChapterResponseDto {
   @IsNumber()
   id: number;
@@ -64,7 +76,9 @@ export class ChapterResponseDto {
 
   @Type(() => ChapterSubjectDto)
   @IsOptional()
-  subject?: ChapterSubjectDto;
+  subject?: ChapterSubjectDto & {
+    module?: ChapterModuleDto;
+  };
 
   @IsArray()
   @Type(() => ChapterLessonDto)

@@ -50,7 +50,7 @@ const data = {
       items: [
         {
           title: "Library",
-          url: "/#",
+          url: "/library",
           icon: BookOpen,
         },
         {

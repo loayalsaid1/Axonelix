@@ -83,3 +83,24 @@ PUT    /api/materials/lessons/:id
 DELETE /api/materials/lessons/:id
 GET    /api/materials/lessons/:id/questions  // Get questions for lesson
 ```
+
+## Front-end
+using shadcn components. building pages as per the lessons and materials hierarchy as mentioned in the app summary file
+### Materials part general look and layout and hierarchy selection (execluding lesson page or view)
+- A sidebar mainly for navigation to navigate hierarchy or materials, with teh following
+	- a place to search for lessons (may be via Command component) (currently disabled or does nothing nwo)
+	- a place for recent lessons, (currently just let it use a sertice class that talks to local storage for the logic) 
+	- a navigation hierarchy 
+		- I need to show the heirarchy while be able to toggle or unfold a level, say module, (theoritcal or practical) or subject or chapter without activating the link that takes  me the page representing that hierarchy level element
+		- it probably need to be in the layout so that it does'nt rerender on each link change, and it need to auto detect path in a smart and clean manner and code 
+- a page with content
+	- mainly with a breadcrump for navigation ontop 
+	- name and description of teh hierarchy 
+	- may be action buttons that may be for generating a question for that level of hierarchy or something that take you to the generate test page with heirarchy name and id in query paramters (empty link for now). and other actions and also may be a progress element for completed correct questions for that hierarchy level of the user (also mocked for now)
+	- content of the hierarchy level.
+		- I like as per the references/UI/Stitch reference 1/material_library_explorer/code.html where you show cards for each element (lesson in this case, but can be subjects, etc) but without the icon and badge ontop, so name, description, progres, available questions (mocked for now as well, like other stats), and lessons or chapters (like the one level deeper in the hierarchy name)
+		- also, in the references/UI/Stitch reference 2/library_material_explorer_1/code.html, I like that in the for subjects, you showed list of chapters, under each with a line seprator it showed the list of lessons as cards down
+
+Final note, Backend may adapt of being added to for the specifics of this as needed in a smart way + you can scan the names of the shadcn components in the ui folder and you can run commands to install more as needed from shadcn, instead of creating replacements yourself
+
+Another Note, Code must abide by the proper profissional conventions of NextJS and statigeically create the componnets to utelize the SSR capabilites and the Suspense streaming and loading and error handling among other things 
