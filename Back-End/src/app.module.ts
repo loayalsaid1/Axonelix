@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DrizzleModule } from './database/drizzle.module';
+import { MaterialsModule } from './modules/materials/materials.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { DrizzleModule } from './database/drizzle.module';
       isGlobal: true,
     }),
     DrizzleModule,
+    MaterialsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
