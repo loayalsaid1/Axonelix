@@ -1,9 +1,10 @@
 import { Suspense } from "react";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { getModules } from "@/lib/api/materials";
 import { HierarchyTreeClient } from "@/components/library/HierarchyTreeClient";
 import { RecentLessonsPanel } from "@/components/library/RecentLessonsPanel";
+import { LessonSearchBox } from "@/components/library/LessonSearchBox";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
@@ -55,13 +56,8 @@ export function LibrarySidebar() {
         </Link>
       </div>
 
-      {/* Search (placeholder — non-functional placeholder per spec) */}
-      <div className="p-3 border-sidebar-border border-b">
-        <div className="flex items-center gap-2 bg-sidebar-accent/30 px-3 py-1.5 border border-sidebar-border rounded-md text-sidebar-foreground/50 text-sm">
-          <Search className="size-3.5 shrink-0" />
-          <span>Search lessons…</span>
-        </div>
-      </div>
+      {/* Search */}
+      <LessonSearchBox />
 
       {/* Scrollable body */}
       <div className="flex flex-col flex-1 gap-4 py-3 overflow-y-auto">

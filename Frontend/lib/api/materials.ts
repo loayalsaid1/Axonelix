@@ -118,6 +118,17 @@ export function getLessons(
   });
 }
 
+export function searchLessons(
+  query: string,
+  opts?: RequestInit
+): Promise<LessonWithHierarchy[]> {
+  const qs = `?q=${encodeURIComponent(query)}`;
+  return apiFetch<LessonWithHierarchy[]>(`/materials/lessons/search${qs}`, {
+    cache: "no-store",
+    ...opts,
+  });
+}
+
 // ─── Re-export raw types so consumers import from one place ──────────────────
 export type {
   Module,

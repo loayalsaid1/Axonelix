@@ -46,6 +46,12 @@ export class LessonsController {
     return this.lessonsService.findAll(chapterId);
   }
 
+  @Get('search')
+  search(@Query('q') q: string) {
+    if (!q || q.trim().length < 1) return [];
+    return this.lessonsService.search(q.trim());
+  }
+
   @Get(':id')
   findOne(@paramIntId() id: number) {
     return this.lessonsService.findOne(id);
