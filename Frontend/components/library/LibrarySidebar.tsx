@@ -5,8 +5,9 @@ import { getModules } from "@/lib/api/materials";
 import { HierarchyTreeClient } from "@/components/library/HierarchyTreeClient";
 import { RecentLessonsPanel } from "@/components/library/RecentLessonsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "@/lib/constants";
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api";
+
 // ─── Tree skeleton shown while the server fetches module data ────────────────
 function TreeSkeleton() {
   return (
@@ -26,14 +27,30 @@ async function HierarchyTree() {
   const modules = await getModules();
 
   // For the sidebar tree we need chapters+lessons too; fetch hierarchies in parallel
+  console.log("🔍 Starting hierarchy fetch for modules:", modules);
+  console.log("📡 API Base URL:", API_BASE_URL);
+  
   const hierarchies = await Promise.all(
-    modules.map((m) =>
-      fetch(
-        `${baseURL}/materials/modules/${m.id}/hierarchy`,
-        { next: { revalidate: 60 } }
-      ).then((r) => r.json())
-    )
+    modules.map((m) => {
+      const url = `${API_BASE_URL}/materials/modules/${m.id}/hierarchy`;
+      console.log(`🌳 Fetching hierarchy for module ${m.id}:`, url);
+      
+      return fetch(url, { next: { revalidate: 60 } })
+        .then((r) => {
+          console.log(`✅ Response received for module ${m.id}:`, r.status, r.statusText);
+          if (!r.ok) {
+            console.error(`❌ Error response for module ${m.id}:`, r.status);
+          }
+          return r.json();
+        })
+        .catch((err) => {
+          console.error(`❌ Fetch failed for module ${m.id}:`, err.message, err.code);
+          throw err;
+        });
+    })
   );
+  
+  console.log("✨ All hierarchies fetched successfully:", hierarchies);
 
   return <HierarchyTreeClient modules={hierarchies} />;
 }

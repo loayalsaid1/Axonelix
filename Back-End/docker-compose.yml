@@ -1,4 +1,4 @@
-version: '3.8'
+services:
   web:
     build:
       context: .
@@ -16,6 +16,8 @@ version: '3.8'
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+
+      - FRONTEND_URL=${FRONTEND_URL}
     networks:
       - backend-network
       - nginx-proxy
