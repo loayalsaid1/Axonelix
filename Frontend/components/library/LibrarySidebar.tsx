@@ -27,30 +27,14 @@ async function HierarchyTree() {
   const modules = await getModules();
 
   // For the sidebar tree we need chapters+lessons too; fetch hierarchies in parallel
-  console.log("🔍 Starting hierarchy fetch for modules:", modules);
-  console.log("📡 API Base URL:", API_BASE_URL);
-  
   const hierarchies = await Promise.all(
-    modules.map((m) => {
-      const url = `${API_BASE_URL}/materials/modules/${m.id}/hierarchy`;
-      console.log(`🌳 Fetching hierarchy for module ${m.id}:`, url);
-      
-      return fetch(url, { next: { revalidate: 60 } })
-        .then((r) => {
-          console.log(`✅ Response received for module ${m.id}:`, r.status, r.statusText);
-          if (!r.ok) {
-            console.error(`❌ Error response for module ${m.id}:`, r.status);
-          }
-          return r.json();
-        })
-        .catch((err) => {
-          console.error(`❌ Fetch failed for module ${m.id}:`, err.message, err.code);
-          throw err;
-        });
-    })
+    modules.map((m) =>
+      fetch(
+        `${API_BASE_URL}/materials/modules/${m.id}/hierarchy`,
+        { next: { revalidate: 60 } }
+      ).then((r) => r.json())
+    )
   );
-  
-  console.log("✨ All hierarchies fetched successfully:", hierarchies);
 
   return <HierarchyTreeClient modules={hierarchies} />;
 }
