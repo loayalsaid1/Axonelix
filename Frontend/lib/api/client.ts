@@ -1,6 +1,4 @@
-// Base URL sourced from env — defaults to localhost for dev
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
+import { API_BASE_URL } from "../constants";
 type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
 /**
@@ -13,7 +11,7 @@ export async function apiFetch<T>(
   path: string,
   { body, ...options }: FetchOptions = {}
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...(options.headers ?? {}),
