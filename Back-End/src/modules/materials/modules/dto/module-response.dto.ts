@@ -1,47 +1,52 @@
 import { IsNumber, IsString, IsOptional, IsDate, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
+import { modules } from '../../../../database/entities/modules';
+import { subjects } from '../../../../database/entities/subjects';
+
+type ModuleRow = typeof modules.$inferSelect;
+type SubjectRow = typeof subjects.$inferSelect;
 
 export class ModuleSubjectDto {
   @IsNumber()
-  id: number;
+  id: SubjectRow['id'];
 
   @IsString()
-  name: string;
+  name: SubjectRow['name'];
 
   @IsString()
-  type: string;
+  type: SubjectRow['type'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: SubjectRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: SubjectRow['orderIndex'];
 }
 
 export class ModuleResponseDto {
   @IsNumber()
-  id: number;
+  id: ModuleRow['id'];
 
   @IsString()
-  name: string;
+  name: ModuleRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ModuleRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: ModuleRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: ModuleRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: ModuleRow['updatedAt'];
 
   @IsArray()
   @Type(() => ModuleSubjectDto)

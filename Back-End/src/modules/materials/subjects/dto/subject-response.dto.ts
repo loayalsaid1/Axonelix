@@ -1,66 +1,72 @@
-import { IsNumber, IsString, IsOptional, IsDate, IsArray, IsEnum } from 'class-validator';
+import { IsNumber, IsString, IsOptional, IsDate, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
-import { SubjectType } from './create-subject.dto';
+import { subjects } from '../../../../database/entities/subjects';
+import { chapters } from '../../../../database/entities/chapters';
+import { modules } from '../../../../database/entities/modules';
+
+type SubjectRow = typeof subjects.$inferSelect;
+type ChapterRow = typeof chapters.$inferSelect;
+type ModuleRow = typeof modules.$inferSelect;
 
 export class SubjectChapterDto {
   @IsNumber()
-  id: number;
+  id: ChapterRow['id'];
 
   @IsString()
-  name: string;
+  name: ChapterRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ChapterRow['description'];
 
   @IsOptional()
-  isMiscellaneous?: boolean;
+  isMiscellaneous: ChapterRow['isMiscellaneous'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: ChapterRow['orderIndex'];
 }
 
 export class SubjectModuleDto {
   @IsNumber()
-  id: number;
+  id: ModuleRow['id'];
 
   @IsString()
-  name: string;
+  name: ModuleRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ModuleRow['description'];
 }
 
 export class SubjectResponseDto {
   @IsNumber()
-  id: number;
+  id: SubjectRow['id'];
 
   @IsNumber()
-  moduleId: number;
+  moduleId: SubjectRow['moduleId'];
 
   @IsString()
-  name: string;
+  name: SubjectRow['name'];
 
-  @IsEnum(SubjectType)
-  type: SubjectType;
+  @IsString()
+  type: SubjectRow['type'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: SubjectRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: SubjectRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: SubjectRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: SubjectRow['updatedAt'];
 
   @Type(() => SubjectModuleDto)
   @IsOptional()

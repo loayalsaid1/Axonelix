@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { ChaptersService } from '../chapters/chapters.service';
-import { CreateLessonDto, UpdateLessonDto } from './dto';
+import { CreateLessonDto, UpdateLessonDto, LessonResponseDto, LessonWithHierarchyDto } from './dto';
 import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
 
 @Controller('materials/lessons')
@@ -25,7 +25,7 @@ export class LessonsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createLessonDto: CreateLessonDto) {
+  async create(@Body() createLessonDto: CreateLessonDto): Promise<LessonResponseDto> {
     if (!createLessonDto.chapterId) {
       // Misc lesson path: get or create the subject's misc chapter
       if (createLessonDto.isMisc && createLessonDto.subjectId) {
@@ -42,17 +42,23 @@ export class LessonsController {
   }
 
   @Get()
-  findAll(@Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number) {
+  findAll(@Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number): Promise<LessonResponseDto[]> {
     return this.lessonsService.findAll(chapterId);
   }
 
+  @Get('search')
+  search(@Query('q') q: string): Promise<LessonWithHierarchyDto[]> | LessonWithHierarchyDto[] {
+    if (!q || q.trim().length < 1) return [];
+    return this.lessonsService.search(q.trim());
+  }
+
   @Get(':id')
-  findOne(@paramIntId() id: number) {
+  findOne(@paramIntId() id: number): Promise<LessonWithHierarchyDto> {
     return this.lessonsService.findOne(id);
   }
 
   @Get(':id/questions')
-  findQuestions(@paramIntId() id: number) {
+  findQuestions(@paramIntId() id: number): Promise<any[]> {
     return this.lessonsService.findQuestions(id);
   }
 
@@ -60,13 +66,13 @@ export class LessonsController {
   update(
     @paramIntId() id: number,
     @Body() updateLessonDto: UpdateLessonDto,
-  ) {
+  ): Promise<LessonResponseDto> {
     return this.lessonsService.update(id, updateLessonDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@paramIntId() id: number) {
+  async remove(@paramIntId() id: number): Promise<void> {
     await this.lessonsService.remove(id);
   }
 }

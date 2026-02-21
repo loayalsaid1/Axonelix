@@ -1,78 +1,87 @@
 import { IsNumber, IsString, IsOptional, IsDate, IsArray, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
+import { chapters } from '../../../../database/entities/chapters';
+import { subjects } from '../../../../database/entities/subjects';
+import { modules } from '../../../../database/entities/modules';
+import { lessons } from '../../../../database/entities/lessons';
+
+type ChapterRow = typeof chapters.$inferSelect;
+type SubjectRow = typeof subjects.$inferSelect;
+type ModuleRow = typeof modules.$inferSelect;
+type LessonRow = typeof lessons.$inferSelect;
 
 export class ChapterLessonDto {
   @IsNumber()
-  id: number;
+  id: LessonRow['id'];
 
   @IsString()
-  name: string;
+  name: LessonRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: LessonRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: LessonRow['orderIndex'];
 }
 
 export class ChapterSubjectDto {
   @IsNumber()
-  id: number;
+  id: SubjectRow['id'];
 
   @IsString()
-  name: string;
+  name: SubjectRow['name'];
 
   @IsString()
-  type: string;
+  type: SubjectRow['type'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: SubjectRow['description'];
 }
 
 export class ChapterModuleDto {
   @IsNumber()
-  id: number;
+  id: ModuleRow['id'];
 
   @IsString()
-  name: string;
+  name: ModuleRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: ModuleRow['description'];
 }
 
 export class ChapterResponseDto {
   @IsNumber()
-  id: number;
+  id: ChapterRow['id'];
 
   @IsNumber()
-  subjectId: number;
+  subjectId: ChapterRow['subjectId'];
 
   @IsString()
-  name: string;
+  name: ChapterRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ChapterRow['description'];
 
   @IsBoolean()
   @IsOptional()
-  isMiscellaneous?: boolean;
+  isMiscellaneous: ChapterRow['isMiscellaneous'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: ChapterRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: ChapterRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: ChapterRow['updatedAt'];
 
   @Type(() => ChapterSubjectDto)
   @IsOptional()

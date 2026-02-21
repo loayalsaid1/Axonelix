@@ -3,7 +3,7 @@ import { DrizzleService } from '../../../database/drizzle.service';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
 import { lessons } from '../../../database/entities/lessons';
 import { chapters } from '../../../database/entities/chapters';
-import { eq } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
@@ -108,6 +108,27 @@ export class LessonsService {
     }
 
     return lesson.questions;
+  }
+
+  async search(query: string) {
+    return await this.drizzleService.db.query.lessons.findMany({
+      where: ilike(lessons.name, `%${query}%`),
+      orderBy: (lessons, { asc }) => [asc(lessons.name)],
+      limit: 20,
+      with: {
+        chapter: {
+          columns: { id: true, name: true },
+          with: {
+            subject: {
+              columns: { id: true, name: true, type: true },
+              with: {
+                module: { columns: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
