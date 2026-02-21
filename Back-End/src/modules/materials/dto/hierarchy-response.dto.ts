@@ -1,55 +1,64 @@
 import { IsNumber, IsString, IsOptional, IsArray, IsDate } from 'class-validator';
 import { Type } from 'class-transformer';
+import { modules } from '../../../database/entities/modules';
+import { subjects } from '../../../database/entities/subjects';
+import { chapters } from '../../../database/entities/chapters';
+import { lessons } from '../../../database/entities/lessons';
+
+type ModuleRow = typeof modules.$inferSelect;
+type SubjectRow = typeof subjects.$inferSelect;
+type ChapterRow = typeof chapters.$inferSelect;
+type LessonRow = typeof lessons.$inferSelect;
 
 export class HierarchyLessonDto {
   @IsNumber()
-  id: number;
+  id: LessonRow['id'];
 
   @IsString()
-  name: string;
+  name: LessonRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: LessonRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: LessonRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: LessonRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: LessonRow['updatedAt'];
 }
 
 export class HierarchyChapterDto {
   @IsNumber()
-  id: number;
+  id: ChapterRow['id'];
 
   @IsString()
-  name: string;
+  name: ChapterRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ChapterRow['description'];
 
   @IsOptional()
-  isMiscellaneous?: boolean;
+  isMiscellaneous: ChapterRow['isMiscellaneous'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: ChapterRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: ChapterRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: ChapterRow['updatedAt'];
 
   @IsArray()
   @Type(() => HierarchyLessonDto)
@@ -58,29 +67,29 @@ export class HierarchyChapterDto {
 
 export class HierarchySubjectDto {
   @IsNumber()
-  id: number;
+  id: SubjectRow['id'];
 
   @IsString()
-  name: string;
+  name: SubjectRow['name'];
 
   @IsString()
-  type: string;
+  type: SubjectRow['type'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: SubjectRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: SubjectRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: SubjectRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: SubjectRow['updatedAt'];
 
   @IsArray()
   @Type(() => HierarchyChapterDto)
@@ -89,26 +98,26 @@ export class HierarchySubjectDto {
 
 export class HierarchyResponseDto {
   @IsNumber()
-  id: number;
+  id: ModuleRow['id'];
 
   @IsString()
-  name: string;
+  name: ModuleRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: ModuleRow['description'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: ModuleRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: ModuleRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: ModuleRow['updatedAt'];
 
   @IsArray()
   @Type(() => HierarchySubjectDto)

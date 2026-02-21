@@ -1,77 +1,86 @@
 import { IsNumber, IsString, IsOptional, IsDate, IsObject } from 'class-validator';
 import { Type } from 'class-transformer';
+import { lessons } from '../../../../database/entities/lessons';
+import { chapters } from '../../../../database/entities/chapters';
+import { subjects } from '../../../../database/entities/subjects';
+import { modules } from '../../../../database/entities/modules';
+
+type LessonRow = typeof lessons.$inferSelect;
+type ChapterRow = typeof chapters.$inferSelect;
+type SubjectRow = typeof subjects.$inferSelect;
+type ModuleRow = typeof modules.$inferSelect;
 
 export class LessonHierarchyChapterDto {
   @IsNumber()
-  id: number;
+  id: ChapterRow['id'];
 
   @IsString()
-  name: string;
+  name: ChapterRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: ChapterRow['description'];
 
   @IsOptional()
-  isMiscellaneous?: boolean;
+  isMiscellaneous?: ChapterRow['isMiscellaneous'];
 }
 
 export class LessonHierarchySubjectDto {
   @IsNumber()
-  id: number;
+  id: SubjectRow['id'];
 
   @IsString()
-  name: string;
+  name: SubjectRow['name'];
 
   @IsString()
-  type: string;
+  type: SubjectRow['type'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: SubjectRow['description'];
 }
 
 export class LessonHierarchyModuleDto {
   @IsNumber()
-  id: number;
+  id: ModuleRow['id'];
 
   @IsString()
-  name: string;
+  name: ModuleRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: ModuleRow['description'];
 }
 
 export class LessonWithHierarchyDto {
   @IsNumber()
-  id: number;
+  id: LessonRow['id'];
 
   @IsNumber()
-  chapterId: number;
+  chapterId: LessonRow['chapterId'];
 
   @IsString()
-  name: string;
+  name: LessonRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: LessonRow['description'];
 
   @IsObject()
   @IsOptional()
-  content?: any;
+  content: LessonRow['content'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: LessonRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: LessonRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: LessonRow['updatedAt'];
 
   @Type(() => LessonHierarchyChapterDto)
   @IsOptional()
