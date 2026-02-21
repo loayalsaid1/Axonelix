@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
-import { CreateSubjectDto, UpdateSubjectDto } from './dto';
+import { CreateSubjectDto, UpdateSubjectDto, SubjectResponseDto, SubjectChapterDto } from './dto';
 import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
 
 @Controller('materials/subjects')
@@ -20,22 +20,22 @@ export class SubjectsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createSubjectDto: CreateSubjectDto) {
+  create(@Body() createSubjectDto: CreateSubjectDto): Promise<SubjectResponseDto> {
     return this.subjectsService.create(createSubjectDto);
   }
 
   @Get()
-  findAll(@Query('moduleId', new ParseIntPipe({ optional: true })) moduleId?: number) {
+  findAll(@Query('moduleId', new ParseIntPipe({ optional: true })) moduleId?: number): Promise<SubjectResponseDto[]> {
     return this.subjectsService.findAll(moduleId);
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number) {
+  findOne(@paramIntId() id: number): Promise<SubjectResponseDto> {
     return this.subjectsService.findOne(id);
   }
 
   @Get(':id/chapters')
-  findChapters(@paramIntId() id: number) {
+  findChapters(@paramIntId() id: number): Promise<SubjectChapterDto[]> {
     return this.subjectsService.findChapters(id);
   }
 
@@ -43,13 +43,13 @@ export class SubjectsController {
   update(
     @paramIntId() id: number,
     @Body() updateSubjectDto: UpdateSubjectDto,
-  ) {
+  ): Promise<SubjectResponseDto> {
     return this.subjectsService.update(id, updateSubjectDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@paramIntId() id: number) {
+  async remove(@paramIntId() id: number): Promise<void> {
     await this.subjectsService.remove(id);
   }
 }

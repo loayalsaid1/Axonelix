@@ -10,8 +10,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
-import { CreateModuleDto, UpdateModuleDto } from './dto';
+import { CreateModuleDto, UpdateModuleDto, ModuleResponseDto } from './dto';
 import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { HierarchyResponseDto } from '../dto/hierarchy-response.dto';
 
 @Controller('materials/modules')
 export class ModulesController {
@@ -19,22 +20,22 @@ export class ModulesController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createModuleDto: CreateModuleDto) {
+  create(@Body() createModuleDto: CreateModuleDto): Promise<ModuleResponseDto> {
     return this.modulesService.create(createModuleDto);
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<ModuleResponseDto[]> {
     return this.modulesService.findAll();
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number) {
+  findOne(@paramIntId() id: number): Promise<ModuleResponseDto> {
     return this.modulesService.findOne(id);
   }
 
   @Get(':id/hierarchy')
-  findHierarchy(@paramIntId() id: number) {
+  findHierarchy(@paramIntId() id: number): Promise<HierarchyResponseDto> {
     return this.modulesService.findHierarchy(id);
   }
 
@@ -42,13 +43,13 @@ export class ModulesController {
   update(
     @paramIntId() id: number,
     @Body() updateModuleDto: UpdateModuleDto,
-  ) {
+  ): Promise<ModuleResponseDto> {
     return this.modulesService.update(id, updateModuleDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@paramIntId() id: number) {
+  async remove(@paramIntId() id: number): Promise<void> {
     await this.modulesService.remove(id);
   }
 }

@@ -1,47 +1,52 @@
 import { IsNumber, IsString, IsOptional, IsDate, IsObject } from 'class-validator';
 import { Type } from 'class-transformer';
+import { lessons } from '../../../../database/entities/lessons';
+import { chapters } from '../../../../database/entities/chapters';
+
+type LessonRow = typeof lessons.$inferSelect;
+type ChapterRow = typeof chapters.$inferSelect;
 
 export class LessonChapterDto {
   @IsNumber()
-  id: number;
+  id: ChapterRow['id'];
 
   @IsString()
-  name: string;
+  name: ChapterRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description?: ChapterRow['description'];
 }
 
 export class LessonResponseDto {
   @IsNumber()
-  id: number;
+  id: LessonRow['id'];
 
   @IsNumber()
-  chapterId: number;
+  chapterId: LessonRow['chapterId'];
 
   @IsString()
-  name: string;
+  name: LessonRow['name'];
 
   @IsString()
   @IsOptional()
-  description?: string;
+  description: LessonRow['description'];
 
   @IsObject()
   @IsOptional()
-  content?: any;
+  content: LessonRow['content'];
 
   @IsNumber()
   @IsOptional()
-  orderIndex?: number;
+  orderIndex: LessonRow['orderIndex'];
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt: LessonRow['createdAt'];
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt: LessonRow['updatedAt'];
 
   @Type(() => LessonChapterDto)
   @IsOptional()

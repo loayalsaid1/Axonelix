@@ -7,14 +7,24 @@ import {
   RecentLessonsService,
   type RecentLesson,
 } from "@/lib/services/recent-lessons.service";
+import { usePathname } from "next/navigation";
 
 export function RecentLessonsPanel() {
   const [lessons, setLessons] = useState<RecentLesson[]>([]);
+  const pathname = usePathname();
 
   // Read from localStorage on mount (client only)
   useEffect(() => {
     setLessons(RecentLessonsService.getAll());
   }, []);
+
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setLessons(RecentLessonsService.getAll());
+    }, 200); // Delay to ensure any recent visit is recorded
+    return () => clearTimeout(timeoutId);
+  }, [pathname]);
 
   if (lessons.length === 0) return null;
 
@@ -30,7 +40,7 @@ export function RecentLessonsPanel() {
         Recent
       </p>
       {lessons.slice(0, 5).map((lesson) => (
-        <div key={lesson.id} className="flex items-center group">
+        <div key={lesson.id} className="group flex items-center">
           <Link
             href={`/library/lessons/${lesson.id}`}
             className="flex flex-1 items-center gap-2 hover:bg-sidebar-accent px-3 py-1.5 rounded-md text-sidebar-foreground/70 text-sm transition-colors hover:text-sidebar-accent-foreground"
@@ -40,7 +50,7 @@ export function RecentLessonsPanel() {
           </Link>
           <button
             onClick={(e) => handleRemove(lesson.id, e)}
-            className="items-center justify-center hidden mr-1 transition-colors rounded group-hover:flex size-5 text-sidebar-foreground/30 hover:text-sidebar-foreground"
+            className="hidden group-hover:flex justify-center items-center mr-1 rounded size-5 text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors"
             aria-label="Remove from recent"
           >
             <X className="size-3" />
