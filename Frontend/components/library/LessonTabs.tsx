@@ -1,10 +1,13 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, HelpCircle, Layers } from "lucide-react";
+import { FileText, AlertCircle, Zap, HelpCircle, Layers } from "lucide-react";
 import type { JSONContent } from "@tiptap/core";
 import { Suspense, lazy } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
+import { LessonQuestionsContent } from "@/components/library/LessonQuestionsContent";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 
 // Lazy-load the heavy TipTap renderer to avoid its SCSS & styles on initial parse
 const EditorPreview = lazy(
@@ -15,14 +18,30 @@ interface LessonTabsProps {
   content: JSONContent | null;
 }
 
-/**
- * Client component providing the tabbed interface for a lesson view.
- * Content tab: TipTap static renderer.
- * Questions / Flashcards tabs: stubs for future implementation.
- */
+
 export function LessonTabs({ content }: LessonTabsProps) {
+  const params = useParams();
+  const lessonIdParam = params?.lessonId;
+  const lessonId = lessonIdParam ? Number(lessonIdParam) : NaN;
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const activeTab = searchParams.get("tab") ?? "content";
+
+  function handleTabChange(newTab: string) {
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("tab", newTab);
+    // Reset pagination when switching away from questions tab
+    if (newTab !== "questions") {
+      p.delete("page");
+      p.delete("limit");
+    }
+    router.push(`${pathname}?${p.toString()}`);
+  }
+
   return (
-    <Tabs defaultValue="content" className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList variant="line" className="mb-4 border-border border-b">
         <TabsTrigger value="content" className="gap-1.5">
           <FileText className="size-3.5" />
@@ -45,30 +64,46 @@ export function LessonTabs({ content }: LessonTabsProps) {
             <EditorPreview content={content} />
           </Suspense>
         ) : (
-          <div className="flex justify-center items-center border border-border border-dashed rounded-xl min-h-48">
-            <p className="text-muted-foreground text-sm">
-              No content yet for this lesson.
-            </p>
-          </div>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FileText className="text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>No content yet</EmptyTitle>
+              <EmptyDescription>This lesson doesn&apos;t have content yet.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </TabsContent>
 
-      {/* Questions stub */}
+      {/* Questions tab — client fetch using route params */}
       <TabsContent value="questions">
-        <div className="flex justify-center items-center border border-border border-dashed rounded-xl min-h-48">
-          <p className="text-muted-foreground text-sm">
-            Questions coming soon.
-          </p>
-        </div>
+        {Number.isFinite(lessonId) ? (
+          <LessonQuestionsContent lessonId={lessonId} />
+        ) : (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <AlertCircle className="text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>Missing lesson ID</EmptyTitle>
+              <EmptyDescription>Unable to load questions without a valid lesson ID.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
       </TabsContent>
 
       {/* Flashcards stub */}
       <TabsContent value="flashcards">
-        <div className="flex justify-center items-center border border-border border-dashed rounded-xl min-h-48">
-          <p className="text-muted-foreground text-sm">
-            Flashcards coming soon.
-          </p>
-        </div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Zap className="text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>Flashcards coming soon</EmptyTitle>
+            <EmptyDescription>This feature is under development.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </TabsContent>
     </Tabs>
   );

@@ -4,6 +4,7 @@ import { getLesson } from "@/lib/api/materials";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { HierarchyPageHeader } from "@/components/library/HierarchyPageHeader";
 import { LessonTabs } from "@/components/library/LessonTabs";
+import { LessonQuestionsContent } from "@/components/library/LessonQuestionsContent";
 import { RecentLessonTracker } from "@/components/library/RecentLessonTracker";
 import { mockProgress, mockQuestionCount } from "@/lib/utils/mock-stats";
 import type { JSONContent } from "@tiptap/core";
