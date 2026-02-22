@@ -3,7 +3,8 @@ import { DrizzleService } from '../../../database/drizzle.service';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
 import { lessons } from '../../../database/entities/lessons';
 import { chapters } from '../../../database/entities/chapters';
-import { eq, ilike } from 'drizzle-orm';
+import { questions } from '../../../database/entities/questions';
+import { eq, ilike, count } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
@@ -93,21 +94,53 @@ export class LessonsService {
     return lesson;
   }
 
-  async findQuestions(id: number) {
+  async findQuestions(id: number, page = 1, limit = 10) {
+    // Verify lesson exists
     const lesson = await this.drizzleService.db.query.lessons.findFirst({
       where: eq(lessons.id, id),
-      with: {
-        questions: {
-          orderBy: (questions, { asc }) => [asc(questions.createdAt)],
-        },
-      },
+      columns: { id: true },
     });
 
     if (!lesson) {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
 
-    return lesson.questions;
+    const offset = (page - 1) * limit;
+
+    // Select only the fields we actually need for the UI to reduce payload size
+    const [data, [{ value: total }]] = await Promise.all([
+      this.drizzleService.db.query.questions.findMany({
+        where: eq(questions.lessonId, id),
+        orderBy: (q, { asc }) => [asc(q.createdAt)],
+        limit,
+        offset,
+        columns: {
+          id: true,
+          questionType: true,
+          statement: true,
+          statementFormat: true,
+          explanation: true,
+          isMisc: true,
+        },
+        with: {
+          questionOptions: {
+            columns: { id: true, optionText: true, isCorrect: true },
+          },
+        },
+      }),
+      this.drizzleService.db
+        .select({ value: count() })
+        .from(questions)
+        .where(eq(questions.lessonId, id)),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async search(query: string) {
