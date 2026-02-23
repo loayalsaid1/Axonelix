@@ -8,7 +8,7 @@ Context:
 
 Note, I want the questions functioanlity now, however, I'll implement teh quizz related logic later
 
-Let's start by questions tap in lessons page
+Let's start by questions tap in lessons page ***(done)***
 
 
 ## Backend
@@ -20,8 +20,9 @@ Implement the questions tap in the lessons page
 - showing cards of the question statement optoin to show answers and another to show explanation when showing answer and selecting a rigth or wrong answer
 - can be similer to the cards and bar from references/UI/Stitch reference 2/lesson_questions_tab_with_pagination/code.html without the mark botton and the filters stuff 
 
+
 ## Backend initial
-I need to as per the app summary I want to create the questions hierarchy and backed as follows, 
+I need to as per the app summary create the questions hierarchy and backed as follows, 
 
 ### Structure 
 ```
@@ -72,12 +73,9 @@ PUT    /api/questions/:id
 DELETE /api/questions/:id
 
 Query params for filtering:
-?moduleId=xxx
-?subjectIds=
-?lessonIds=xxx,xx,xx
-?chapterIds=xxx,xx,xx
+?lessonId=xxx
+?chapterId=xxx
 ?isMisc=true // fetch only misc questions for chapters
-?includeMisc // For fetching all questions for 
 ?questionType=mcq
 ?oldExamId=xxx
 
@@ -88,6 +86,7 @@ PUT    /api/questions/old-exams/:id
 DELETE /api/questions/old-exams/:id
 
 Query params:
+?moduleId=xxx
 ?universityId=xxx
 ?year=2024
 ?examType=final
@@ -97,49 +96,37 @@ GET    /api/questions/universities
 POST   /api/questions/universities
 GET    /api/questions/universities/:id
 ```
+ 
+#### My data access model for questions (execluding loged in specific behaviour like thier old questiosn history for examle now)
+##### user side
+- fetch lessons questions
+- provide moduleId, type (theoritical/practical), and exam tye (final, midterm, tpl, or flipped) and show available old exams per university and year
+  (then then fetch questions for that old exam, either alone or internally, after generating a quizz from that old exam questions)
+- later when generating a quizz, filter variants according to materials hierarchy described in the Revised App Summary md document
+  - one or more module, subject types(theo, prac), subject,  chapter, lesson, only misc questions (ones attached just to the chapter, not that all questions from lessons under that chapter)
+  - typically this will be from a seprate function to only return questionIds, and used when generating a queizz
 
-### Notes on the way I'll be fetching via network or interacting with questions in the app 
-#### In the user side
-  - Fetching lesson's questions in the lesson page
-  - or questions in a certiain old exam
-    which as I will decide later can be not fetching, but generating a quizz based on them and dealing later with teh quizz itself
-  - When dealing with quizzes
-    - generate a quiz based on 
-      - a lesson, an array of lessons
-      - a chapter, can be just misc questions which not attatched to a specifc lesson, not that it's questions of all lesssons under the chapter
-      - a module which meansn all chapter under a module or array of moduels, 
-    Effectively, the different variants I can filter based on the hierarchy of my materials
-
-
-  
-#### In the admin side
-  - getting questions based on materails hierarchy
-  - yeah.. that's it
+##### Admin side,
+  - filter the actual questions similer to previous manner but fetching actuall questions this time
+  - fetching avaialble universities in the system as well, and available old exams and filtering them 
 
 
-<!-- 
+#### Notes
+- You can use a POST /filter endpoint for this complex filtering
+- use 2 functions one for getting the questions and one for just ids
+- make a private method for building conditions of the query from the filters given, by using the query builder pattern
+- ***[havn't decided this yet]***, some how if we are keeping the normal /questions with query parameters, for simple uses?! may be .. we return certain http error to redirect to the /filter endpoint or something?! if we are keeping this endpoint
+- pagination all the way!
 
-and note, exam types can be just an enmu in the old exams type, not a separate table, 
-also,
-
-
-
-So currently, we have questions, oldexams, no tests nothing.
-so we can now, just fetch lessons's questions, and fetch lessons related to this 
-fetch questions from old exams, all temporarily untell we generate tests and link to them.. 
-
-or we can think ahead and think of a test functionality here
+- Another note, I initally put it so that we can filter by all types of variats of hierarchy, like one or more modules, subjet types, subjects etc.. but I think it may be unnccessary most, i guess , I don'tk now.. wemay keep it with scopped to chapters, and lessons?!
 
 
-make a quizz, with array of questions
-and metadata of the source (and userId later)
-whether it's for an old exam or not
+## Front-end Initial
+Currently we have questions backend
+what we need is to
+- get old exams
+- fetch the actual questions of the exam and take the quizz
+  - either save teh data or just show the quesiont and show the results later or whatever.
 
 
-for quizzez, we can take the questionsIds, metadata (time, seen and answered and saved answered questions, last previewed question)
-
-
-
-what I can currently do, is make the backend for questions, as usual.
-then for UI, i add the paginated questions tap in lessons view + old exams view where I temporarily may be just pagenating through questions 
-{may be in the questions page, i add filtering and I can pagenate through questions generally?!} -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
