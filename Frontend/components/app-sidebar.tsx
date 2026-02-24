@@ -30,13 +30,13 @@ const data = {
       items: [
         {
           title: "Dashboard",
-          url: "/#",
+          url: "/dashboard",
           icon: LayoutDashboard,
           isActive: true,
         },
         {
           title: "Planner",
-          url: "/#",
+          url: "/planner",
           icon: CalendarDays,
         },
       ],
@@ -60,17 +60,17 @@ const data = {
             },
             {
               title: "My Tests",
-              url: "/#",
+              url: "/qbank/my-tests",
             },
             {
               title: "Generate Tests",
-              url: "/#",
+              url: "/qbank/generate-tests",
             },
           ],
         },
         {
           title: "Flashcards",
-          url: "/#",
+          url: "/flashcards",
           icon: CreditCard,
         },
       ],
@@ -80,7 +80,7 @@ const data = {
       items: [
         {
           title: "Performance",
-          url: "/#",
+          url: "/performance",
           icon: TrendingUp,
         },
       ],
