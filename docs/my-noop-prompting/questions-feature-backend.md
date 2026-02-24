@@ -119,14 +119,3 @@ GET    /api/questions/universities/:id
 - pagination all the way!
 
 - Another note, I initally put it so that we can filter by all types of variats of hierarchy, like one or more modules, subjet types, subjects etc.. but I think it may be unnccessary most, i guess , I don'tk now.. wemay keep it with scopped to chapters, and lessons?!
-
-
-## Front-end Initial
-Currently we have questions backend
-what we need is to
-- get old exams
-- fetch the actual questions of the exam and take the quizz
-  - either save teh data or just show the quesiont and show the results later or whatever.
-
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

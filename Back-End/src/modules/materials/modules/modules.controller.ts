@@ -24,6 +24,12 @@ export class ModulesController {
     return this.modulesService.create(createModuleDto);
   }
 
+  /** Lightweight list – only id + name, for filter dropdowns. */
+  @Get('names')
+  findNames(): Promise<{ id: number; name: string }[]> {
+    return this.modulesService.findNames();
+  }
+
   @Get()
   findAll(): Promise<ModuleResponseDto[]> {
     return this.modulesService.findAll();

@@ -1,6 +1,7 @@
 import { apiFetch } from "./client";
 import type {
   Module,
+  ModuleName,
   ModuleWithSubjects,
   ModuleHierarchy,
   Subject,
@@ -12,6 +13,14 @@ import type {
 } from "@/lib/types/materials";
 
 // ─── Modules ─────────────────────────────────────────────────────────────────
+
+/** Fetch only id+name for every module – best for filter dropdowns. */
+export function getModuleNames(opts?: RequestInit): Promise<ModuleName[]> {
+  return apiFetch<ModuleName[]>("/materials/modules/names", {
+    next: { revalidate: 60 },
+    ...opts,
+  });
+}
 
 export function getModules(opts?: RequestInit): Promise<ModuleWithSubjects[]> {
   return apiFetch<ModuleWithSubjects[]>("/materials/modules", {
