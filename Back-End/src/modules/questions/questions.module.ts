@@ -12,9 +12,11 @@ import { UniversitiesService } from './universities/universities.service';
 @Module({
   imports: [DrizzleModule],
   controllers: [
-    QuestionsController,
+    // Specific-prefix controllers MUST come before QuestionsController so that
+    // routes like GET /questions/old-exams are not swallowed by GET /questions/:id
     OldExamsController,
     UniversitiesController,
+    QuestionsController,
   ],
   providers: [
     QuestionsService,
