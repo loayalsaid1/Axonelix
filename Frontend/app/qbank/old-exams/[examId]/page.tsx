@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getOldExam } from "@/lib/api/old-exams";
 import { OldExamQuestionsContent } from "@/components/qbank/OldExamQuestionsContent";
-import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
+import { QBankBreadcrumb } from "@/components/qbank/QBankBreadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +48,7 @@ export default async function OldExamDetailPage({ params }: Props) {
   return (
     <div className="space-y-6 p-6">
       {/* Breadcrumbs */}
-      <HierarchyBreadcrumb
+      <QBankBreadcrumb
         segments={[
           { label: "Old Exams", href: "/qbank/old-exams" },
           {
