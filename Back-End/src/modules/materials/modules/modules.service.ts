@@ -17,6 +17,13 @@ export class ModulesService {
     return newModule;
   }
 
+  async findNames(): Promise<{ id: number; name: string }[]> {
+    return this.drizzleService.db.query.modules.findMany({
+      columns: { id: true, name: true },
+      orderBy: (m, { asc }) => [asc(m.orderIndex), asc(m.name)],
+    });
+  }
+
   async findAll() {
     return await this.drizzleService.db.query.modules.findMany({
       orderBy: (modules, { asc }) => [asc(modules.orderIndex), asc(modules.name)],
