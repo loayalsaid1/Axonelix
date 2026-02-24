@@ -1,0 +1,10 @@
+/* ─── Theme Registry ─────────────────────────────────────────────────────────
+   Each theme file scopes its variables under html[data-theme="xxx"] so they
+   only activate when that theme is selected.  The default theme lives in
+   globals.css (:root / .dark) and requires no data-theme attribute.
+   ──────────────────────────────────────────────────────────────────────────── */
+@import "./themes/alpine.css";
+@import "./themes/starry-night.css";
+@import "./themes/tiesen.css";
+@import "./themes/brownies.css";
+@import "./themes/meta-mask.css";
