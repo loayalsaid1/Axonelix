@@ -55,12 +55,12 @@ const data = {
         },
         {
           title: "QBank",
-          url: "/#",
+          url: "/qbank",
           icon: FileQuestion,
           items: [
             {
               title: "Old Exams",
-              url: "/#",
+              url: "/qbank/old-exams",
             },
             {
               title: "My Tests",
