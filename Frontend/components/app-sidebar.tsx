@@ -13,6 +13,7 @@ import {
 import { AppSidebarHeader } from "@/components/app-sidebar-header"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -99,6 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
+        <ThemeSwitcher />
         <NavUser />
       </SidebarFooter>
       <SidebarRail />
