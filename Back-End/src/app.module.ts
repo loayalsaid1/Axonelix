@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DrizzleModule } from './database/drizzle.module';
 import { MaterialsModule } from './modules/materials/materials.module';
+import { QuestionsModule } from './modules/questions/questions.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { MaterialsModule } from './modules/materials/materials.module';
     }),
     DrizzleModule,
     MaterialsModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

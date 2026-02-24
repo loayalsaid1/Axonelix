@@ -58,8 +58,12 @@ export class LessonsController {
   }
 
   @Get(':id/questions')
-  findQuestions(@paramIntId() id: number): Promise<any[]> {
-    return this.lessonsService.findQuestions(id);
+  findQuestions(
+    @paramIntId() id: number,
+    @Query('page', new ParseIntPipe({ optional: true })) page = 1,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
+  ) {
+    return this.lessonsService.findQuestions(id, page, limit);
   }
 
   @Patch(':id')

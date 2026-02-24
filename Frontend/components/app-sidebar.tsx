@@ -13,6 +13,7 @@ import {
 import { AppSidebarHeader } from "@/components/app-sidebar-header"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -23,11 +24,6 @@ import {
 
 // Application data
 const data = {
-  user: {
-    name: "Student",
-    email: "student@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navGroups: [
     {
       label: "Main",
@@ -55,12 +51,12 @@ const data = {
         },
         {
           title: "QBank",
-          url: "/#",
+          url: "/qbank",
           icon: FileQuestion,
           items: [
             {
               title: "Old Exams",
-              url: "/#",
+              url: "/qbank/old-exams",
             },
             {
               title: "My Tests",
@@ -104,7 +100,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <ThemeSwitcher />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

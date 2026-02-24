@@ -1,5 +1,11 @@
 // ─── Core entity types matching backend schema ───────────────────────────────
 
+/** Lightweight module reference – used in filter dropdowns. */
+export interface ModuleName {
+  id: number;
+  name: string;
+}
+
 export interface Module {
   id: number;
   name: string;
