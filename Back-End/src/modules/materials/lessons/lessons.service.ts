@@ -143,7 +143,6 @@ export class LessonsService {
     };
   }
 
-
   async search(query: string) {
     return await this.drizzleService.db.query.lessons.findMany({
       where: ilike(lessons.name, `%${query}%`),
