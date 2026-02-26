@@ -6,15 +6,9 @@ import { DatabaseExceptionFilter } from './common/filters/database-exception.fil
 import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  // CORS — allow the Next.js frontend (dev: 3001, prod: adjust via env)
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true,
-  });
-
+  // rawBody: true is required for Svix webhook signature verification
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+  
   // Enable CORS for the frontend dev server
   app.enableCors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',

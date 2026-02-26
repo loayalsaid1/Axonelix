@@ -6,6 +6,7 @@ import { chapters } from "./entities/chapters";
 import { lessons } from "./entities/lessons";
 import { questions } from "./entities/questions";
 import { questionOptions } from "./entities/question-options";
+import { users } from "./entities/users";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -18,6 +19,7 @@ export {
 	lessons,
 	questions,
 	questionOptions,
+	users,
 };
 
 export const schema = {
@@ -29,6 +31,7 @@ export const schema = {
 	lessons,
 	questions,
 	questionOptions,
+	users,
 	...relations,
 };
 
