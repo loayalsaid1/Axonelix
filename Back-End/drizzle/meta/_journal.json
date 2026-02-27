@@ -22,6 +22,18 @@
       "when": 1771978644263,
       "tag": "0002_elite_wolf_cub",
       "breakpoints": true
-    }
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772227484766,
+      "tag": "0003_careful_silver_samurai",
+      "breakpoints": true    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772227000001,
+      "tag": "0004_quiz_triggers_and_views",
+      "breakpoints": true    }
   ]
 }

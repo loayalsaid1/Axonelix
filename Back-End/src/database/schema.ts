@@ -7,6 +7,15 @@ import { lessons } from "./entities/lessons";
 import { questions } from "./entities/questions";
 import { questionOptions } from "./entities/question-options";
 import { users } from "./entities/users";
+import { quizzes } from "./entities/quizzes";
+import { quizQuestions } from "./entities/quiz-questions";
+import { quizSessions } from "./entities/quiz-sessions";
+import { quizSessionAnswers } from "./entities/quiz-session-answers";
+import {
+	quizQuestionTypeEnum,
+	quizQuestionStatusEnum,
+	quizSessionStatusEnum,
+} from "./entities/enums/quiz-enums";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -20,6 +29,13 @@ export {
 	questions,
 	questionOptions,
 	users,
+	quizzes,
+	quizQuestions,
+	quizSessions,
+	quizSessionAnswers,
+	quizQuestionTypeEnum,
+	quizQuestionStatusEnum,
+	quizSessionStatusEnum,
 };
 
 export const schema = {
@@ -32,6 +48,13 @@ export const schema = {
 	questions,
 	questionOptions,
 	users,
+	quizzes,
+	quizQuestions,
+	quizSessions,
+	quizSessionAnswers,
+	quizQuestionTypeEnum,
+	quizQuestionStatusEnum,
+	quizSessionStatusEnum,
 	...relations,
 };
 
