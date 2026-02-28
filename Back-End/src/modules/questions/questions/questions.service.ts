@@ -169,10 +169,10 @@ export class QuestionsService {
     const offset = (page - 1) * limit;
 
     const [idRows, [{ value: total }]] = await Promise.all([
-      this._buildFilterQuery(filterDto).limit(limit).offset(offset),
+      this.buildFilterQuery(filterDto).limit(limit).offset(offset),
       this.drizzleService.db
         .select({ value: count() })
-        .from(this._buildFilterQuery(filterDto).as('cq')),
+        .from(this.buildFilterQuery(filterDto).as('cq')),
     ]);
 
     const ids = idRows.map((r) => r.id);
@@ -195,11 +195,11 @@ export class QuestionsService {
    * Complex filter returning only question IDs (lightweight, for quiz generation).
    */
   async filterIds(filterDto: QuestionFilterDto): Promise<QuestionIdsDto> {
-    const rows = await this._buildFilterQuery(filterDto);
+    const rows = await this.buildFilterQuery(filterDto);
     return { ids: rows.map((r) => r.id), total: rows.length };
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  // ── Filter-building helpers (also used by QuizzesService) ──────────────────
 
   /**
    * Determine which table joins are needed given the active filters.
@@ -209,7 +209,7 @@ export class QuestionsService {
    *                   └─ LEFT JOIN chapters (when subjectIds / moduleIds / moduleType)
    *                       └─ LEFT JOIN subjects (when moduleIds / moduleType)
    */
-  private _getJoinPlan(filter: QuestionFilterDto) {
+  getJoinPlan(filter: QuestionFilterDto) {
     const needsSubjects =
       !!(filter.moduleIds?.length || filter.moduleType);
     const needsChapters =
@@ -224,7 +224,7 @@ export class QuestionsService {
    * Build WHERE conditions that reference whatever joined tables are present.
    * Callers must ensure the matching joins are added before executing.
    */
-  private _buildFilterConditions(filter: QuestionFilterDto): SQL[] {
+  buildFilterConditions(filter: QuestionFilterDto): SQL[] {
     const conditions: SQL[] = [];
 
     // ── Question-level (no join needed) ──────────────────────────────────
@@ -259,9 +259,9 @@ export class QuestionsService {
    * Returns a `SELECT DISTINCT (id, createdAt)` query with only the joins required
    * by the active filters.  Uses `$dynamic()` to allow conditional join chaining.
    */
-  private _buildFilterQuery(filter: QuestionFilterDto) {
-    const { needsLessons, needsChapters, needsSubjects } = this._getJoinPlan(filter);
-    const conditions = this._buildFilterConditions(filter);
+  buildFilterQuery(filter: QuestionFilterDto) {
+    const { needsLessons, needsChapters, needsSubjects } = this.getJoinPlan(filter);
+    const conditions = this.buildFilterConditions(filter);
 
     let query = this.drizzleService.db
       .selectDistinct({ id: questions.id, createdAt: questions.createdAt })
