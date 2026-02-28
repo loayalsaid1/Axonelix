@@ -16,6 +16,10 @@ import {
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
 } from "./entities/enums/quiz-enums";
+import {
+	vLatestUserQuestionStatus,
+	vUserSubjectAccuracy,
+} from "./entities/quiz-views";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -36,6 +40,8 @@ export {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	vLatestUserQuestionStatus,
+	vUserSubjectAccuracy,
 };
 
 export const schema = {
@@ -55,6 +61,8 @@ export const schema = {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	vLatestUserQuestionStatus,
+	vUserSubjectAccuracy,
 	...relations,
 };
 
