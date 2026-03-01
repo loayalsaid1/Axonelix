@@ -9,6 +9,7 @@ import { quizSessions } from '../../database/entities/quiz-sessions';
 import { quizSessionAnswers } from '../../database/entities/quiz-session-answers';
 import { quizzes } from '../../database/entities/quizzes';
 import { questionOptions } from '../../database/entities/question-options';
+import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { UpdateSessionStatusDto, AnswerDto } from './dto';
 
 /** Transaction type inferred from the database instance — avoids manual generics */
@@ -219,7 +220,7 @@ export class QuizSessionsService {
           break;
 
         case 'completed':
-          await this._complete(tx, sessionId, session.totalQuestions, dto);
+          await this._complete(tx, sessionId, userId, session.totalQuestions, dto);
           break;
       }
     });
@@ -268,12 +269,16 @@ export class QuizSessionsService {
   private async _complete(
     tx: DrizzleTx,
     sessionId: number,
+    userId: number,
     totalQuestions: number,
     dto: UpdateSessionStatusDto,
   ) {
     if (dto.answers?.length) {
       await this._upsertAnswers(tx, sessionId, dto.answers);
     }
+
+    // Snapshot per-user per-question correctness for count filter queries
+    await this._upsertUserQuestionStatus(tx, sessionId, userId);
 
     const stats = await this._buildSessionStats(tx, sessionId, totalQuestions);
 
@@ -287,6 +292,52 @@ export class QuizSessionsService {
         ...stats,
       })
       .where(eq(quizSessions.id, sessionId));
+  }
+
+  // ── User question status upsert ──────────────────────────────────────────
+
+  /**
+   * Batch-upserts `user_question_status` rows from the completed session's
+   * answer records.  Called once per session completion, inside the same
+   * transaction as answer persistence.
+   *
+   * ON CONFLICT: update last_is_correct, increment attempt_count, refresh
+   * last_answered_at — always keeping the MOST RECENT result.
+   */
+  private async _upsertUserQuestionStatus(
+    tx: DrizzleTx,
+    sessionId: number,
+    userId: number,
+  ) {
+    const answers = await tx
+      .select({
+        questionId: quizSessionAnswers.questionId,
+        isCorrect:  quizSessionAnswers.isCorrect,
+      })
+      .from(quizSessionAnswers)
+      .where(eq(quizSessionAnswers.sessionId, sessionId));
+
+    if (!answers.length) return;
+
+    await tx
+      .insert(userQuestionStatus)
+      .values(
+        answers.map((a) => ({
+          userId,
+          questionId:     a.questionId,
+          lastIsCorrect:  a.isCorrect,
+          attemptCount:   1,
+          lastAnsweredAt: sql`CURRENT_TIMESTAMP`,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [userQuestionStatus.userId, userQuestionStatus.questionId],
+        set: {
+          lastIsCorrect:  sql`EXCLUDED.last_is_correct`,
+          attemptCount:   sql`${userQuestionStatus.attemptCount} + 1`,
+          lastAnsweredAt: sql`CURRENT_TIMESTAMP`,
+        },
+      });
   }
 
   // ── Answer upsert ─────────────────────────────────────────────────────────

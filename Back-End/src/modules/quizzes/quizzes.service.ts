@@ -13,7 +13,7 @@ import { questions } from '../../database/entities/questions';
 import { lessons as lessonsTable } from '../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../database/entities/subjects';
-import { vLatestUserQuestionStatus } from '../../database/entities/quiz-views';
+import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { QuestionFilterDto } from '../questions/questions/dto';
 import { GenerateQuizDto } from './dto';
 
@@ -276,9 +276,13 @@ export class QuizzesService {
   }
 
   /**
-   * Attaches the `v_latest_user_question_status` join for `incorrect_only` /
-   * `unread` filters.  For `unread` an extra IS NULL condition is pushed onto
-   * the shared `conditions` array so the caller can apply it in the WHERE clause.
+   * Attaches the `user_question_status` join for `incorrect_only` / `unread`
+   * filters.  For `unread` an extra IS NULL condition is pushed onto the shared
+   * `conditions` array so the caller can apply it in the WHERE clause.
+   *
+   * Uses the denormalised user_question_status table (upserted on session
+   * completion) rather than the live view — indexed, faster, consistent with
+   * QuestionCountService.
    *
    * Returns the (possibly augmented) query unchanged for `all` / undefined status.
    */
@@ -291,23 +295,23 @@ export class QuizzesService {
     if (questionStatus === 'incorrect_only') {
       // INNER JOIN — only questions this user last answered incorrectly
       return query.innerJoin(
-        vLatestUserQuestionStatus,
+        userQuestionStatus,
         and(
-          eq(vLatestUserQuestionStatus.questionId, questions.id),
-          eq(vLatestUserQuestionStatus.userId, userId),
-          eq(vLatestUserQuestionStatus.lastIsCorrect, false),
+          eq(userQuestionStatus.questionId, questions.id),
+          eq(userQuestionStatus.userId, userId),
+          eq(userQuestionStatus.lastIsCorrect, false),
         )!,
       );
     }
 
     if (questionStatus === 'unread') {
-      // LEFT JOIN + IS NULL — questions with no entry in the status view
-      conditions.push(isNull(vLatestUserQuestionStatus.questionId));
+      // LEFT JOIN + IS NULL — questions the user has never answered
+      conditions.push(isNull(userQuestionStatus.questionId));
       return query.leftJoin(
-        vLatestUserQuestionStatus,
+        userQuestionStatus,
         and(
-          eq(vLatestUserQuestionStatus.questionId, questions.id),
-          eq(vLatestUserQuestionStatus.userId, userId),
+          eq(userQuestionStatus.questionId, questions.id),
+          eq(userQuestionStatus.userId, userId),
         )!,
       );
     }

@@ -20,6 +20,11 @@ import {
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
 } from "./entities/quiz-views";
+import {
+	vwQuestionAncestry,
+	vwQuestionCounts,
+} from "./entities/question-hierarchy-views";
+import { userQuestionStatus } from "./entities/user-question-status";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -42,6 +47,9 @@ export {
 	quizSessionStatusEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
+	vwQuestionAncestry,
+	vwQuestionCounts,
+	userQuestionStatus,
 };
 
 export const schema = {
@@ -63,6 +71,9 @@ export const schema = {
 	quizSessionStatusEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
+	vwQuestionAncestry,
+	vwQuestionCounts,
+	userQuestionStatus,
 	...relations,
 };
 

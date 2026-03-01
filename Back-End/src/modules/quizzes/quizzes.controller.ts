@@ -15,13 +15,33 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { paramIntId } from '../../common/decorators/param-int-id.decorator';
 import type { UserRecord } from '../users/interfaces/user-record.interface';
 import { QuizzesService } from './quizzes.service';
+import { QuestionCountService } from './question-count.service';
 import { QuizOwnerGuard } from './guards/quiz-owner.guard';
-import { GenerateQuizDto } from './dto';
+import { CountQuestionsDto, GenerateQuizDto } from './dto';
 
 @UseGuards(ClerkAuthGuard)
 @Controller('quizzes')
 export class QuizzesController {
-  constructor(private readonly quizzesService: QuizzesService) {}
+  constructor(
+    private readonly quizzesService: QuizzesService,
+    private readonly questionCountService: QuestionCountService,
+  ) {}
+
+  /**
+   * GET /quizzes/count
+   *
+   * Returns the number of questions available for the given filter combination.
+   * Accepts the same scope + status filters as POST /quizzes (minus title and
+   * questionCount).  Used by the test-generator UI to show the live
+   * "X questions available" counter as the user adjusts filters.
+   */
+  @Get('count')
+  count(
+    @Query() dto: CountQuestionsDto,
+    @CurrentUser() user: UserRecord,
+  ) {
+    return this.questionCountService.count(dto, user.id);
+  }
 
   /**
    * POST /quizzes

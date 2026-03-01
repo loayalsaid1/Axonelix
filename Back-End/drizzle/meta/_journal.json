@@ -28,12 +28,28 @@
       "version": "7",
       "when": 1772227484766,
       "tag": "0003_careful_silver_samurai",
-      "breakpoints": true    },
+      "breakpoints": true
+    },
     {
       "idx": 4,
       "version": "7",
       "when": 1772227000001,
       "tag": "0004_quiz_triggers_and_views",
-      "breakpoints": true    }
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772322394652,
+      "tag": "0006_lyrical_gunslinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772400000000,
+      "tag": "0007_hierarchy_views_trigger",
+      "breakpoints": true
+    }
   ]
 }

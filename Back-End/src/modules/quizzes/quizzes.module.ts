@@ -7,6 +7,7 @@ import { QuizzesController } from './quizzes.controller';
 import { QuizSessionsController } from './quiz-sessions.controller';
 import { QuizzesService } from './quizzes.service';
 import { QuizSessionsService } from './quiz-sessions.service';
+import { QuestionCountService } from './question-count.service';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { QuizSessionsService } from './quiz-sessions.service';
   providers: [
     QuizzesService,
     QuizSessionsService,
+    QuestionCountService,
   ],
-  exports: [QuizzesService, QuizSessionsService],
+  exports: [QuizzesService, QuizSessionsService, QuestionCountService],
 })
 export class QuizzesModule {}
