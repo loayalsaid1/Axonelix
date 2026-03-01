@@ -221,7 +221,13 @@ export class QuizzesService {
       query = query.where(and(...conditions));
     }
 
-    const rows = await query.orderBy(sql`RANDOM()`).limit(dto.questionCount);
+    // GROUP BY instead of SELECT DISTINCT so that ORDER BY RANDOM() is valid.
+    // PostgreSQL forbids ORDER BY expressions that are not in the SELECT list
+    // when DISTINCT is used, but GROUP BY has no such restriction.
+    const rows = await query
+      .groupBy(questions.id)
+      .orderBy(sql`RANDOM()`)
+      .limit(dto.questionCount);
     return rows.map((r) => r.id);
   }
 
@@ -251,8 +257,10 @@ export class QuizzesService {
     const { needsLessons, needsChapters, needsSubjects } =
       this.questionsService.getJoinPlan(filterDto);
 
+    // Use select + groupBy (in _resolveQuestionIds) rather than selectDistinct,
+    // because PostgreSQL disallows ORDER BY RANDOM() with SELECT DISTINCT.
     let query = this.drizzleService.db
-      .selectDistinct({ id: questions.id })
+      .select({ id: questions.id })
       .from(questions)
       .$dynamic();
 
