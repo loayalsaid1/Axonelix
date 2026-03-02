@@ -22,9 +22,10 @@ function formatTime(secs: number | null): string {
 interface SessionResultsProps {
   quiz: Quiz;
   session: QuizSession;
+  onReview: () => void;
 }
 
-export function SessionResults({ quiz, session }: SessionResultsProps) {
+export function SessionResults({ quiz, session, onReview }: SessionResultsProps) {
   const score = session.scorePct ?? 0;
   const correct = session.correctCount ?? 0;
   const incorrect = session.incorrectCount ?? 0;
@@ -140,10 +141,14 @@ export function SessionResults({ quiz, session }: SessionResultsProps) {
           <Button asChild variant="outline" className="flex-1">
             <Link href="/qbank/my-tests">View All Tests</Link>
           </Button>
-          <Button asChild className="flex-1">
+          <Button asChild variant="outline" className="flex-1">
             <Link href="/qbank/generate-tests">New Test</Link>
           </Button>
         </div>
+
+        <Button className="gap-2 w-full" onClick={onReview}>
+          Review Answers &amp; Explanations
+        </Button>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { getSession, updateSessionStatus } from '@/lib/api/quizzes';
 import { SessionOverview } from './SessionOverview';
 import { TestInterface } from './TestInterface';
 import { SessionResults } from './SessionResults';
+import { SessionReview } from './SessionReview';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { SessionDetail } from '@/lib/types/quizzes';
 
@@ -30,6 +31,7 @@ interface SessionPageContentProps {
 export function SessionPageContent({ initialData }: SessionPageContentProps) {
   const [sessionDetail, setSessionDetail] = useState<SessionDetail>(initialData);
   const [isStarting, setIsStarting] = useState(false);
+  const [activeView, setActiveView] = useState<'results' | 'review'>('results');
   const { getToken } = useAuth();
 
   // Sync when server provides fresh data (triggered by router.refresh())
@@ -91,7 +93,21 @@ export function SessionPageContent({ initialData }: SessionPageContentProps) {
   }
 
   if (session.status === 'completed') {
-    return <SessionResults quiz={quiz} session={session} />;
+    if (activeView === 'review') {
+      return (
+        <SessionReview
+          sessionDetail={sessionDetail}
+          onBack={() => setActiveView('results')}
+        />
+      );
+    }
+    return (
+      <SessionResults
+        quiz={quiz}
+        session={session}
+        onReview={() => setActiveView('review')}
+      />
+    );
   }
 
   // in_progress — hand full session detail to the test interface

@@ -86,7 +86,7 @@ export function MCQAnswerOptions({
                     onToggleEliminate(opt.id);
                   }}
                   className={cn(
-                    'border rounded-lg shrink-0 transition-all',
+                    'border rounded-lg transition-all shrink-0',
                     isEliminated
                       ? 'border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive'
                       : 'border-border hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive text-muted-foreground',

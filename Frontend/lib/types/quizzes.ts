@@ -116,6 +116,47 @@ export function toSessionDetail(raw: QuizSession & { quiz: Quiz; answers: Sessio
   return { session, quiz, answers };
 }
 
+// ─── Review mode ──────────────────────────────────────────────────────────────
+
+/**
+ * Filter tabs available in the review UI.
+ * 'all'       — every question in the quiz
+ * 'incorrect' — only wrong or skipped (no answer)
+ * 'marked'    — questions the user flagged during the test
+ */
+export type ReviewFilter = 'all' | 'incorrect' | 'marked';
+
+/**
+ * A single entry in review mode: the original question joined with the
+ * persisted answer (null when the question was skipped entirely).
+ *
+ * `isCorrect`:
+ *   true  — MCQ and user chose the right option
+ *   false — MCQ and user chose wrong, or question was skipped
+ *   null  — written question (not auto-graded yet)
+ */
+export interface ReviewEntry {
+  question: QuizQuestion;
+  /** Original 1-based position in the full quiz — stable regardless of filter */
+  questionNumber: number;
+  answer: SessionAnswer | null;
+  isCorrect: boolean | null;
+}
+
+/**
+ * Build a ReviewEntry array from a completed SessionDetail.
+ * Preserves question order from quiz.questions.
+ */
+export function buildReviewEntries(detail: SessionDetail): ReviewEntry[] {
+  const answerMap = new Map(detail.answers.map((a) => [a.questionId, a]));
+  return detail.quiz.questions.map((q, i) => {
+    const answer = answerMap.get(q.id) ?? null;
+    // Skipped (no answer at all) counts as incorrect for filtering purposes
+    const isCorrect = answer ? (answer.isCorrect ?? null) : false;
+    return { question: q, questionNumber: i + 1, answer, isCorrect };
+  });
+}
+
 // ─── Session list item (from GET /quiz-sessions) ──────────────────────────────
 
 export type SessionListItem = QuizSession & {

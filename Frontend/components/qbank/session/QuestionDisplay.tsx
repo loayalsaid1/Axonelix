@@ -4,6 +4,7 @@ import { Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { MCQAnswerOptions } from './MCQAnswerOptions';
 import { WrittenAnswerInput } from './WrittenAnswerInput';
 import EditorPreview from '@/components/editor-preview/EditorPreview';
@@ -32,7 +33,7 @@ export function QuestionDisplay({
   const isMarked = !!answer?.isMarked;
 
   return (
-    <article className="bg-card shadow-sm border border-border rounded-xl overflow-hidden">
+    <Card className="gap-0 p-0 overflow-hidden">
       {/* Utility bar */}
       <div className="flex justify-between items-center bg-muted/20 px-5 py-3 border-border border-b">
         <div className="flex items-center gap-2">
@@ -70,7 +71,7 @@ export function QuestionDisplay({
       </div>
 
       {/* Question statement */}
-      <div className="px-6 pt-6 pb-4">
+      <CardContent className="pt-6 pb-4">
         {question.statementFormat === 'tiptap_json' ? (
           <EditorPreview content={JSON.parse(question.statement)} />
         ) : (
@@ -78,14 +79,13 @@ export function QuestionDisplay({
             {question.statement}
           </p>
         )}
-      </div>
+      </CardContent>
 
       {/* Answer area */}
-      <div
+      <CardContent
         className={cn(
-          'px-6 pb-6',
-          question.questionType === 'mcq' && 'pt-2',
-          question.questionType === 'written' && 'pt-4',
+          'pb-6',
+          question.questionType === 'mcq' ? 'pt-2' : 'pt-4',
         )}
       >
         {question.questionType === 'mcq' ? (
@@ -103,7 +103,7 @@ export function QuestionDisplay({
             onChange={(text) => onSetWritten(question.id, text)}
           />
         )}
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   );
 }
