@@ -28,16 +28,21 @@ export class QuizzesController {
   ) {}
 
   /**
-   * GET /quizzes/count
+   * POST /quizzes/count
    *
    * Returns the number of questions available for the given filter combination.
    * Accepts the same scope + status filters as POST /quizzes (minus title and
    * questionCount).  Used by the test-generator UI to show the live
    * "X questions available" counter as the user adjusts filters.
+   *
+   * Uses POST instead of GET so that array filter params (subjectIds,
+   * chapterIds, lessonIds, etc.) are sent as a JSON body and avoid
+   * query-string array-parsing issues.
    */
-  @Get('count')
+  @Post('count')
+  @HttpCode(HttpStatus.OK)
   count(
-    @Query() dto: CountQuestionsDto,
+    @Body() dto: CountQuestionsDto,
     @CurrentUser() user: UserRecord,
   ) {
     return this.questionCountService.count(dto, user.id);

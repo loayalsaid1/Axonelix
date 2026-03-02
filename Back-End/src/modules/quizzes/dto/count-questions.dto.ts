@@ -2,7 +2,7 @@ import { OmitType } from '@nestjs/mapped-types';
 import { GenerateQuizDto } from './generate-quiz.dto';
 
 /**
- * Query-parameter shape for GET /quizzes/count.
+ * Request body for POST /quizzes/count.
  *
  * Identical to GenerateQuizDto but without `title` and `questionCount` —
  * those fields are irrelevant when just counting available questions.
@@ -12,6 +12,9 @@ import { GenerateQuizDto } from './generate-quiz.dto';
  *  • oldExamId
  *  • questionType
  *  • questionStatus  ('all' | 'incorrect_only' | 'unread')
+ *
+ * Sent as a JSON body (POST) rather than query params so that array fields
+ * (subjectIds, chapterIds, lessonIds, etc.) are handled natively.
  */
 export class CountQuestionsDto extends OmitType(GenerateQuizDto, [
   'title',
