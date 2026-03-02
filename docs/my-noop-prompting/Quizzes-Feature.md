@@ -94,3 +94,32 @@ in_progress → completed
 - Pagination on list endpoints.
 
 ---
+
+
+# Front-end
+
+## The flow
+THe user go to the generate test page where in a similer manner to the 2 refernece from /references/ui/Stitch refernece (1 and 2) / qback_test_generator/code.html. 
+he choses from
+-  hierarchy materails just like in the library except he can chose are check boxes.. 
+- choses MCQ or written questions 
+- filter based on previous interactions (all, incorrect_only, unread) 
+- and number of questions (slider component)
+
+then clicks generate and recieves a test-sessionId and get's redirected to ti's page which is similer to the Stitch reference 2/active_test_interface
+
+
+## Notes
+- Modularized components need to be planned ahead and well structured, 
+- we must utilize useReducer to proelry handle the complex state in either pages
+- there should be badges showing count of avilable questions per material hierarhcy and per user perormance filters as well
+- note the questions map tracking unread and unanswered and answered questions...
+- the test mode (tutor and timed) can be shaded and disabled temporarily
+- I've instaled the accordion shadcn compoennt among others as I'm not dead sure if this is the best design, to use the accordion, and check modules, then subjects.. etc or to use thie tree of checkboxes?
+
+
+Isues: 
+1. Timer is using the reducer state to tick each second, as far as I know, this is a shitty performance compromise, becaause it will cause as far as I know a full rerender .. so, we have finde a solution to this, and I suggest, that we may be savee a ref for the stat data, and then making the timer ocmponent has it's own logic, and then we some how use this state, on suspending teh test, or ending... 
+Question, tho?, .. what are the other proper options.
+2. this is this isElemenated option in the DTO when suspending a seesion for question so r something.. what is that?
+3. When generating a quiz.. we don't get to select certain chapters to have the quiz on,.. just the subjects?>!
