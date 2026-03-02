@@ -46,7 +46,7 @@ export type TestSessionAction =
   | { type: 'TOGGLE_MARK'; questionId: number }
   | { type: 'TOGGLE_ELIMINATE'; questionId: number; optionId: number }
   | { type: 'TICK' }
-  | { type: 'HYDRATE'; answers: SessionAnswer[]; metadata: SessionMetadata | null; currentIndex: number };
+  | { type: 'HYDRATE'; answers: SessionAnswer[]; metadata: SessionMetadata | null; currentIndex: number; elapsedSecs?: number };
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -157,7 +157,7 @@ function reducer(state: TestSessionState, action: TestSessionAction): TestSessio
         answers,
         currentIndex: action.currentIndex,
         seen,
-        elapsedSecs: 0,
+        elapsedSecs: action.elapsedSecs ?? 0,
       };
     }
 
@@ -240,6 +240,7 @@ export function useTestSession({ sessionDetail, onSessionEnded }: UseTestSession
         answers: persistedAnswers,
         metadata: session.metadata,
         currentIndex: startingIndex,
+        elapsedSecs: session.timeTakenSecs ?? 0,
       });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
