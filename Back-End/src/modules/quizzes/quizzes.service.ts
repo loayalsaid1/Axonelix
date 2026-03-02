@@ -15,7 +15,13 @@ import { chapters as chaptersTable } from '../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../database/entities/subjects';
 import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { QuestionFilterDto } from '../questions/questions/dto';
-import { GenerateQuizDto } from './dto';
+import {
+  GenerateQuizDto,
+  QuizDetailResponseDto,
+  QuizSummaryResponseDto,
+  PaginatedQuizzesDto,
+  GenerateQuizResponseDto,
+} from './dto';
 
 // ─── column projections ───────────────────────────────────────────────────────
 
@@ -23,7 +29,7 @@ const QUIZ_COLUMNS = {
   id: true,
   title: true,
   description: true,
-  createdBy: true,
+  // createdBy is intentionally omitted — callers are always the owner
   oldExamId: true,
   scopeFilter: true,
   questionType: true,
@@ -78,7 +84,7 @@ export class QuizzesService {
    *
    * Returns { quiz, session } to allow an immediate frontend redirect.
    */
-  async generate(dto: GenerateQuizDto, userId: number) {
+  async generate(dto: GenerateQuizDto, userId: number): Promise<GenerateQuizResponseDto> {
     // 1. Resolve final question IDs — single DB query
     const selectedIds = await this._resolveQuestionIds(dto, userId);
 
@@ -136,7 +142,7 @@ export class QuizzesService {
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
   /** Paginated list of the requesting user's quizzes */
-  async findAll(userId: number, page = 1, limit = 20) {
+  async findAll(userId: number, page = 1, limit = 20): Promise<PaginatedQuizzesDto> {
     const offset = (page - 1) * limit;
 
     const [data, [{ value: total }]] = await Promise.all([
@@ -161,7 +167,7 @@ export class QuizzesService {
    * The caller is responsible for ensuring the user owns this quiz
    * (ownership is enforced at the HTTP layer by QuizOwnerGuard).
    */
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, userId: number): Promise<QuizDetailResponseDto> {
     const quiz = await this.drizzleService.db.query.quizzes.findFirst({
       where: and(eq(quizzes.id, id), eq(quizzes.createdBy, userId)),
       columns: QUIZ_COLUMNS,
@@ -188,7 +194,7 @@ export class QuizzesService {
    * Delete a quiz (cascades to quiz_questions and quiz_sessions).
    * Single DELETE … RETURNING — if nothing deleted the row didn't exist.
    */
-  async remove(id: number, userId: number) {
+  async remove(id: number, userId: number): Promise<{ id: number }> {
     const [deleted] = await this.drizzleService.db
       .delete(quizzes)
       .where(and(eq(quizzes.id, id), eq(quizzes.createdBy, userId)))

@@ -11,6 +11,10 @@ import { quizzes } from '../../database/entities/quizzes';
 import { questionOptions } from '../../database/entities/question-options';
 import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { UpdateSessionStatusDto, AnswerDto } from './dto';
+import {
+  PaginatedQuizSessionsDto,
+  QuizSessionDetailResponseDto,
+} from './dto';
 
 /** Transaction type inferred from the database instance — avoids manual generics */
 type DrizzleTx = Parameters<Parameters<DRIZZLE_PROVIDER['transaction']>[0]>[0];
@@ -31,7 +35,7 @@ const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
 const SESSION_COLUMNS = {
   id: true,
   quizId: true,
-  userId: true,
+  // userId is intentionally omitted — sessions are always scoped to the authenticated user
   status: true,
   startedAt: true,
   endedAt: true,
@@ -75,7 +79,7 @@ export class QuizSessionsService {
   // ── List ──────────────────────────────────────────────────────────────────
 
   /** Paginated list of the user's sessions, including basic quiz info */
-  async findAll(userId: number, page = 1, limit = 20) {
+  async findAll(userId: number, page = 1, limit = 20): Promise<PaginatedQuizSessionsDto> {
     const offset = (page - 1) * limit;
 
     const [data, [{ value: total }]] = await Promise.all([
@@ -117,7 +121,7 @@ export class QuizSessionsService {
    * This single call is the sole source of truth for the session page on
    * initial load and resume hydration.
    */
-  async findOne(sessionId: number, userId: number) {
+  async findOne(sessionId: number, userId: number): Promise<QuizSessionDetailResponseDto> {
     const session = await this.drizzleService.db.query.quizSessions.findFirst({
       where: and(
         eq(quizSessions.id, sessionId),
@@ -130,6 +134,7 @@ export class QuizSessionsService {
             id: true,
             title: true,
             description: true,
+            oldExamId: true,
             questionType: true,
             questionStatus: true,
             scopeFilter: true,
@@ -166,14 +171,16 @@ export class QuizSessionsService {
 
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
 
-    // Flatten junction rows into a clean questions array on the quiz
-    const { quizQuestions, ...quizRest } = session.quiz;
+    // Destructure nested relation fields before spreading to avoid leaking raw
+    // Drizzle relation props (quizSessionAnswers, quiz.quizQuestions) into the response.
+    const { quiz: rawQuiz, quizSessionAnswers: rawAnswers, ...sessionBase } = session;
+    const { quizQuestions, ...quizRest } = rawQuiz;
     const questions = quizQuestions.map((jq) => jq.question);
 
     return {
-      ...session,
+      ...sessionBase,
       quiz: { ...quizRest, questions },
-      answers: session.quizSessionAnswers,
+      answers: rawAnswers,
     };
   }
 
@@ -190,7 +197,7 @@ export class QuizSessionsService {
     sessionId: number,
     userId: number,
     dto: UpdateSessionStatusDto,
-  ) {
+  ): Promise<QuizSessionDetailResponseDto> {
     // 1. Fetch current session
     const session = await this.drizzleService.db.query.quizSessions.findFirst({
       where: and(

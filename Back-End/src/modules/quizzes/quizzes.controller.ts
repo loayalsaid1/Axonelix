@@ -17,7 +17,13 @@ import type { UserRecord } from '../users/interfaces/user-record.interface';
 import { QuizzesService } from './quizzes.service';
 import { QuestionCountService } from './question-count.service';
 import { QuizOwnerGuard } from './guards/quiz-owner.guard';
-import { CountQuestionsDto, GenerateQuizDto } from './dto';
+import {
+  CountQuestionsDto,
+  GenerateQuizDto,
+  PaginatedQuizzesDto,
+  QuizDetailResponseDto,
+  GenerateQuizResponseDto,
+} from './dto';
 
 @UseGuards(ClerkAuthGuard)
 @Controller('quizzes')
@@ -44,7 +50,7 @@ export class QuizzesController {
   count(
     @Body() dto: CountQuestionsDto,
     @CurrentUser() user: UserRecord,
-  ) {
+  ): Promise<{ count: number }> {
     return this.questionCountService.count(dto, user.id);
   }
 
@@ -57,7 +63,7 @@ export class QuizzesController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  generate(@Body() dto: GenerateQuizDto, @CurrentUser() user: UserRecord) {
+  generate(@Body() dto: GenerateQuizDto, @CurrentUser() user: UserRecord): Promise<GenerateQuizResponseDto> {
     return this.quizzesService.generate(dto, user.id);
   }
 
@@ -71,7 +77,7 @@ export class QuizzesController {
     @CurrentUser() user: UserRecord,
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 20,
-  ) {
+  ): Promise<PaginatedQuizzesDto> {
     return this.quizzesService.findAll(user.id, page, limit);
   }
 
@@ -82,7 +88,7 @@ export class QuizzesController {
    */
   @UseGuards(QuizOwnerGuard)
   @Get(':id')
-  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord) {
+  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord): Promise<QuizDetailResponseDto> {
     return this.quizzesService.findOne(id, user.id);
   }
 

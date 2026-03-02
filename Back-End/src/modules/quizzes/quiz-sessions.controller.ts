@@ -15,7 +15,11 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { UserRecord } from '../users/interfaces/user-record.interface';
 import { QuizSessionsService } from './quiz-sessions.service';
 import { QuizSessionOwnerGuard } from './guards/quiz-session-owner.guard';
-import { UpdateSessionStatusDto } from './dto';
+import {
+  UpdateSessionStatusDto,
+  PaginatedQuizSessionsDto,
+  QuizSessionDetailResponseDto,
+} from './dto';
 
 @UseGuards(ClerkAuthGuard)
 @Controller('quiz-sessions')
@@ -32,7 +36,7 @@ export class QuizSessionsController {
     @CurrentUser() user: UserRecord,
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 20,
-  ) {
+  ): Promise<PaginatedQuizSessionsDto> {
     return this.quizSessionsService.findAll(user.id, page, limit);
   }
 
@@ -48,7 +52,7 @@ export class QuizSessionsController {
   findOne(
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @CurrentUser() user: UserRecord,
-  ) {
+  ): Promise<QuizSessionDetailResponseDto> {
     return this.quizSessionsService.findOne(sessionId, user.id);
   }
 
@@ -73,7 +77,7 @@ export class QuizSessionsController {
     @Param('sessionId', ParseIntPipe) sessionId: number,
     @Body() dto: UpdateSessionStatusDto,
     @CurrentUser() user: UserRecord,
-  ) {
+  ): Promise<QuizSessionDetailResponseDto> {
     return this.quizSessionsService.updateStatus(sessionId, user.id, dto);
   }
 }
