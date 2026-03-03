@@ -20,6 +20,15 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
+
+function normalize(p?: string | null) {
+  if (!p) return ""
+    // Remove query/hash and trailing slash (except root)
+    const purePathname = p.split("?")[0].split("#")[0]
+    if (purePathname === "/") return "/"
+    return purePathname.replace(/\/$/, "")
+  }
+
 export function NavMain({
   label,
   items,
@@ -38,9 +47,12 @@ export function NavMain({
 }) {
   const pathname = usePathname()
 
+  const pathnameNormalized = normalize(pathname)
+
   function isActive(url: string) {
-    if (url === "/" || url === "/#") return pathname === url
-    return pathname === url || pathname.startsWith(url + "/") || pathname.startsWith(url.replace("/#", ""))
+    url = normalize(url)
+    if (url === "/") return pathnameNormalized === url
+    return pathnameNormalized === url || pathnameNormalized.startsWith(url + "/")
   }
 
   return (
@@ -54,7 +66,9 @@ export function NavMain({
               <Collapsible
                 key={item.title}
                 asChild
-                defaultOpen={item.isActive}
+                defaultOpen={
+                  Boolean(item.isActive) || item.items.some((si) => isActive(si.url))
+                }
                 className="group/collapsible"
               >
                 <SidebarMenuItem>

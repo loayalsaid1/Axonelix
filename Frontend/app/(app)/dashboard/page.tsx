@@ -13,6 +13,8 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card"
+import { Suspense } from "react"
+import Link from "next/link"
 import {
   TrendingUp,
   BookOpen,
@@ -21,8 +23,9 @@ import {
   CreditCard,
   Flame,
   Target,
-  Clock,
+  Zap,
 } from "lucide-react"
+import { RecentTestsCard, RecentTestsCardSkeleton } from "@/components/dashboard/RecentTestsCard"
 
 const statCards = [
   {
@@ -43,12 +46,6 @@ const statCards = [
     icon: Target,
     hint: "Complete at least one test to see results",
   },
-  {
-    label: "Study Time",
-    value: "—",
-    icon: Clock,
-    hint: "Time spent studying this week",
-  },
 ]
 
 const quickLinks = [
@@ -58,6 +55,23 @@ const quickLinks = [
   { label: "Planner", href: "/planner", icon: CalendarDays, desc: "Study schedule" },
   { label: "Performance", href: "/performance", icon: TrendingUp, desc: "Track progress" },
 ]
+
+const GenerateTestCard = () => (
+  <Link href="/qbank/generate-tests" className="group">
+    <Card className="gap-3 hover:shadow-md py-4 border-primary/20 hover:border-primary/50 h-full transition-all cursor-pointer">
+      <CardHeader className="flex-row justify-between items-center gap-2 space-y-0 px-4 pt-0 pb-0">
+        <CardTitle className="font-medium text-muted-foreground text-xs">Custom Quiz</CardTitle>
+        <div className="flex justify-center items-center bg-primary/10 group-hover:bg-primary/20 rounded-md w-7 h-7 transition-colors shrink-0">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1 px-4">
+        <span className="font-bold text-foreground group-hover:text-primary text-2xl transition-colors">Generate</span>
+        <span className="text-muted-foreground/70 text-xs leading-snug">Build a custom quiz session from any topic</span>
+      </CardContent>
+    </Card>
+  </Link>
+)
 
 export default function DashboardPage() {
   return (
@@ -102,29 +116,15 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ))}
+          <GenerateTestCard />
         </div>
 
         {/* Main content area */}
         <div className="gap-4 grid md:grid-cols-3">
-          {/* Recent activity placeholder */}
-          <Card className="gap-4 md:col-span-2 py-4">
-            <CardHeader className="flex-row justify-between items-center space-y-0 px-5 pt-0 pb-0">
-              <CardTitle className="text-sm">Recent Activity</CardTitle>
-              <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-0 px-5">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 py-2.5 border-border/40 last:border-0 border-b">
-                  <div className="bg-muted rounded-md w-8 h-8 shrink-0" />
-                  <div className="flex flex-col flex-1 gap-1.5">
-                    <div className="bg-muted rounded w-2/3 h-3" />
-                    <div className="bg-muted/60 rounded w-1/3 h-2.5" />
-                  </div>
-                  <div className="bg-muted rounded w-12 h-2.5 shrink-0" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          {/* Recent tests — streams in while the rest of the page renders */}
+          <Suspense fallback={<RecentTestsCardSkeleton />}>
+            <RecentTestsCard />
+          </Suspense>
 
           {/* Quick links */}
           <Card className="gap-4 py-4">

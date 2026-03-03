@@ -6,8 +6,10 @@ import { DatabaseExceptionFilter } from './common/filters/database-exception.fil
 import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
+  // rawBody: true is required for Svix webhook signature verification
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+  
+  // Enable CORS for the frontend dev server
   app.enableCors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
     credentials: true,
