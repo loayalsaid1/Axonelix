@@ -11,7 +11,7 @@ export default function AppLayout({
     <SidebarProvider>
       <TooltipProvider>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           {children}
         </SidebarInset>
       </TooltipProvider>

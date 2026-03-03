@@ -20,4 +20,11 @@ Revising the quizzes module backend, entities, and DTOs, I suggest we include
 - history endpoint fetching the nccessary data here for our lovely table of sessions.
 
 # Front-end 
-***Later, let me check the backend first***
+Now with the user-stats endpoint added. as described ealier, use the reference from teh my_tests_history ui reference
+
+Notes: 
+- needless to say, loading should be considered.
+- and to rely on shadcn compoents more
+- when deleting, talk to the quiz controller now for the delete endpoint not the quiz-session
+- I havn't decided on mobile how th elook will be, I may suggest if this is more approriate that we make the view or table showing items be scrollable horizontally
+- an error boundry should be added 
