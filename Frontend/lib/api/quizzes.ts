@@ -8,7 +8,9 @@ import type {
   UpdateSessionStatusDto,
   QuizSession,
   SessionAnswer,
+  SessionStatus,
   CountQuestionsDto,
+  UserTestStats,
   Quiz,
 } from '@/lib/types/quizzes';
 
@@ -88,16 +90,43 @@ export function deleteQuiz(id: number, token: string): Promise<{ id: number }> {
 /**
  * GET /quiz-sessions
  * Paginated list of the current user's sessions.
+ * @param status Optional — only return sessions of this lifecycle status.
  */
 export function getSessions(
+  token: string,
   page = 1,
   limit = 20,
-  token: string,
+  status?: SessionStatus,
 ): Promise<PaginatedSessionsResponse> {
+  const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) qs.set('status', status);
   return apiFetch<PaginatedSessionsResponse>(
-    `/quiz-sessions?page=${page}&limit=${limit}`,
+    `/quiz-sessions?${qs}`,
     { cache: 'no-store', headers: bearer(token) },
   );
+}
+
+/**
+ * GET /quiz-sessions/stats
+ * Aggregated statistics for the authenticated user's test history.
+ */
+export function getSessionStats(token: string): Promise<UserTestStats> {
+  return apiFetch<UserTestStats>('/quiz-sessions/user-stats', {
+    cache: 'no-store',
+    headers: bearer(token),
+  });
+}
+
+/**
+ * DELETE /quiz-sessions/:sessionId
+ * Permanently removes the session and all its answers. Returns void (204).
+ */
+export function deleteSession(sessionId: number, token: string): Promise<void> {
+  return apiFetch<void>(`/quiz-sessions/${sessionId}`, {
+    method: 'DELETE',
+    cache: 'no-store',
+    headers: bearer(token),
+  });
 }
 
 /**
