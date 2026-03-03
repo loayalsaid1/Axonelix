@@ -1,14 +1,19 @@
 import {
   Injectable,
+  Inject,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { createClerkClient, verifyToken } from '@clerk/backend';
 import { UsersService } from '../users/users.service';
 import { UserRecord } from '../users/interfaces/user-record.interface';
 
 type ClerkJwtPayload = Awaited<ReturnType<typeof verifyToken>>;
+
+const USER_CACHE_PREFIX = 'auth:user:';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     const key = this.configService.get<string>('CLERK_SECRET_KEY');
     if (!key) {
@@ -41,10 +47,21 @@ export class AuthService {
 
   /**
    * Retrieve the application user by their Clerk ID.
-   * If the user doesn't exist yet (webhook missed / race condition), falls back
-   * to fetching their details from the Clerk API and auto-creating the record.
+   * Checks the in-memory cache first; on a miss it queries the DB (or falls
+   * back to the Clerk API for auto-creation) and stores the result.
    */
   async getOrCreateUser(clerkId: string): Promise<UserRecord> {
+    const cacheKey = `${USER_CACHE_PREFIX}${clerkId}`;
+    const cached = await this.cacheManager.get<UserRecord>(cacheKey);
+    if (cached) return cached;
+
+    const user = await this.resolveUser(clerkId);
+    await this.cacheManager.set(cacheKey, user);
+    return user;
+  }
+
+  /** Internal: fetch from DB or fall back to Clerk API and auto-create. */
+  private async resolveUser(clerkId: string): Promise<UserRecord> {
     const existing = await this.usersService.findByClerkId(clerkId);
     if (existing) return existing;
 
