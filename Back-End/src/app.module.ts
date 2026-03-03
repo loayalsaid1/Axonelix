@@ -7,6 +7,7 @@ import { MaterialsModule } from './modules/materials/materials.module';
 import { QuestionsModule } from './modules/questions/questions.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
     MaterialsModule,
     QuestionsModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
