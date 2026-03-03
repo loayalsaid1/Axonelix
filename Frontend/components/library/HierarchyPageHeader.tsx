@@ -61,8 +61,7 @@ export function HierarchyPageHeader({
         {/* Actions */}
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            {/* href intentionally empty — will be wired to test generator later */}
-            <Link href="#">
+            <Link href="/qbank/generate-tests">
               <Zap className="mr-1.5 size-3.5" />
               Generate Test
             </Link>
