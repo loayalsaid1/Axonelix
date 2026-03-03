@@ -37,6 +37,7 @@ export class QuizQuestionResponseDto {
 export class QuizSummaryResponseDto {
   id!: QuizRow['id'];
   title!: QuizRow['title'];
+  oldExamId!: QuizRow['oldExamId'];
   questionType!: QuizRow['questionType'];
   questionStatus!: QuizRow['questionStatus'];
   totalQuestions!: QuizRow['totalQuestions'];
@@ -51,7 +52,7 @@ export class QuizSummaryResponseDto {
  */
 export class QuizDetailResponseDto extends QuizSummaryResponseDto {
   description!: QuizRow['description'];
-  oldExamId!: QuizRow['oldExamId'];
+  // oldExamId is now inherited from QuizSummaryResponseDto
   questionIds!: QuizRow['questionIds'];
   updatedAt!: QuizRow['updatedAt'];
   questions!: QuizQuestionResponseDto[];

@@ -32,7 +32,6 @@ const data = {
           title: "Dashboard",
           url: "/dashboard",
           icon: LayoutDashboard,
-          isActive: true,
         },
         {
           title: "Planner",

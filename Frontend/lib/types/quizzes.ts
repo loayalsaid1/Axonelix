@@ -163,6 +163,7 @@ export type SessionListItem = QuizSession & {
   quiz: Pick<Quiz,
     | 'id'
     | 'title'
+    | 'oldExamId'
     | 'questionType'
     | 'questionStatus'
     | 'totalQuestions'
@@ -170,6 +171,18 @@ export type SessionListItem = QuizSession & {
     | 'createdAt'
   >;
 };
+
+// ─── Stats (from GET /quiz-sessions/stats) ───────────────────────────────────
+
+export interface UserTestStats {
+  totalSessions: number;
+  completedCount: number;
+  suspendedCount: number;
+  inProgressCount: number;
+  notStartedCount: number;
+  /** Average score % across all completed sessions. null when no completed sessions yet. */
+  averageScore: number | null;
+}
 
 // ─── API response types ───────────────────────────────────────────────────────
 

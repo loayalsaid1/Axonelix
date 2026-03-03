@@ -13,6 +13,7 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card"
+import { Suspense } from "react"
 import {
   TrendingUp,
   BookOpen,
@@ -23,6 +24,7 @@ import {
   Target,
   Clock,
 } from "lucide-react"
+import { RecentTestsCard, RecentTestsCardSkeleton } from "@/components/dashboard/RecentTestsCard"
 
 const statCards = [
   {
@@ -106,25 +108,10 @@ export default function DashboardPage() {
 
         {/* Main content area */}
         <div className="gap-4 grid md:grid-cols-3">
-          {/* Recent activity placeholder */}
-          <Card className="gap-4 md:col-span-2 py-4">
-            <CardHeader className="flex-row justify-between items-center space-y-0 px-5 pt-0 pb-0">
-              <CardTitle className="text-sm">Recent Activity</CardTitle>
-              <Badge variant="secondary" className="text-xs">Coming Soon</Badge>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-0 px-5">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 py-2.5 border-border/40 last:border-0 border-b">
-                  <div className="bg-muted rounded-md w-8 h-8 shrink-0" />
-                  <div className="flex flex-col flex-1 gap-1.5">
-                    <div className="bg-muted rounded w-2/3 h-3" />
-                    <div className="bg-muted/60 rounded w-1/3 h-2.5" />
-                  </div>
-                  <div className="bg-muted rounded w-12 h-2.5 shrink-0" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          {/* Recent tests — streams in while the rest of the page renders */}
+          <Suspense fallback={<RecentTestsCardSkeleton />}>
+            <RecentTestsCard />
+          </Suspense>
 
           {/* Quick links */}
           <Card className="gap-4 py-4">
