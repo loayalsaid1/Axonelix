@@ -10,7 +10,7 @@ import { quizSessionAnswers } from '../../database/entities/quiz-session-answers
 import { quizzes } from '../../database/entities/quizzes';
 import { questionOptions } from '../../database/entities/question-options';
 import { userQuestionStatus } from '../../database/entities/user-question-status';
-import { UpdateSessionStatusDto, AnswerDto } from './dto';
+import { UpdateSessionStatusDto, AnswerDto, UserTestStatsDto } from './dto';
 import {
   PaginatedQuizSessionsDto,
   QuizSessionDetailResponseDto,
@@ -22,6 +22,9 @@ type DrizzleTx = Parameters<Parameters<DRIZZLE_PROVIDER['transaction']>[0]>[0];
 // ─── allowed status transitions ──────────────────────────────────────────────
 
 type SessionStatus = 'not_started' | 'in_progress' | 'suspended' | 'completed';
+
+/** Public alias used by controller / service for the optional list filter. */
+export type QuizSessionStatus = SessionStatus;
 
 const VALID_TRANSITIONS: Record<SessionStatus, SessionStatus[]> = {
   not_started: ['in_progress'],
@@ -78,19 +81,33 @@ export class QuizSessionsService {
 
   // ── List ──────────────────────────────────────────────────────────────────
 
-  /** Paginated list of the user's sessions, including basic quiz info */
-  async findAll(userId: number, page = 1, limit = 20): Promise<PaginatedQuizSessionsDto> {
+  /**
+   * Paginated list of the user's sessions, including basic quiz info.
+   *
+   * @param status Optional filter — only return sessions of this status.
+   */
+  async findAll(
+    userId: number,
+    page = 1,
+    limit = 20,
+    status?: QuizSessionStatus,
+  ): Promise<PaginatedQuizSessionsDto> {
     const offset = (page - 1) * limit;
+
+    const whereClause = status
+      ? and(eq(quizSessions.userId, userId), eq(quizSessions.status, status))
+      : eq(quizSessions.userId, userId);
 
     const [data, [{ value: total }]] = await Promise.all([
       this.drizzleService.db.query.quizSessions.findMany({
-        where: eq(quizSessions.userId, userId),
+        where: whereClause,
         columns: SESSION_COLUMNS,
         with: {
           quiz: {
             columns: {
               id: true,
               title: true,
+              oldExamId: true,
               questionType: true,
               questionStatus: true,
               totalQuestions: true,
@@ -106,10 +123,62 @@ export class QuizSessionsService {
       this.drizzleService.db
         .select({ value: count() })
         .from(quizSessions)
-        .where(eq(quizSessions.userId, userId)),
+        .where(whereClause),
     ]);
 
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Returns aggregated statistics for the authenticated user's test history.
+   *
+   * Single Postgres round-trip using conditional COUNT + AVG FILTER aggregates —
+   * no N+1 queries and no in-memory grouping.
+   */
+  async getStats(userId: number): Promise<UserTestStatsDto> {
+    const [row] = await this.drizzleService.db
+      .select({
+        totalSessions:   sql<number>`count(*)::int`,
+        completedCount:  sql<number>`count(*) filter (where ${quizSessions.status} = 'completed')::int`,
+        suspendedCount:  sql<number>`count(*) filter (where ${quizSessions.status} = 'suspended')::int`,
+        inProgressCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'in_progress')::int`,
+        notStartedCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'not_started')::int`,
+        // AVG returns a string in Drizzle when the column is numeric — parse it
+        averageScore:    sql<string | null>`avg(${quizSessions.scorePct}) filter (where ${quizSessions.status} = 'completed')`,
+      })
+      .from(quizSessions)
+      .where(eq(quizSessions.userId, userId));
+
+    return {
+      totalSessions:   row.totalSessions,
+      completedCount:  row.completedCount,
+      suspendedCount:  row.suspendedCount,
+      inProgressCount: row.inProgressCount,
+      notStartedCount: row.notStartedCount,
+      averageScore:    row.averageScore != null ? parseFloat(row.averageScore) : null,
+    };
+  }
+
+  // ── Remove ────────────────────────────────────────────────────────────────
+
+  /**
+   * Permanently deletes a quiz session and all its answers (via FK cascade).
+   *
+   * The quiz record itself is NOT deleted — only the specific session entry is
+   * removed.  This preserves other sessions that share the same quiz.
+   *
+   * Ownership is enforced at the HTTP layer by QuizSessionOwnerGuard; the
+   * extra `userId` condition here is a defence-in-depth safety net.
+   */
+  async remove(sessionId: number, userId: number): Promise<void> {
+    const [deleted] = await this.drizzleService.db
+      .delete(quizSessions)
+      .where(and(eq(quizSessions.id, sessionId), eq(quizSessions.userId, userId)))
+      .returning({ id: quizSessions.id });
+
+    if (!deleted) throw new NotFoundException(`Session ${sessionId} not found`);
   }
 
   // ── Detail ────────────────────────────────────────────────────────────────
