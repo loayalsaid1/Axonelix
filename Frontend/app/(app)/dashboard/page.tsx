@@ -14,6 +14,7 @@ import {
   CardContent,
 } from "@/components/ui/card"
 import { Suspense } from "react"
+import Link from "next/link"
 import {
   TrendingUp,
   BookOpen,
@@ -22,7 +23,7 @@ import {
   CreditCard,
   Flame,
   Target,
-  Clock,
+  Zap,
 } from "lucide-react"
 import { RecentTestsCard, RecentTestsCardSkeleton } from "@/components/dashboard/RecentTestsCard"
 
@@ -45,12 +46,6 @@ const statCards = [
     icon: Target,
     hint: "Complete at least one test to see results",
   },
-  {
-    label: "Study Time",
-    value: "—",
-    icon: Clock,
-    hint: "Time spent studying this week",
-  },
 ]
 
 const quickLinks = [
@@ -60,6 +55,23 @@ const quickLinks = [
   { label: "Planner", href: "/planner", icon: CalendarDays, desc: "Study schedule" },
   { label: "Performance", href: "/performance", icon: TrendingUp, desc: "Track progress" },
 ]
+
+const GenerateTestCard = () => (
+  <Link href="/qbank/generate-tests" className="group">
+    <Card className="gap-3 hover:shadow-md py-4 border-primary/20 hover:border-primary/50 h-full transition-all cursor-pointer">
+      <CardHeader className="flex-row justify-between items-center gap-2 space-y-0 px-4 pt-0 pb-0">
+        <CardTitle className="font-medium text-muted-foreground text-xs">Custom Quiz</CardTitle>
+        <div className="flex justify-center items-center bg-primary/10 group-hover:bg-primary/20 rounded-md w-7 h-7 transition-colors shrink-0">
+          <Zap className="w-3.5 h-3.5 text-primary" />
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1 px-4">
+        <span className="font-bold text-foreground group-hover:text-primary text-2xl transition-colors">Generate</span>
+        <span className="text-muted-foreground/70 text-xs leading-snug">Build a custom quiz session from any topic</span>
+      </CardContent>
+    </Card>
+  </Link>
+)
 
 export default function DashboardPage() {
   return (
@@ -104,6 +116,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           ))}
+          <GenerateTestCard />
         </div>
 
         {/* Main content area */}
