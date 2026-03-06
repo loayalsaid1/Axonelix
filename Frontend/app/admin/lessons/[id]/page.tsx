@@ -1,0 +1,340 @@
+'use client';
+
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { JSONContent } from '@tiptap/core';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
+
+interface SimpleEditorRefHandler {
+  getJSON: () => JSONContent | null;
+}
+
+interface Lesson {
+  id: string;
+  chapter_id: string;
+  name: string;
+  description: string;
+  content: JSONContent;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface LessonWithHierarchy extends Lesson {
+  module_id: string;
+  module_name: string;
+  subject_id: string;
+  subject_name: string;
+  chapter_name: string;
+  is_miscellaneous?: boolean;
+}
+
+export default function LessonEditPage() {
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const editorRef = useRef<SimpleEditorRefHandler>(null);
+
+  const lessonId = params.id as string;
+
+  const [lesson, setLesson] = useState<LessonWithHierarchy | null>(null);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [orderIndex, setOrderIndex] = useState('0');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [moduleId, setModuleId] = useState('');
+  const [subjectId, setSubjectId] = useState('');
+  const [chapterId, setChapterId] = useState('');
+  const [isMisc, setIsMisc] = useState(false);
+
+  useEffect(() => {
+    const fetchLesson = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch lesson with hierarchy information
+        const response = await fetch(`/api/admin/lessons/${lessonId}/with-hierarchy`);
+        if (!response.ok) throw new Error('Failed to fetch lesson');
+
+        const data = await response.json();
+        const lessonData = data.lesson;
+
+        // Parse content if it's a string
+        if (typeof lessonData.content === 'string') {
+          lessonData.content = JSON.parse(lessonData.content);
+        }
+
+        setLesson(lessonData);
+        setName(lessonData.name);
+        setDescription(lessonData.description);
+        setOrderIndex(String(lessonData.order_index || 0));
+        setModuleId(lessonData.module_id || '');
+        setSubjectId(lessonData.subject_id || '');
+        setChapterId(lessonData.chapter_id || '');
+        setIsMisc(lessonData.is_miscellaneous || false);
+      } catch (error) {
+        console.error('Error fetching lesson:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load lesson',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLesson();
+  }, [lessonId, toast]);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+
+      // Get content from editor
+      const content = editorRef.current?.getJSON();
+
+      if (!name.trim()) {
+        toast({
+          title: 'Validation Error',
+          description: 'Lesson name is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!description.trim()) {
+        toast({
+          title: 'Validation Error',
+          description: 'Lesson description is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const actualChapterId = isMisc ? '' : (chapterId || lesson?.chapter_id);
+
+      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          content,
+          order_index: parseInt(orderIndex) || 0,
+          chapterId: actualChapterId,
+          subjectId,
+          isMisc: isMisc,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save lesson');
+
+      const data = await response.json();
+      // update local lesson state with canonical lesson returned by the API (includes joined hierarchy names)
+      setLesson(data.lesson);
+      setName(data.lesson.name);
+      setDescription(data.lesson.description);
+      setOrderIndex(String(data.lesson.order_index || 0));
+      setModuleId(data.lesson.module_id || '');
+      setSubjectId(data.lesson.subject_id || '');
+      setChapterId(data.lesson.chapter_id || '');
+      setIsMisc(data.lesson.is_miscellaneous || false);
+
+      toast({
+        title: 'Success',
+        description: 'Lesson saved successfully',
+      });
+    } catch (error) {
+      console.error('Error saving lesson:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save lesson',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card>
+          <CardHeader>
+            <CardTitle>Lesson Not Found</CardTitle>
+            <CardDescription>The requested lesson could not be found.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/admin/materials">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Materials
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const backUrl = `/admin/materials/${lesson.module_id}/${lesson.subject_id}/${lesson.chapter_id}`;
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="ghost" asChild>
+              <Link href={backUrl}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Lessons
+              </Link>
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Breadcrumb */}
+          <nav className="text-sm text-muted-foreground mb-2">
+            <span>{lesson.module_name}</span>
+            <span className="mx-2">/</span>
+            <span>{lesson.subject_name}</span>
+            <span className="mx-2">/</span>
+            <span>{lesson.chapter_name}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Lesson Info Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Lesson Information</CardTitle>
+              <CardDescription>Edit the lesson details and content</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Lesson Name *</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter lesson name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter lesson description"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="orderIndex">Order Index</Label>
+                <Input
+                  id="orderIndex"
+                  type="number"
+                  value={orderIndex}
+                  onChange={(e) => setOrderIndex(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label>Hierarchy</Label>
+                <MaterialHierarchySelect
+                  moduleId={moduleId}
+                  subjectId={subjectId}
+                  chapterId={chapterId}
+                  isMisc={isMisc}
+                  onModuleChange={(id) => setModuleId(id)}
+                  onSubjectChange={(id) => setSubjectId(id)}
+                  onChapterChange={(id) => setChapterId(id)}
+                  onIsMiscChange={(misc) => setIsMisc(misc)}
+                  open={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Editor Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Lesson Content</CardTitle>
+              <CardDescription>Edit the lesson content using the rich text editor</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {lesson.content ? (
+                <div className="border rounded-lg overflow-hidden">
+                  {/* <SimpleEditor */}
+                  <div
+                    key={lesson.id}
+                  // ref={editorRef}
+                  // initialContent={lesson.content}
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Bottom Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={isSaving} size="lg">
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
