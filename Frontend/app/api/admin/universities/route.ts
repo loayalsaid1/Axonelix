@@ -1,9 +1,9 @@
-import { OldExamService } from '@/lib/admin-services/old-exam-service';
+import { api } from '@/lib/backend-api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const universities = await OldExamService.getUniversities();
+    const universities = await api.get('/questions/universities');
     return NextResponse.json({ universities });
   } catch (error) {
     console.error('Failed to fetch universities:', error);
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
-    const university = await OldExamService.createUniversity(name);
+    const university = await api.post('/questions/universities', { name });
     return NextResponse.json({ university }, { status: 201 });
   } catch (error) {
     console.error('Failed to create university:', error);

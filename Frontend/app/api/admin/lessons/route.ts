@@ -1,4 +1,5 @@
-import { LessonService } from '@/lib/admin-services/lesson-service';
+import { api } from '@/lib/backend-api';
+import { normalizeLesson } from '@/lib/response-transform';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -13,17 +14,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newLesson = await LessonService.createLesson(
-      chapterId || null,
+    const lesson = await api.post('/materials/lessons', {
+      chapterId: chapterId ? Number(chapterId) : undefined,
+      subjectId: subjectId ? Number(subjectId) : undefined,
+      isMisc,
       name,
       description,
-      content,
-      order_index,
-      subjectId,
-      isMisc
-    );
+      content: content ?? {},
+      orderIndex: order_index,
+    });
 
-    return NextResponse.json({ lesson: newLesson }, { status: 201 });
+    return NextResponse.json({ lesson: normalizeLesson(lesson) }, { status: 201 });
   } catch (error) {
     console.error('Failed to create lesson:', error);
     return NextResponse.json({ error: 'Failed to create lesson' }, { status: 500 });

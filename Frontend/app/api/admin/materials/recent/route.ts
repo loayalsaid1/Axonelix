@@ -1,12 +1,14 @@
-import { RecentMaterialsService } from '@/lib/admin-services/recent-materials-service';
+import { api } from '@/lib/backend-api';
+import { normalizeRecentLesson } from '@/lib/response-transform';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = searchParams.get('limit') ?? '10';
 
-    const materials = await RecentMaterialsService.getRecentMaterials(limit);
+    const lessons = await api.get(`/materials/lessons/recent?limit=${limit}`);
+    const materials = (lessons as any[]).map(normalizeRecentLesson);
     return NextResponse.json({ materials });
   } catch (error) {
     console.error('Failed to fetch recent materials:', error);

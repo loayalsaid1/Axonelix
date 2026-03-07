@@ -1,18 +1,17 @@
-import { ChapterService } from '@/lib/admin-services/chapter-service';
+import { api } from '@/lib/backend-api';
+import { normalizeChapter } from '@/lib/response-transform';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const chapter = await ChapterService.getChapterById(id);
-    if (!chapter) {
-      return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
-    }
-    return NextResponse.json({ chapter });
-  } catch (error) {
+    const chapter = await api.get(`/materials/chapters/${id}`);
+    return NextResponse.json({ chapter: normalizeChapter(chapter) });
+  } catch (error: any) {
+    if (error?.status === 404) return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     console.error('Failed to fetch chapter:', error);
     return NextResponse.json({ error: 'Failed to fetch chapter' }, { status: 500 });
   }
@@ -26,30 +25,34 @@ export async function PUT(
     const { id } = await params;
     const { name, description, is_miscellaneous, order_index } = await request.json();
 
-    if (!name || !description) {
-      return NextResponse.json(
-        { error: 'Name and description are required' },
-        { status: 400 }
-      );
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const chapter = await ChapterService.updateChapter(id, name, description, is_miscellaneous, order_index);
-    return NextResponse.json({ chapter });
-  } catch (error) {
+    const chapter = await api.patch(`/materials/chapters/${id}`, {
+      name,
+      description,
+      isMiscellaneous: is_miscellaneous,
+      orderIndex: order_index,
+    });
+    return NextResponse.json({ chapter: normalizeChapter(chapter) });
+  } catch (error: any) {
+    if (error?.status === 404) return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     console.error('Failed to update chapter:', error);
     return NextResponse.json({ error: 'Failed to update chapter' }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    await ChapterService.deleteChapter(id);
+    await api.delete(`/materials/chapters/${id}`);
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.status === 404) return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     console.error('Failed to delete chapter:', error);
     return NextResponse.json({ error: 'Failed to delete chapter' }, { status: 500 });
   }

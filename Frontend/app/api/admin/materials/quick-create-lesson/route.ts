@@ -1,10 +1,7 @@
+import { api } from '@/lib/backend-api';
+import { normalizeLesson } from '@/lib/response-transform';
 import { NextRequest, NextResponse } from 'next/server';
-import { LessonService } from '@/lib/admin-services/lesson-service';
 
-/**
- * Quick create lesson endpoint
- * Creates a lesson in existing hierarchy (module, subject, chapter)
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -30,24 +27,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create lesson
-    const lesson = await LessonService.createLesson(
-      chapterId || null,
-      lessonName,
-      lessonDescription || '',
-      lessonContent || {},
-      orderIndex || 0,
-      subjectId,
-      isMisc
-    );
+    const lesson = await api.post('/materials/lessons', {
+      chapterId: chapterId ? Number(chapterId) : undefined,
+      subjectId: Number(subjectId),
+      isMisc,
+      name: lessonName,
+      description: lessonDescription ?? '',
+      content: lessonContent ?? {},
+      orderIndex: orderIndex ?? 0,
+    });
 
     return NextResponse.json({
-      lesson,
-      hierarchy: {
-        moduleId,
-        subjectId,
-        chapterId,
-      },
+      lesson: normalizeLesson(lesson),
+      hierarchy: { moduleId, subjectId, chapterId },
     }, { status: 201 });
   } catch (error) {
     console.error('Failed to quick create lesson:', error);

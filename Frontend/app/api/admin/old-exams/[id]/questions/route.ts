@@ -1,13 +1,14 @@
-import { OldExamService } from '@/lib/admin-services/old-exam-service';
+import { api } from '@/lib/backend-api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const questions = await OldExamService.getExamQuestions(id);
+    // Fetch questions filtered by this old exam
+    const questions = await api.get(`/questions?oldExamId=${id}`);
     return NextResponse.json({ questions });
   } catch (error) {
     console.error('Failed to fetch exam questions:', error);
@@ -27,13 +28,13 @@ export async function POST(
       return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
     }
 
-    const result = await OldExamService.linkQuestionToExam(questionId, id);
+    // Link existing question to exam by patching its oldExamId
+    const result = await api.patch(`/questions/${questionId}`, {
+      oldExamId: Number(id),
+    });
     return NextResponse.json({ result }, { status: 201 });
   } catch (error) {
     console.error('Failed to link question to exam:', error);
-    return NextResponse.json(
-      { error: 'Failed to link question to exam' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to link question to exam' }, { status: 500 });
   }
 }
