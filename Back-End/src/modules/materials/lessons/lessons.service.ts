@@ -8,7 +8,7 @@ import { eq, ilike, count } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async create(createLessonDto: CreateLessonDto) {
     // Chapter must be provided by controller or caller
@@ -141,6 +141,26 @@ export class LessonsService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async findRecent(limit: number) {
+    return this.drizzleService.db.query.lessons.findMany({
+      orderBy: (lessons, { desc }) => [desc(lessons.createdAt)],
+      limit,
+      with: {
+        chapter: {
+          columns: { id: true, name: true },
+          with: {
+            subject: {
+              columns: { id: true, name: true, type: true },
+              with: {
+                module: { columns: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async search(query: string) {

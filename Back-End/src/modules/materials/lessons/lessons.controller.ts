@@ -21,7 +21,7 @@ export class LessonsController {
   constructor(
     private readonly lessonsService: LessonsService,
     private readonly chaptersService: ChaptersService,
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -50,6 +50,14 @@ export class LessonsController {
   search(@Query('q') q: string): Promise<LessonWithHierarchyDto[]> | LessonWithHierarchyDto[] {
     if (!q || q.trim().length < 1) return [];
     return this.lessonsService.search(q.trim());
+  }
+
+  /** Recent lessons sorted by creation date, with full hierarchy. */
+  @Get('recent')
+  findRecent(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
+  ): Promise<LessonWithHierarchyDto[]> {
+    return this.lessonsService.findRecent(limit);
   }
 
   @Get(':id')
