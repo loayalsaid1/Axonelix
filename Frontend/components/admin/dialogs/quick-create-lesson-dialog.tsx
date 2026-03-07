@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
 
@@ -166,7 +166,7 @@ export default function QuickCreateLessonDialog({
           <div className="space-y-2 border rounded-lg p-4">
             <Label>Lesson Content</Label>
             <div className="border rounded-lg overflow-hidden">
-              {/* <SimpleEditor ref={editorRef} /> */}
+              <SimpleEditor ref={editorRef} />
               <div className="p-4 text-sm text-gray-500" />
             </div>
           </div>

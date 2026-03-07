@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
 
 interface EditLessonDialogProps {
@@ -148,7 +148,7 @@ export default function EditLessonDialog({
           <div className="space-y-2 border rounded-lg p-4">
             <Label>Lesson Content</Label>
             <div className="border rounded-lg overflow-hidden">
-              {/* <SimpleEditor ref={editorRef} initialContent={initialContent} key={lessonId} /> */}
+              <SimpleEditor ref={editorRef} initialContent={initialContent} key={lessonId} />
               <div className="p-4 text-sm text-gray-500">
                 Content will be displayed here
               </div>

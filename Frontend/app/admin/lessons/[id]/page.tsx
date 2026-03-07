@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -302,11 +302,10 @@ export default function LessonEditPage() {
             <CardContent>
               {lesson.content ? (
                 <div className="border rounded-lg overflow-hidden">
-                  {/* <SimpleEditor */}
-                  <div
+                  <SimpleEditor
                     key={lesson.id}
-                  // ref={editorRef}
-                  // initialContent={lesson.content}
+                    ref={editorRef}
+                    initialContent={lesson.content}
                   />
                 </div>
               ) : (
