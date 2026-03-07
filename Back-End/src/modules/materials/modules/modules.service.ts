@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class ModulesService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async create(createModuleDto: CreateModuleDto) {
     const [newModule] = await this.drizzleService.db
@@ -104,5 +104,32 @@ export class ModulesService {
     }
 
     return deletedModule;
+  }
+
+  async findHierarchyOptionsNormalized() {
+    const [modulesList, subjectsList, chaptersList, lessonsList] = await Promise.all([
+      this.drizzleService.db.query.modules.findMany({
+        columns: { id: true, name: true },
+        orderBy: (m, { asc }) => [asc(m.orderIndex), asc(m.name)],
+      }),
+      this.drizzleService.db.query.subjects.findMany({
+        columns: { id: true, name: true, type: true, moduleId: true },
+        orderBy: (s, { asc }) => [asc(s.orderIndex), asc(s.name)],
+      }),
+      this.drizzleService.db.query.chapters.findMany({
+        columns: { id: true, name: true, subjectId: true },
+        orderBy: (c, { asc }) => [asc(c.orderIndex), asc(c.name)],
+      }),
+      this.drizzleService.db.query.lessons.findMany({
+        columns: { id: true, name: true, chapterId: true },
+        orderBy: (l, { asc }) => [asc(l.orderIndex), asc(l.name)],
+      }),
+    ]);
+    return {
+      modules: modulesList,
+      subjects: subjectsList,
+      chapters: chaptersList,
+      lessons: lessonsList,
+    };
   }
 }

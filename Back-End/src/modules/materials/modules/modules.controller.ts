@@ -16,7 +16,7 @@ import { HierarchyResponseDto } from '../dto/hierarchy-response.dto';
 
 @Controller('materials/modules')
 export class ModulesController {
-  constructor(private readonly modulesService: ModulesService) {}
+  constructor(private readonly modulesService: ModulesService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -28,6 +28,12 @@ export class ModulesController {
   @Get('names')
   findNames(): Promise<{ id: number; name: string }[]> {
     return this.modulesService.findNames();
+  }
+
+  /** Flat hierarchy snapshot for admin dropdowns – modules/subjects/chapters/lessons. */
+  @Get('hierarchy-options')
+  findHierarchyOptions() {
+    return this.modulesService.findHierarchyOptionsNormalized();
   }
 
   @Get()
