@@ -58,7 +58,7 @@ export function RecentMaterialsList({ limit = 10 }: RecentMaterialsListProps) {
                 )}
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" />
-                  <span>Updated {new Date(lesson.updated_at).toLocaleDateString()}</span>
+                  <span>Updated {new Date(lesson.updatedAt).toLocaleDateString()}</span>
                 </div>
               </CardContent>
             </Card>

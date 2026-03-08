@@ -65,10 +65,10 @@ export function LessonsList({ moduleId, subjectId, chapterId }: LessonsListProps
             <AdminResourceCard
               key={lesson.id}
               title={lesson.name}
-              description={lesson.description}
+              description={lesson.description ?? undefined}
               href={`/admin/lessons/${lesson.id}`}
-              date={new Date(lesson.created_at).toLocaleDateString()}
-              order={lesson.order_index}
+              date={new Date(lesson.createdAt).toLocaleDateString()}
+              order={lesson.orderIndex ?? undefined}
               onEdit={() => handleEditLesson(lesson.id)}
               onDelete={() => handleDeleteLesson(lesson.id)}
             />

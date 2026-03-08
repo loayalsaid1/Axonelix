@@ -14,12 +14,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import { useQuestionFilters } from '@/hooks/admin/use-question-filters';
+import { apiFetch } from '@/lib/api/client';
 
 interface Question {
   id: string;
   statement: string;
-  question_type: string;
-  options: any[];
+  questionType: string;
+  questionOptions: any[];
 }
 
 interface AddQuestionToExamDialogProps {
@@ -86,21 +87,13 @@ export default function AddQuestionToExamDialog({
     setSubmitting(true);
 
     try {
-      const response = await fetch(`/api/admin/old-exams/${examId}/questions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId: selectedQuestion }),
+      await apiFetch(`/questions/${selectedQuestion}`, {
+        method: 'PATCH',
+        body: { oldExamId: Number(examId) },
       });
 
-      if (response.ok) {
-        setSelectedQuestion('');
-        // Keep filters and dialog open so user can add more questions without
-        // losing their filter/material state.
-        onQuestionAdded();
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to add question');
-      }
+      setSelectedQuestion('');
+      onQuestionAdded();
     } catch (error) {
       console.error('Failed to add question:', error);
       alert('Failed to add question to exam');
@@ -194,12 +187,12 @@ export default function AddQuestionToExamDialog({
                           <Label htmlFor={question.id} className="flex-1 cursor-pointer">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-                                {question.question_type}
+                                {question.questionType}
                               </span>
                             </div>
                             <p className="font-medium text-sm line-clamp-2">{question.statement}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {question.options?.length || 0} options
+                              {question.questionOptions?.length || 0} options
                             </p>
                           </Label>
                         </div>

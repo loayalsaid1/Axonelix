@@ -11,6 +11,7 @@ import { AdminQuestionCard } from '@/components/admin/questions/admin-question-c
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import CreateQuestionDialog from '@/components/admin/dialogs/create-question-dialog';
 import EditQuestionDialog from '@/components/admin/dialogs/edit-question-dialog';
+import { apiFetch } from '@/lib/api/client';
 
 export function QuestionsList() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -48,15 +49,9 @@ export function QuestionsList() {
 
   const handleDeleteQuestion = async (questionId: string) => {
     try {
-      const response = await fetch(`/api/admin/questions/${questionId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        // Refetch questions after deletion
-        if (filtersApplied) {
-          fetchQuestions();
-        }
+      const response = await apiFetch(`/questions/${questionId}`, { method: 'DELETE' });
+      if (filtersApplied) {
+        fetchQuestions();
       }
     } catch (error) {
       console.error('Failed to delete question:', error);
@@ -175,9 +170,9 @@ export function QuestionsList() {
               key={question.id}
               id={question.id}
               statement={question.statement}
-              questionType={question.question_type}
-              options={question.options}
-              isMisc={question.is_misc}
+              questionType={question.questionType}
+              options={question.questionOptions}
+              isMisc={question.isMisc}
               href={'/admin/questions/' + question.id}
               onDelete={() => handleDeleteQuestion(question.id)}
               onEdit={() => setEditingQuestionId(question.id)}

@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
+import { apiFetch } from '@/lib/api/client';
 
 interface QuickCreateLessonDialogProps {
   open: boolean;
@@ -66,33 +67,25 @@ export default function QuickCreateLessonDialog({
 
       const actualChapterId = isMisc ? '' : chapterId;
 
-      const response = await fetch('/api/admin/materials/quick-create-lesson', {
+      const data = await apiFetch<any>('/materials/lessons', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lessonName,
-          lessonDescription,
-          lessonContent: content,
+        body: {
+          name: lessonName,
+          description: lessonDescription,
+          content,
           orderIndex: parseInt(orderIndex) || 0,
-          moduleId,
-          subjectId,
-          chapterId: actualChapterId,
+          chapterId: actualChapterId ? Number(actualChapterId) : null,
+          subjectId: Number(subjectId),
           isMisc,
-        }),
+        },
       });
 
-      const data = await response.json();
+      resetForm();
+      onOpenChange(false);
+      onLessonCreated?.();
 
-      if (response.ok) {
-        resetForm();
-        onOpenChange(false);
-        onLessonCreated?.();
-
-        if (data.lesson) {
-          router.push(`/admin/materials/${moduleId}/${subjectId}/${data.lesson.chapter_id}`);
-        }
-      } else {
-        alert(`Error: ${data.error || 'Failed to create lesson'}`);
+      if (data?.chapterId) {
+        router.push(`/admin/materials/${moduleId}/${subjectId}/${data.chapterId}`);
       }
     } catch (error) {
       console.error('Failed to create lesson:', error);
@@ -175,7 +168,7 @@ export default function QuickCreateLessonDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !chapterId}>
+            <Button type="submit" disabled={loading || (!isMisc && !chapterId)}>
               {loading ? 'Creating...' : 'Create Lesson'}
             </Button>
           </div>

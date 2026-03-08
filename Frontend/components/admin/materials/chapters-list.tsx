@@ -100,12 +100,12 @@ export function ChaptersList({ moduleId, subjectId }: ChaptersListProps) {
             <AdminResourceCard
               key={chapter.id}
               title={chapter.name}
-              description={chapter.description}
+              description={chapter.description ?? undefined}
               href={`/admin/materials/${moduleId}/${subjectId}/${chapter.id}`}
-              date={new Date(chapter.created_at).toLocaleDateString()}
-              order={chapter.order_index}
+              date={new Date(chapter.createdAt).toLocaleDateString()}
+              order={chapter.orderIndex ?? undefined}
               badge={
-                chapter.is_miscellaneous && (
+                chapter.isMiscellaneous && (
                   <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">
                     Misc
                   </span>

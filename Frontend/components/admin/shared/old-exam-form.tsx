@@ -18,10 +18,10 @@ interface Module {
 }
 
 interface OldExamFormData {
-  university_id: string;
-  module_id: string;
-  module_type: 'theoretical' | 'practical';
-  exam_type: 'final' | 'midterm' | 'tpl' | 'flipped';
+  universityId: string;
+  moduleId: string;
+  moduleType: 'theoretical' | 'practical';
+  examType: 'final' | 'midterm' | 'tpl' | 'flipped';
   year: number;
 }
 
@@ -51,15 +51,15 @@ export function OldExamForm({
       {/* University Selection */}
       <UniversitySelector
         universities={universities}
-        value={data.university_id}
-        onValueChange={(val) => updateField('university_id', val)}
+        value={data.universityId}
+        onValueChange={(val) => updateField('universityId', val)}
         onCreateUniversity={onCreateUniversity}
       />
 
       {/* Module Selection */}
       <div className="space-y-2">
         <Label htmlFor="old-exam-module">Module</Label>
-        <Select value={data.module_id} onValueChange={(val) => updateField('module_id', val)}>
+        <Select value={data.moduleId} onValueChange={(val) => updateField('moduleId', val)}>
           <SelectTrigger>
             <SelectValue placeholder="Select module" />
           </SelectTrigger>
@@ -77,8 +77,8 @@ export function OldExamForm({
       <div className="space-y-2">
         <Label htmlFor="module-type">Module Type</Label>
         <Select
-          value={data.module_type}
-          onValueChange={(val: 'theoretical' | 'practical') => updateField('module_type', val)}
+          value={data.moduleType}
+          onValueChange={(val: 'theoretical' | 'practical') => updateField('moduleType', val)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select type" />
@@ -94,9 +94,9 @@ export function OldExamForm({
       <div className="space-y-2">
         <Label htmlFor="exam-type">Exam Type</Label>
         <Select
-          value={data.exam_type}
+          value={data.examType}
           onValueChange={(val: 'final' | 'midterm' | 'tpl' | 'flipped') =>
-            updateField('exam_type', val)
+            updateField('examType', val)
           }
         >
           <SelectTrigger>

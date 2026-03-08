@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { apiFetch } from '@/lib/api/client';
 
 interface EditChapterDialogProps {
   chapterId: string | null;
@@ -28,11 +29,11 @@ export default function EditChapterDialog({
   onChapterUpdated,
 }: EditChapterDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    description: '', 
-    is_miscellaneous: false,
-    order_index: 0 
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    isMiscellaneous: false,
+    orderIndex: 0
   });
 
   useEffect(() => {
@@ -43,18 +44,15 @@ export default function EditChapterDialog({
 
   const fetchChapter = async () => {
     if (!chapterId) return;
-    
+
     try {
-      const response = await fetch(`/api/admin/chapters/${chapterId}`);
-      const data = await response.json();
-      if (data.chapter) {
-        setFormData({
-          name: data.chapter.name,
-          description: data.chapter.description || '',
-          is_miscellaneous: data.chapter.is_miscellaneous || false,
-          order_index: data.chapter.order_index || 0,
-        });
-      }
+      const data = await apiFetch<any>(`/materials/chapters/${chapterId}`);
+      setFormData({
+        name: data.name,
+        description: data.description || '',
+        isMiscellaneous: data.isMiscellaneous || false,
+        orderIndex: data.orderIndex || 0,
+      });
     } catch (error) {
       console.error('Failed to fetch chapter:', error);
     }
@@ -63,20 +61,16 @@ export default function EditChapterDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chapterId) return;
-    
+
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/chapters/${chapterId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      await apiFetch(`/materials/chapters/${chapterId}`, {
+        method: 'PATCH',
+        body: { name: formData.name, description: formData.description, isMiscellaneous: formData.isMiscellaneous, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onChapterUpdated();
-      }
+      onOpenChange(false);
+      onChapterUpdated();
     } catch (error) {
       console.error('Failed to update chapter:', error);
     } finally {
@@ -127,10 +121,10 @@ export default function EditChapterDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

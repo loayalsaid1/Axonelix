@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 
 export interface Chapter {
   id: string;
   name: string;
-  description: string;
-  is_miscellaneous: boolean;
-  order_index: number;
-  created_at: string;
+  description: string | null;
+  isMiscellaneous: boolean;
+  orderIndex: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function useChapters(subjectId: string) {
@@ -16,13 +18,12 @@ export function useChapters(subjectId: string) {
 
   const fetchChapters = useCallback(async () => {
     if (!subjectId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/admin/subjects/${subjectId}/chapters`);
-      const data = await response.json();
-      setChapters(data.chapters || []);
+      const data = await apiFetch<Chapter[]>(`/materials/subjects/${subjectId}/chapters`);
+      setChapters(data.map((c) => ({ ...c, id: String(c.id) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch chapters'));
       console.error('Failed to fetch chapters:', err);
@@ -33,15 +34,9 @@ export function useChapters(subjectId: string) {
 
   const deleteChapter = useCallback(async (chapterId: string) => {
     try {
-      const response = await fetch(`/api/admin/chapters/${chapterId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setChapters((prev) => prev.filter((c) => c.id !== chapterId));
-        return true;
-      }
-      return false;
+      await apiFetch(`/materials/chapters/${chapterId}`, { method: 'DELETE' });
+      setChapters((prev) => prev.filter((c) => c.id !== chapterId));
+      return true;
     } catch (err) {
       console.error('Failed to delete chapter:', err);
       return false;

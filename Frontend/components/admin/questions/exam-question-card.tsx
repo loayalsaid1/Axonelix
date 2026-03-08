@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 interface ExamQuestionCardProps {
   question: {
     id: string;
-    question_type: string;
+    questionType: string;
     statement: string;
-    options: { id: string; option_text: string; is_correct: boolean }[];
+    questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
   };
   index: number;
   onRemove: (questionId: string) => void;
@@ -24,7 +24,7 @@ export function ExamQuestionCard({ question, index, onRemove }: ExamQuestionCard
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="secondary">
-                {question.question_type.toUpperCase()}
+                {question.questionType.toUpperCase()}
               </Badge>
             </div>
             <CardTitle className="text-lg">
@@ -44,20 +44,19 @@ export function ExamQuestionCard({ question, index, onRemove }: ExamQuestionCard
           </Button>
         </div>
       </CardHeader>
-      {question.options && question.options.length > 0 && (
+      {question.questionOptions && question.questionOptions.length > 0 && (
         <CardContent>
           <div className="space-y-2">
-            {question.options.map((option, optIndex) => (
+            {question.questionOptions.map((option, optIndex) => (
               <div
                 key={optIndex}
-                className={`p-2 rounded text-sm ${
-                  option.is_correct
+                className={`p-2 rounded text-sm ${option.isCorrect
                     ? 'bg-green-50 border border-green-200 text-green-700'
                     : 'bg-gray-50 border border-gray-100'
-                }`}
+                  }`}
               >
                 <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
-                {option.option_text}
+                {option.optionText}
               </div>
             ))}
           </div>
