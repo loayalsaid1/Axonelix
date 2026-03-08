@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsArray, IsBoolean, IsOptional } from 'class-validator';
+import { IsEnum, IsNumber, IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -15,6 +15,13 @@ import { Type } from 'class-transformer';
  * Any combination is valid; multiple levels narrow the result set further (AND).
  */
 export class QuestionFilterDto {
+  // ── Text search ──────────────────────────────────────────────────────
+
+  /** Case-insensitive substring search on question statement */
+  @IsString()
+  @IsOptional()
+  searchQuery?: string;
+
   // ── Hierarchy scope ───────────────────────────────────────────────────────
 
   @IsArray()
