@@ -10,11 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
+import { apiFetch } from '@/lib/api/client';
 
 interface QuestionOption {
   id?: string;
-  option_text: string;
-  is_correct: boolean;
+  optionText: string;
+  isCorrect: boolean;
 }
 
 interface EditQuestionDialogProps {
@@ -26,11 +27,11 @@ interface EditQuestionDialogProps {
 
 interface QuestionData {
   id: string;
-  question_type: 'mcq' | 'written';
+  questionType: 'mcq' | 'written';
   statement: string;
-  statement_format: string;
+  statementFormat: string;
   explanation: string | null;
-  options: QuestionOption[];
+  questionOptions: QuestionOption[];
 }
 
 export default function EditQuestionDialog({
@@ -41,15 +42,15 @@ export default function EditQuestionDialog({
 }: EditQuestionDialogProps) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  
+
   // Question form data
   const [formData, setFormData] = useState({
-    question_type: 'mcq' as 'mcq' | 'written',
+    questionType: 'mcq' as 'mcq' | 'written',
     statement: '',
     explanation: '',
     options: [
-      { option_text: '', is_correct: true },
-      { option_text: '', is_correct: false },
+      { optionText: '', isCorrect: true },
+      { optionText: '', isCorrect: false },
     ],
   });
 
@@ -62,47 +63,40 @@ export default function EditQuestionDialog({
 
   const fetchQuestion = async () => {
     if (!questionId) return;
-    
+
     setFetching(true);
     try {
-      const response = await fetch(`/api/admin/questions/${questionId}`);
-      if (response.ok) {
-        const data = await response.json();
-        const question: QuestionData = data.question;
-        
-        // Extract explanation text from JSON format if needed
-        let explanationText = '';
-        if (question.explanation) {
-          try {
-            const explanationJson = typeof question.explanation === 'string' 
-              ? JSON.parse(question.explanation) 
-              : question.explanation;
-            
-            // Extract text from TipTap JSON structure
-            if (explanationJson?.content) {
-              explanationText = explanationJson.content
-                .flatMap((node: any) => 
-                  node.content?.map((c: any) => c.text).join(' ') || ''
-                )
-                .join(' ');
-            }
-          } catch (e) {
-            explanationText = String(question.explanation);
-          }
-        }
+      const question = await apiFetch<QuestionData>(`/questions/${questionId}`);
 
-        setFormData({
-          question_type: question.question_type,
-          statement: question.statement,
-          explanation: explanationText,
-          options: question.options.length > 0 
-            ? question.options 
-            : [
-                { option_text: '', is_correct: true },
-                { option_text: '', is_correct: false },
-              ],
-        });
+      let explanationText = '';
+      if (question.explanation) {
+        try {
+          const explanationJson = typeof question.explanation === 'string'
+            ? JSON.parse(question.explanation)
+            : question.explanation;
+          if (explanationJson?.content) {
+            explanationText = explanationJson.content
+              .flatMap((node: any) =>
+                node.content?.map((c: any) => c.text).join(' ') || ''
+              )
+              .join(' ');
+          }
+        } catch (e) {
+          explanationText = String(question.explanation);
+        }
       }
+
+      setFormData({
+        questionType: question.questionType,
+        statement: question.statement,
+        explanation: explanationText,
+        options: question.questionOptions?.length > 0
+          ? question.questionOptions
+          : [
+            { optionText: '', isCorrect: true },
+            { optionText: '', isCorrect: false },
+          ],
+      });
     } catch (error) {
       console.error('Failed to fetch question:', error);
       alert('Failed to load question data');
@@ -125,16 +119,16 @@ export default function EditQuestionDialog({
       return;
     }
 
-    if (formData.question_type === 'mcq') {
+    if (formData.questionType === 'mcq') {
       if (formData.options.length < 2) {
         alert('MCQ must have at least 2 options');
         return;
       }
-      if (formData.options.some((opt) => !opt.option_text.trim())) {
+      if (formData.options.some((opt) => !opt.optionText.trim())) {
         alert('Please fill in all options');
         return;
       }
-      if (!formData.options.some((opt) => opt.is_correct)) {
+      if (!formData.options.some((opt) => opt.isCorrect)) {
         alert('Please select at least one correct option');
         return;
       }
@@ -144,31 +138,26 @@ export default function EditQuestionDialog({
 
     try {
       const payload = {
-        question_type: formData.question_type,
+        questionType: formData.questionType,
         statement: formData.statement,
-        statement_format: 'text' as const,
+        statementFormat: 'text' as const,
         explanation: formData.explanation.trim()
           ? {
-              type: 'doc',
-              content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
-            }
+            type: 'doc',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
+          }
           : null,
-        options: formData.question_type === 'mcq' ? formData.options : [],
+        options: formData.questionType === 'mcq'
+          ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
+          : [],
       };
 
-      const response = await fetch(`/api/admin/questions/${questionId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      await apiFetch(`/questions/${questionId}`, {
+        method: 'PATCH',
+        body: payload,
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onQuestionUpdated();
-      } else {
-        const error = await response.json();
-        alert(error.details || error.error || 'Failed to update question');
-      }
+      onOpenChange(false);
+      onQuestionUpdated();
     } catch (error) {
       console.error('Failed to update question:', error);
       alert(`Failed to update question: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -184,7 +173,7 @@ export default function EditQuestionDialog({
           <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>Update the question content and options</DialogDescription>
         </DialogHeader>
-        
+
         {fetching ? (
           <div className="py-8 text-center text-muted-foreground">
             Loading question data...
@@ -194,7 +183,7 @@ export default function EditQuestionDialog({
             {/* Question Form Fields */}
             <QuestionFormFields
               data={{
-                question_type: formData.question_type,
+                questionType: formData.questionType,
                 statement: formData.statement,
                 explanation: formData.explanation,
                 options: formData.options,

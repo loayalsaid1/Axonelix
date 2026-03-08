@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiFetch } from '@/lib/api/client';
 
 interface Props {
   moduleId: string;
@@ -69,9 +70,8 @@ export default function MaterialHierarchySelect({
 
   const fetchModules = async () => {
     try {
-      const response = await fetch('/api/admin/materials/hierarchy-options?type=modules');
-      const data = await response.json();
-      setModules(data.modules || []);
+      const data = await apiFetch<any[]>('/materials/modules');
+      setModules(data.map((m) => ({ ...m, id: String(m.id) })));
     } catch (error) {
       console.error('Failed to fetch modules:', error);
     }
@@ -79,9 +79,8 @@ export default function MaterialHierarchySelect({
 
   const fetchSubjects = async (moduleId: string) => {
     try {
-      const response = await fetch(`/api/admin/materials/hierarchy-options?type=subjects&moduleId=${moduleId}`);
-      const data = await response.json();
-      setSubjects(data.subjects || []);
+      const data = await apiFetch<any[]>(`/materials/subjects?moduleId=${moduleId}`);
+      setSubjects(data.map((s) => ({ ...s, id: String(s.id) })));
     } catch (error) {
       console.error('Failed to fetch subjects:', error);
     }
@@ -89,9 +88,8 @@ export default function MaterialHierarchySelect({
 
   const fetchChapters = async (subjectId: string) => {
     try {
-      const response = await fetch(`/api/admin/materials/hierarchy-options?type=chapters&subjectId=${subjectId}`);
-      const data = await response.json();
-      setChapters(data.chapters || []);
+      const data = await apiFetch<any[]>(`/materials/subjects/${subjectId}/chapters`);
+      setChapters(data.map((c) => ({ ...c, id: String(c.id) })));
     } catch (error) {
       console.error('Failed to fetch chapters:', error);
     }
@@ -133,17 +131,17 @@ export default function MaterialHierarchySelect({
 
       <div className="space-y-2">
         <Label>Chapter *</Label>
-        <Select 
-          value={isMisc ? '' : chapterId} 
-          onValueChange={onChapterChange} 
-          disabled={!subjectId || isMisc} 
+        <Select
+          value={isMisc ? '' : chapterId}
+          onValueChange={onChapterChange}
+          disabled={!subjectId || isMisc}
           required
         >
           <SelectTrigger>
             <SelectValue placeholder={isMisc ? "Miscellaneous (auto)" : "Select chapter"} />
           </SelectTrigger>
           <SelectContent>
-            {chapters.filter((c) => !c.is_miscellaneous).map((c) => (
+            {chapters.filter((c) => !c.isMiscellaneous).map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
               </SelectItem>

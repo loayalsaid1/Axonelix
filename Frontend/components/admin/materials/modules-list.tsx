@@ -74,9 +74,9 @@ export function ModulesList() {
             <AdminResourceCard
               key={module.id}
               title={module.name}
-              description={module.description}
+              description={module.description ?? undefined}
               href={`/admin/materials/${module.id}`}
-              date={new Date(module.created_at).toLocaleDateString()}
+              date={new Date(module.createdAt).toLocaleDateString()}
               onEdit={() => handleEditModule(module.id)}
               onDelete={() => handleDeleteModule(module.id)}
             />

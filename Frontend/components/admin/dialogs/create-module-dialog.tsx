@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateModuleDialogProps {
   open: boolean;
@@ -28,24 +29,20 @@ export default function CreateModuleDialog({
   onModuleCreated,
 }: CreateModuleDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', order_index: 0 });
+  const [formData, setFormData] = useState({ name: '', description: '', orderIndex: 0 });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/modules', {
+      await apiFetch('/materials/modules', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: { name: formData.name, description: formData.description, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        setFormData({ name: '', description: '', order_index: 0 });
-        onOpenChange(false);
-        onModuleCreated();
-      }
+      setFormData({ name: '', description: '', orderIndex: 0 });
+      onOpenChange(false);
+      onModuleCreated();
     } catch (error) {
       console.error('Failed to create module:', error);
     } finally {
@@ -84,10 +81,10 @@ export default function CreateModuleDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

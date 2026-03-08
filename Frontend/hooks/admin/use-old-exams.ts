@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 
 export interface OldExam {
   id: string;
-  exam_type: 'final' | 'midterm' | 'tpl' | 'flipped';
+  examType: 'final' | 'midterm' | 'tpl' | 'flipped';
   year: number;
-  university_id: string;
-  university_name?: string;
-  module_id: string;
-  module_name?: string;
-  module_type: 'theoretical' | 'practical';
-  created_at: string;
+  universityId: string;
+  moduleId: string;
+  moduleType: 'theoretical' | 'practical';
+  createdAt: string;
+  // joined relations
+  module?: { id: string; name: string };
+  university?: { id: string; name: string };
 }
 
 export function useOldExams() {
@@ -21,9 +23,17 @@ export function useOldExams() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/admin/old-exams');
-      const data = await response.json();
-      setExams(data.exams || []);
+      const data = await apiFetch<OldExam[]>('/questions/old-exams');
+      setExams(
+        data.map((e) => ({
+          ...e,
+          id: String(e.id),
+          universityId: String((e as any).universityId),
+          moduleId: String((e as any).moduleId),
+          module: e.module ? { id: String(e.module.id), name: e.module.name } : undefined,
+          university: e.university ? { id: String(e.university.id), name: e.university.name } : undefined,
+        }))
+      );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch old exams'));
       console.error('Failed to fetch old exams:', err);
@@ -34,15 +44,9 @@ export function useOldExams() {
 
   const deleteExam = useCallback(async (examId: string) => {
     try {
-      const response = await fetch(`/api/admin/old-exams/${examId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setExams((prev) => prev.filter((e) => e.id !== examId));
-        return true;
-      }
-      return false;
+      await apiFetch(`/questions/old-exams/${examId}`, { method: 'DELETE' });
+      setExams((prev) => prev.filter((e) => e.id !== examId));
+      return true;
     } catch (err) {
       console.error('Failed to delete old exam:', err);
       return false;

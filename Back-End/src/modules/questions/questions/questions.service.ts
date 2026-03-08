@@ -5,7 +5,7 @@ import { questions } from '../../../database/entities/questions';
 import { lessons as lessonsTable } from '../../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
-import { and, eq, inArray, or, SQL, count } from 'drizzle-orm';
+import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
   CreateQuestionDto,
   UpdateQuestionDto,
@@ -226,6 +226,11 @@ export class QuestionsService {
    */
   buildFilterConditions(filter: QuestionFilterDto): SQL[] {
     const conditions: SQL[] = [];
+
+    // ── Text search ────────────────────────────────
+    if (filter.searchQuery?.trim()) {
+      conditions.push(ilike(questions.statement, `%${filter.searchQuery.trim()}%`));
+    }
 
     // ── Question-level (no join needed) ──────────────────────────────────
     if (filter.questionType)       conditions.push(eq(questions.questionType, filter.questionType));

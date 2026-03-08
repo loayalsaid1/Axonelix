@@ -52,6 +52,5 @@ export const unlinkQuestionFromExam = OldExamService.unlinkQuestionFromExam;
 export const getExamQuestions = OldExamService.getExamQuestions;
 
 // Recent Materials
-export const getRecentMaterials = RecentMaterialsService.getRecentMaterials;
 export const buildMaterialUrl = RecentMaterialsService.buildMaterialUrl;
 export const getMaterialBreadcrumb = RecentMaterialsService.getMaterialBreadcrumb;

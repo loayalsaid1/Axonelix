@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 
 export interface Subject {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   type: 'theoretical' | 'practical';
-  order_index: number;
-  created_at: string;
+  moduleId: string;
+  orderIndex: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function useSubjects(moduleId: string) {
@@ -16,13 +19,12 @@ export function useSubjects(moduleId: string) {
 
   const fetchSubjects = useCallback(async () => {
     if (!moduleId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/admin/modules/${moduleId}/subjects`);
-      const data = await response.json();
-      setSubjects(data.subjects || []);
+      const data = await apiFetch<Subject[]>(`/materials/subjects?moduleId=${moduleId}`);
+      setSubjects(data.map((s) => ({ ...s, id: String(s.id), moduleId: String((s as any).moduleId) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch subjects'));
       console.error('Failed to fetch subjects:', err);
@@ -33,15 +35,9 @@ export function useSubjects(moduleId: string) {
 
   const deleteSubject = useCallback(async (subjectId: string) => {
     try {
-      const response = await fetch(`/api/admin/subjects/${subjectId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setSubjects((prev) => prev.filter((s) => s.id !== subjectId));
-        return true;
-      }
-      return false;
+      await apiFetch(`/materials/subjects/${subjectId}`, { method: 'DELETE' });
+      setSubjects((prev) => prev.filter((s) => s.id !== subjectId));
+      return true;
     } catch (err) {
       console.error('Failed to delete subject:', err);
       return false;

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from "@/components/ui/checkbox"
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateChapterDialogProps {
   subjectId: string;
@@ -30,11 +31,11 @@ export default function CreateChapterDialog({
   onChapterCreated,
 }: CreateChapterDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    description: '', 
-    is_miscellaneous: false,
-    order_index: 0
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    isMiscellaneous: false,
+    orderIndex: 0
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,17 +43,13 @@ export default function CreateChapterDialog({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/subjects/${subjectId}/chapters`, {
+      await apiFetch('/materials/chapters', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: { subjectId: Number(subjectId), name: formData.name, description: formData.description, isMiscellaneous: formData.isMiscellaneous, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        setFormData({ name: '', description: '', is_miscellaneous: false, order_index: 0 });
-        onOpenChange(false);
-        onChapterCreated();
-      }
+      setFormData({ name: '', description: '', isMiscellaneous: false, orderIndex: 0 });
+      onOpenChange(false);
+      onChapterCreated();
     } catch (error) {
       console.error('Failed to create chapter:', error);
     } finally {
@@ -101,10 +98,10 @@ export default function CreateChapterDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

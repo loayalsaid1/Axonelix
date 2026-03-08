@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { JSONContent } from '@tiptap/react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateLessonDialogProps {
   chapterId?: string;
@@ -53,25 +54,21 @@ export default function CreateLessonDialog({
     try {
       const content = editorRef.current?.getJSON() || {};
 
-      const response = await fetch('/api/admin/lessons', {
+      await apiFetch('/materials/lessons', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           name,
           description,
           content,
-          order_index: parseInt(orderIndex) || 0,
-          chapterId,
-          subjectId,
+          orderIndex: parseInt(orderIndex) || 0,
+          chapterId: chapterId ? Number(chapterId) : null,
+          subjectId: subjectId ? Number(subjectId) : null,
           isMisc,
-        }),
+        },
       });
-
-      if (response.ok) {
-        resetForm();
-        onOpenChange(false);
-        onLessonCreated();
-      }
+      resetForm();
+      onOpenChange(false);
+      onLessonCreated();
     } catch (error) {
       console.error('Failed to create lesson:', error);
     } finally {
