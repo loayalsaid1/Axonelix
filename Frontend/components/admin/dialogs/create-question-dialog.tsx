@@ -105,7 +105,7 @@ export default function CreateQuestionDialog({
       fetchSubjects(selectedModule);
       setSelectedSubject('');
       setSelectedChapter('');
-      setFormData({ ...formData, lessonId: '', chapterId: '' });
+      setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
     }
   }, [selectedModule]);
 
@@ -113,14 +113,14 @@ export default function CreateQuestionDialog({
     if (selectedSubject) {
       fetchChapters(selectedSubject);
       setSelectedChapter('');
-      setFormData({ ...formData, lessonId: '', chapterId: '' });
+      setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
     }
   }, [selectedSubject]);
 
   useEffect(() => {
     if (selectedChapter) {
       fetchLessons(selectedChapter);
-      setFormData({ ...formData, chapterId: selectedChapter, lessonId: '' });
+      setFormData((prev) => ({ ...prev, chapterId: selectedChapter, lessonId: '' }));
     }
   }, [selectedChapter]);
 
@@ -276,9 +276,9 @@ export default function CreateQuestionDialog({
                 onSubjectChange={setSelectedSubject}
                 onChapterChange={setSelectedChapter}
                 onLessonChange={(lessonId) =>
-                  setFormData({ ...formData, lessonId })
+                  setFormData((prev) => ({ ...prev, lessonId }))
                 }
-                onIsMiscChange={(isMisc) => setFormData({ ...formData, isMisc })}
+                onIsMiscChange={(isMisc) => setFormData((prev) => ({ ...prev, isMisc }))}
               />
 
               {/* Old Exam Checkbox */}
