@@ -46,6 +46,11 @@ export class LessonsController {
     return this.lessonsService.findAll(chapterId);
   }
 
+  @Get('recent')
+  findRecent(@Query('limit', new ParseIntPipe({ optional: true })) limit = 10) {
+    return this.lessonsService.findRecent(limit);
+  }
+
   @Get('search')
   search(@Query('q') q: string): Promise<LessonWithHierarchyDto[]> | LessonWithHierarchyDto[] {
     if (!q || q.trim().length < 1) return [];
