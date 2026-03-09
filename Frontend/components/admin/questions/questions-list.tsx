@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, Upload } from 'lucide-react';
 import { useQuestionFilters } from '@/hooks/admin/use-question-filters';
 import { useToast } from '@/hooks/use-toast';
 import { AdminEmptyState } from '@/components/admin/shared/admin-empty-state';
@@ -12,10 +13,18 @@ import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import CreateQuestionDialog from '@/components/admin/dialogs/create-question-dialog';
 import EditQuestionDialog from '@/components/admin/dialogs/edit-question-dialog';
 import { apiFetch } from '@/lib/api/client';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ButtonGroup } from '@/components/ui/button-group';
 
 export function QuestionsList() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const router = useRouter();
   const {
     filterOptions,
     optionsLoading,
@@ -114,10 +123,28 @@ export function QuestionsList() {
 
       {/* Action Bar */}
       <div className="flex justify-end">
-        <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Question
-        </Button>
+        <ButtonGroup>
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Question
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="default" className="px-2.5" aria-label="More question actions">
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="gap-2 cursor-pointer"
+                onClick={() => router.push('/admin/questions/upload')}
+              >
+                <Upload className="h-4 w-4" />
+                Bulk Upload via CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ButtonGroup>
       </div>
 
       {/* Filter Card */}
