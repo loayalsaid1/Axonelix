@@ -17,12 +17,12 @@ export const oldExams = pgTable("old_exams", {
 		columns: [table.moduleId],
 		foreignColumns: [modules.id],
 		name: "old_exams_module_id_fkey"
-	}).onDelete('set null'),
+	}).onDelete('cascade'),
 	foreignKey({
 		columns: [table.universityId],
 		foreignColumns: [universities.id],
 		name: "old_exams_university_id_fkey"
-	}).onDelete('set null'),
+	}).onDelete('cascade'),
 	unique("old_exams_exam_type_module_id_module_type_university_id_yea_key").on(table.examType, table.moduleId, table.moduleType, table.universityId, table.year),
 	check("old_exams_exam_type_check", sql`(exam_type)::text = ANY ((ARRAY['final'::character varying, 'midterm'::character varying, 'tpl'::character varying, 'flipped'::character varying])::text[])`),
 	check("old_exams_module_type_check", sql`(module_type)::text = ANY ((ARRAY['theoretical'::character varying, 'practical'::character varying])::text[])`),
