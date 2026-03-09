@@ -1,16 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
+
+export interface QuestionOption {
+  id: string;
+  optionText: string;
+  isCorrect: boolean;
+}
 
 export interface Question {
   id: string;
-  question_type: 'mcq' | 'written';
+  questionType: 'mcq' | 'written';
   statement: string;
   explanation: any;
-  lesson_id?: string;
-  chapter_id?: string;
-  old_exam_id?: string;
-  is_misc: boolean;
-  options: { id: string; option_text: string; is_correct: boolean }[];
-  created_at: string;
+  lessonId?: string | null;
+  chapterId?: string | null;
+  oldExamId?: string | null;
+  isMisc: boolean;
+  questionOptions: QuestionOption[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PaginatedQuestions {
+  data: Question[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export function useQuestions() {
@@ -22,9 +38,17 @@ export function useQuestions() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/admin/questions');
-      const data = await response.json();
-      setQuestions(data.questions || []);
+      const data = await apiFetch<PaginatedQuestions>('/questions?limit=100');
+      setQuestions(
+        (data.data || []).map((q) => ({
+          ...q,
+          id: String(q.id),
+          lessonId: q.lessonId != null ? String(q.lessonId) : null,
+          chapterId: q.chapterId != null ? String(q.chapterId) : null,
+          oldExamId: q.oldExamId != null ? String(q.oldExamId) : null,
+          questionOptions: (q.questionOptions || []).map((o) => ({ ...o, id: String(o.id) })),
+        }))
+      );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch questions'));
       console.error('Failed to fetch questions:', err);
@@ -35,15 +59,9 @@ export function useQuestions() {
 
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
-      const response = await fetch(`/api/admin/questions/${questionId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setQuestions((prev) => prev.filter((q) => q.id !== questionId));
-        return true;
-      }
-      return false;
+      await apiFetch(`/questions/${questionId}`, { method: 'DELETE' });
+      setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+      return true;
     } catch (err) {
       console.error('Failed to delete question:', err);
       return false;

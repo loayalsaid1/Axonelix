@@ -1,5 +1,19 @@
 import { relations } from "drizzle-orm/relations";
-import { modules, subjects, oldExams, universities, chapters, lessons, questions, questionOptions } from "./schema";
+import {
+	modules,
+	subjects,
+	oldExams,
+	universities,
+	chapters,
+	lessons,
+	questions,
+	questionOptions,
+	users,
+	quizzes,
+	quizQuestions,
+	quizSessions,
+	quizSessionAnswers,
+} from "./schema";
 
 export const subjectsRelations = relations(subjects, ({one, many}) => ({
 	module: one(modules, {
@@ -24,6 +38,7 @@ export const oldExamsRelations = relations(oldExams, ({one, many}) => ({
 		references: [universities.id]
 	}),
 	questions: many(questions),
+	quizzes: many(quizzes),
 }));
 
 export const universitiesRelations = relations(universities, ({many}) => ({
@@ -61,11 +76,72 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 		references: [oldExams.id]
 	}),
 	questionOptions: many(questionOptions),
+	quizQuestions: many(quizQuestions),
+	quizSessionAnswers: many(quizSessionAnswers),
 }));
 
-export const questionOptionsRelations = relations(questionOptions, ({one}) => ({
+export const questionOptionsRelations = relations(questionOptions, ({one, many}) => ({
 	question: one(questions, {
 		fields: [questionOptions.questionId],
 		references: [questions.id]
+	}),
+	quizSessionAnswers: many(quizSessionAnswers),
+}));
+
+// ─── Quiz Relations ───────────────────────────────────────────────────────────
+
+export const usersRelations = relations(users, ({many}) => ({
+	quizzes: many(quizzes),
+	quizSessions: many(quizSessions),
+}));
+
+export const quizzesRelations = relations(quizzes, ({one, many}) => ({
+	createdBy: one(users, {
+		fields: [quizzes.createdBy],
+		references: [users.id],
+	}),
+	oldExam: one(oldExams, {
+		fields: [quizzes.oldExamId],
+		references: [oldExams.id],
+	}),
+	quizQuestions: many(quizQuestions),
+	quizSessions: many(quizSessions),
+}));
+
+export const quizQuestionsRelations = relations(quizQuestions, ({one}) => ({
+	quiz: one(quizzes, {
+		fields: [quizQuestions.quizId],
+		references: [quizzes.id],
+	}),
+	question: one(questions, {
+		fields: [quizQuestions.questionId],
+		references: [questions.id],
+	}),
+}));
+
+export const quizSessionsRelations = relations(quizSessions, ({one, many}) => ({
+	quiz: one(quizzes, {
+		fields: [quizSessions.quizId],
+		references: [quizzes.id],
+	}),
+	user: one(users, {
+		fields: [quizSessions.userId],
+		references: [users.id],
+	}),
+	quizSessionAnswers: many(quizSessionAnswers),
+}));
+
+export const quizSessionAnswersRelations = relations(quizSessionAnswers, ({one}) => ({
+	session: one(quizSessions, {
+		fields: [quizSessionAnswers.sessionId],
+		references: [quizSessions.id],
+	}),
+	question: one(questions, {
+		fields: [quizSessionAnswers.questionId],
+		references: [questions.id],
+	}),
+	selectedOption: one(questionOptions, {
+		fields: [quizSessionAnswers.selectedOptionId],
+		references: [questionOptions.id],
 	}),
 }));

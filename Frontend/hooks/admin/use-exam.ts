@@ -1,15 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
+import type { OldExam } from './use-old-exams';
 
-export interface Exam {
-  id: string;
-  exam_type: string;
-  year: number;
-  university_id?: string;
-  university_name?: string;
-  module_id?: string;
-  module_name?: string;
-  module_type?: 'theoretical' | 'practical';
-}
+// Re-use the same type
+export type Exam = OldExam;
 
 export function useExam(examId: string) {
   const [exam, setExam] = useState<Exam | null>(null);
@@ -22,9 +16,15 @@ export function useExam(examId: string) {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/admin/old-exams/${examId}`);
-      const data = await response.json();
-      setExam(data.exam);
+      const data = await apiFetch<Exam>(`/questions/old-exams/${examId}`);
+      setExam({
+        ...data,
+        id: String(data.id),
+        universityId: String(data.universityId),
+        moduleId: String(data.moduleId),
+        module: data.module ? { id: String(data.module.id), name: data.module.name } : undefined,
+        university: data.university ? { id: String(data.university.id), name: data.university.name } : undefined,
+      });
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch exam'));
       console.error('Failed to fetch exam:', err);

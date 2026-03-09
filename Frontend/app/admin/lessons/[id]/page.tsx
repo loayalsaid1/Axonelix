@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,29 +13,35 @@ import { JSONContent } from '@tiptap/core';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
+import { apiFetch } from '@/lib/api/client';
 
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null;
 }
 
-interface Lesson {
+interface LessonWithHierarchy {
   id: string;
-  chapter_id: string;
+  chapterId: number;
   name: string;
   description: string;
   content: JSONContent;
-  order_index: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface LessonWithHierarchy extends Lesson {
-  module_id: string;
-  module_name: string;
-  subject_id: string;
-  subject_name: string;
-  chapter_name: string;
-  is_miscellaneous?: boolean;
+  orderIndex: number;
+  isMisc?: boolean;
+  createdAt: string;
+  updatedAt: string;
+  chapter: {
+    id: number;
+    name: string;
+    subject: {
+      id: number;
+      name: string;
+      type: string;
+      module: {
+        id: number;
+        name: string;
+      };
+    };
+  };
 }
 
 export default function LessonEditPage() {
@@ -61,12 +67,7 @@ export default function LessonEditPage() {
     const fetchLesson = async () => {
       try {
         setIsLoading(true);
-        // Fetch lesson with hierarchy information
-        const response = await fetch(`/api/admin/lessons/${lessonId}/with-hierarchy`);
-        if (!response.ok) throw new Error('Failed to fetch lesson');
-
-        const data = await response.json();
-        const lessonData = data.lesson;
+        const lessonData = await apiFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`);
 
         // Parse content if it's a string
         if (typeof lessonData.content === 'string') {
@@ -76,11 +77,11 @@ export default function LessonEditPage() {
         setLesson(lessonData);
         setName(lessonData.name);
         setDescription(lessonData.description);
-        setOrderIndex(String(lessonData.order_index || 0));
-        setModuleId(lessonData.module_id || '');
-        setSubjectId(lessonData.subject_id || '');
-        setChapterId(lessonData.chapter_id || '');
-        setIsMisc(lessonData.is_miscellaneous || false);
+        setOrderIndex(String(lessonData.orderIndex || 0));
+        setModuleId(String(lessonData.chapter.subject.module.id));
+        setSubjectId(String(lessonData.chapter.subject.id));
+        setChapterId(String(lessonData.chapterId));
+        setIsMisc(lessonData.isMisc || false);
       } catch (error) {
         console.error('Error fetching lesson:', error);
         toast({
@@ -121,34 +122,29 @@ export default function LessonEditPage() {
         return;
       }
 
-      const actualChapterId = isMisc ? '' : (chapterId || lesson?.chapter_id);
+      const actualChapterId = isMisc ? null : Number(chapterId || lesson?.chapterId);
 
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const updated = await apiFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`, {
+        method: 'PATCH',
+        body: {
           name,
           description,
           content,
-          order_index: parseInt(orderIndex) || 0,
+          orderIndex: parseInt(orderIndex) || 0,
           chapterId: actualChapterId,
-          subjectId,
-          isMisc: isMisc,
-        }),
+          subjectId: Number(subjectId),
+          isMisc,
+        },
       });
 
-      if (!response.ok) throw new Error('Failed to save lesson');
-
-      const data = await response.json();
-      // update local lesson state with canonical lesson returned by the API (includes joined hierarchy names)
-      setLesson(data.lesson);
-      setName(data.lesson.name);
-      setDescription(data.lesson.description);
-      setOrderIndex(String(data.lesson.order_index || 0));
-      setModuleId(data.lesson.module_id || '');
-      setSubjectId(data.lesson.subject_id || '');
-      setChapterId(data.lesson.chapter_id || '');
-      setIsMisc(data.lesson.is_miscellaneous || false);
+      setLesson(updated);
+      setName(updated.name);
+      setDescription(updated.description);
+      setOrderIndex(String(updated.orderIndex || 0));
+      setModuleId(String(updated.chapter.subject.module.id));
+      setSubjectId(String(updated.chapter.subject.id));
+      setChapterId(String(updated.chapterId));
+      setIsMisc(updated.isMisc || false);
 
       toast({
         title: 'Success',
@@ -195,7 +191,7 @@ export default function LessonEditPage() {
     );
   }
 
-  const backUrl = `/admin/materials/${lesson.module_id}/${lesson.subject_id}/${lesson.chapter_id}`;
+  const backUrl = `/admin/materials/${lesson.chapter.subject.module.id}/${lesson.chapter.subject.id}/${lesson.chapter.id}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,11 +222,11 @@ export default function LessonEditPage() {
 
           {/* Breadcrumb */}
           <nav className="text-sm text-muted-foreground mb-2">
-            <span>{lesson.module_name}</span>
+            <span>{lesson.chapter.subject.module.name}</span>
             <span className="mx-2">/</span>
-            <span>{lesson.subject_name}</span>
+            <span>{lesson.chapter.subject.name}</span>
             <span className="mx-2">/</span>
-            <span>{lesson.chapter_name}</span>
+            <span>{lesson.chapter.name}</span>
           </nav>
         </div>
       </div>
@@ -302,11 +298,10 @@ export default function LessonEditPage() {
             <CardContent>
               {lesson.content ? (
                 <div className="border rounded-lg overflow-hidden">
-                  {/* <SimpleEditor */}
-                  <div
+                  <SimpleEditor
                     key={lesson.id}
-                  // ref={editorRef}
-                  // initialContent={lesson.content}
+                    ref={editorRef}
+                    initialContent={lesson.content}
                   />
                 </div>
               ) : (

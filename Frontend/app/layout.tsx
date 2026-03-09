@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { ClerkProvider } from '@clerk/nextjs'
+import { shadcn } from '@clerk/themes'
+import { AppThemeProvider, ColorThemeScript } from "@/components/theme-provider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,19 +26,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SidebarProvider>
-          <TooltipProvider>
-            <AppSidebar/>
-            <SidebarInset>
-              {children}
-            </SidebarInset>
-          </TooltipProvider>
-        </SidebarProvider>
-      </body>
-    </html>
+    <ClerkProvider appearance={{
+      theme: shadcn
+    }}>
+      <html lang="en" suppressHydrationWarning>
+        <head>
+          <ColorThemeScript />
+        </head>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <AppThemeProvider>
+            {children}
+          </AppThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

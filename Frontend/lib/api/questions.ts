@@ -1,6 +1,36 @@
 import { apiFetch } from "@/lib/api/client";
 import type { PaginatedQuestionsResponse } from "@/lib/types/questions";
 
+export interface QuestionOptionInput {
+  optionText: string;
+  isCorrect: boolean;
+}
+
+export interface BulkCreateQuestionInput {
+  questionType: 'mcq' | 'written';
+  statement: string;
+  statementFormat?: 'text' | 'tiptap_json';
+  lessonId?: number | null;
+  chapterId?: number | null;
+  isMisc?: boolean;
+  oldExamId?: number | null;
+  options?: QuestionOptionInput[];
+}
+
+export interface BulkCreateResult {
+  count: number;
+  questionIds: number[];
+}
+
+export function bulkCreateQuestions(
+  questions: BulkCreateQuestionInput[],
+): Promise<BulkCreateResult> {
+  return apiFetch<BulkCreateResult>('/questions/bulk', {
+    method: 'POST',
+    body: { questions },
+  });
+}
+
 export function getLessonQuestions(
   lessonId: number,
   page = 1,

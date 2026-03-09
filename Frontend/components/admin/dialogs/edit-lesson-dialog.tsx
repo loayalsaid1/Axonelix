@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-// import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
+import { apiFetch } from '@/lib/api/client';
 
 interface EditLessonDialogProps {
   lessonId: string | null;
@@ -37,7 +38,7 @@ export default function EditLessonDialog({
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    order_index: 0
+    orderIndex: 0
   });
   const [initialContent, setInitialContent] = useState<JSONContent | undefined>(undefined);
 
@@ -51,25 +52,21 @@ export default function EditLessonDialog({
     if (!lessonId) return;
 
     try {
-      const response = await fetch(`/api/admin/lessons/${lessonId}`);
-      const data = await response.json();
-      console.log('Fetched lesson data:', data);
-      if (data.lesson) {
-        setFormData({
-          name: data.lesson.name,
-          description: data.lesson.description || '',
-          order_index: data.lesson.order_index || 0,
-        });
+      const data = await apiFetch<any>(`/materials/lessons/${lessonId}`);
+      setFormData({
+        name: data.name,
+        description: data.description || '',
+        orderIndex: data.orderIndex || 0,
+      });
 
-        if (data.lesson.content) {
-          try {
-            const content = typeof data.lesson.content === 'string'
-              ? JSON.parse(data.lesson.content)
-              : data.lesson.content;
-            setInitialContent(content);
-          } catch (e) {
-            setInitialContent(undefined);
-          }
+      if (data.content) {
+        try {
+          const content = typeof data.content === 'string'
+            ? JSON.parse(data.content)
+            : data.content;
+          setInitialContent(content);
+        } catch (e) {
+          setInitialContent(undefined);
         }
       }
     } catch (error) {
@@ -86,19 +83,12 @@ export default function EditLessonDialog({
     try {
       const content = editorRef.current?.getJSON() || {};
 
-      const response = await fetch(`/api/admin/lessons/${lessonId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          content,
-        }),
+      await apiFetch(`/materials/lessons/${lessonId}`, {
+        method: 'PATCH',
+        body: { name: formData.name, description: formData.description, orderIndex: formData.orderIndex, content },
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onLessonUpdated();
-      }
+      onOpenChange(false);
+      onLessonUpdated();
     } catch (error) {
       console.error('Failed to update lesson:', error);
     } finally {
@@ -138,17 +128,17 @@ export default function EditLessonDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
 
           <div className="space-y-2 border rounded-lg p-4">
             <Label>Lesson Content</Label>
             <div className="border rounded-lg overflow-hidden">
-              {/* <SimpleEditor ref={editorRef} initialContent={initialContent} key={lessonId} /> */}
+              <SimpleEditor ref={editorRef} initialContent={initialContent} key={lessonId} />
               <div className="p-4 text-sm text-gray-500">
                 Content will be displayed here
               </div>

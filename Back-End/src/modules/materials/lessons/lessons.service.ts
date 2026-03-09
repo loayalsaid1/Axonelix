@@ -8,7 +8,7 @@ import { eq, ilike, count } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
 
   async create(createLessonDto: CreateLessonDto) {
     // Chapter must be provided by controller or caller
@@ -143,6 +143,26 @@ export class LessonsService {
     };
   }
 
+  async findRecent(limit = 10) {
+    return await this.drizzleService.db.query.lessons.findMany({
+      orderBy: (l, { desc }) => [desc(l.updatedAt)],
+      limit,
+      with: {
+        chapter: {
+          columns: { id: true, name: true },
+          with: {
+            subject: {
+              columns: { id: true, name: true, type: true },
+              with: {
+                module: { columns: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async search(query: string) {
     return await this.drizzleService.db.query.lessons.findMany({
       where: ilike(lessons.name, `%${query}%`),
@@ -165,11 +185,26 @@ export class LessonsService {
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
-    const [updatedLesson] = await this.drizzleService.db
+    await this.drizzleService.db
       .update(lessons)
       .set(updateLessonDto)
       .where(eq(lessons.id, id))
-      .returning();
+    const updatedLesson = await this.drizzleService.db.query.lessons.findFirst({
+      where: eq(lessons.id, id),
+      with: {
+        chapter: {
+          columns: { id: true, name: true, isMiscellaneous: true },
+          with: {
+            subject: {
+              columns: { id: true, name: true, type: true },
+              with: {
+                module: { columns: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
 
     if (!updatedLesson) {
       throw new NotFoundException(`Lesson with ID ${id} not found`);

@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiFetch } from '@/lib/api/client';
 
 interface EditSubjectDialogProps {
   subjectId: string | null;
@@ -28,11 +29,11 @@ export default function EditSubjectDialog({
   onSubjectUpdated,
 }: EditSubjectDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    description: '', 
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
     type: 'theoretical' as 'theoretical' | 'practical',
-    order_index: 0 
+    orderIndex: 0
   });
 
   useEffect(() => {
@@ -43,18 +44,15 @@ export default function EditSubjectDialog({
 
   const fetchSubject = async () => {
     if (!subjectId) return;
-    
+
     try {
-      const response = await fetch(`/api/admin/subjects/${subjectId}`);
-      const data = await response.json();
-      if (data.subject) {
-        setFormData({
-          name: data.subject.name,
-          description: data.subject.description || '',
-          type: data.subject.type,
-          order_index: data.subject.order_index || 0,
-        });
-      }
+      const data = await apiFetch<any>(`/materials/subjects/${subjectId}`);
+      setFormData({
+        name: data.name,
+        description: data.description || '',
+        type: data.type,
+        orderIndex: data.orderIndex || 0,
+      });
     } catch (error) {
       console.error('Failed to fetch subject:', error);
     }
@@ -63,20 +61,16 @@ export default function EditSubjectDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subjectId) return;
-    
+
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/subjects/${subjectId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      await apiFetch(`/materials/subjects/${subjectId}`, {
+        method: 'PATCH',
+        body: { name: formData.name, description: formData.description, type: formData.type, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onSubjectUpdated();
-      }
+      onOpenChange(false);
+      onSubjectUpdated();
     } catch (error) {
       console.error('Failed to update subject:', error);
     } finally {
@@ -127,10 +121,10 @@ export default function EditSubjectDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

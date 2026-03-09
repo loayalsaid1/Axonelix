@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateSubjectDialogProps {
   moduleId: string;
@@ -36,11 +37,11 @@ export default function CreateSubjectDialog({
   onSubjectCreated,
 }: CreateSubjectDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    description: '', 
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
     type: 'theoretical' as 'theoretical' | 'practical',
-    order_index: 0 
+    orderIndex: 0
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,17 +49,13 @@ export default function CreateSubjectDialog({
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}/subjects`, {
+      await apiFetch('/materials/subjects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: { moduleId: Number(moduleId), name: formData.name, type: formData.type, description: formData.description, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        setFormData({ name: '', description: '', type: 'theoretical', order_index: 0 });
-        onOpenChange(false);
-        onSubjectCreated();
-      }
+      setFormData({ name: '', description: '', type: 'theoretical', orderIndex: 0 });
+      onOpenChange(false);
+      onSubjectCreated();
     } catch (error) {
       console.error('Failed to create subject:', error);
     } finally {
@@ -96,8 +93,8 @@ export default function CreateSubjectDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="type">Subject Type</Label>
-            <Select 
-              value={formData.type} 
+            <Select
+              value={formData.type}
               onValueChange={(value: 'theoretical' | 'practical') => setFormData({ ...formData, type: value })}
             >
               <SelectTrigger>
@@ -112,10 +109,10 @@ export default function CreateSubjectDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

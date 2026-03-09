@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsNumber, IsObject, IsBoolean } from 'class-valid
 export class CreateLessonDto {
   @IsNumber()
   @IsOptional()
-  chapterId?: number | null;
+  chapterId?: number;
 
   @IsNumber()
   @IsOptional()

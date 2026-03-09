@@ -15,12 +15,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, X } from 'lucide-react';
 
 interface QuestionOption {
-  option_text: string;
-  is_correct: boolean;
+  optionText: string;
+  isCorrect: boolean;
 }
 
 interface QuestionFormData {
-  question_type: 'mcq' | 'written';
+  questionType: 'mcq' | 'written';
   statement: string;
   explanation: string;
   options: QuestionOption[];
@@ -41,28 +41,28 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...data.options];
-    newOptions[index].option_text = value;
+    newOptions[index].optionText = value;
     updateField('options', newOptions);
   };
 
   const handleCorrectChange = (index: number) => {
     const newOptions = data.options.map((opt, i) => ({
       ...opt,
-      is_correct: i === index,
+      isCorrect: i === index,
     }));
     updateField('options', newOptions);
   };
 
   const handleAddOption = () => {
-    updateField('options', [...data.options, { option_text: '', is_correct: false }]);
+    updateField('options', [...data.options, { optionText: '', isCorrect: false }]);
   };
 
   const handleRemoveOption = (index: number) => {
     if (data.options.length <= 2) return;
-    const wasCorrect = data.options[index].is_correct;
+    const wasCorrect = data.options[index].isCorrect;
     const newOptions = data.options.filter((_, i) => i !== index);
     if (wasCorrect && newOptions.length > 0) {
-      newOptions[0].is_correct = true;
+      newOptions[0].isCorrect = true;
     }
     updateField('options', newOptions);
   };
@@ -72,10 +72,10 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
       {/* Question Type */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="question_type">Question Type</Label>
+          <Label htmlFor="questionType">Question Type</Label>
           <Select
-            value={data.question_type}
-            onValueChange={(val: 'mcq' | 'written') => updateField('question_type', val)}
+            value={data.questionType}
+            onValueChange={(val: 'mcq' | 'written') => updateField('questionType', val)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select type" />
@@ -102,7 +102,7 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
       </div>
 
       {/* MCQ Options */}
-      {data.question_type === 'mcq' && (
+      {data.questionType === 'mcq' && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <Label>Options</Label>
@@ -119,7 +119,7 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
           </div>
 
           <RadioGroup
-            value={data.options.findIndex((o) => o.is_correct).toString()}
+            value={data.options.findIndex((o) => o.isCorrect).toString()}
             onValueChange={(val) => handleCorrectChange(parseInt(val))}
           >
             {data.options.map((option, index) => (
@@ -127,7 +127,7 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
                 <RadioGroupItem value={index.toString()} id={`opt-${index}`} />
                 <Input
                   placeholder={`Option ${index + 1}`}
-                  value={option.option_text}
+                  value={option.optionText}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                 />
                 <Button

@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 
 export interface ExamQuestion {
   id: string;
-  question_type: string;
+  questionType: string;
   statement: string;
-  options: { id: string; option_text: string; is_correct: boolean }[];
-  created_at: string;
+  questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
+  createdAt: string;
+}
+
+interface PaginatedQuestions {
+  data: ExamQuestion[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export function useExamQuestions(examId: string) {
@@ -19,9 +28,14 @@ export function useExamQuestions(examId: string) {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/admin/old-exams/${examId}/questions`);
-      const data = await response.json();
-      setQuestions(data.questions || []);
+      const data = await apiFetch<PaginatedQuestions>(`/questions?oldExamId=${examId}&limit=100`);
+      setQuestions(
+        (data.data || []).map((q) => ({
+          ...q,
+          id: String(q.id),
+          questionOptions: (q.questionOptions || []).map((o) => ({ ...o, id: String(o.id) })),
+        }))
+      );
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch exam questions'));
       console.error('Failed to fetch exam questions:', err);
@@ -33,21 +47,18 @@ export function useExamQuestions(examId: string) {
   const removeQuestion = useCallback(
     async (questionId: string) => {
       try {
-        const response = await fetch(`/api/admin/old-exams/${examId}/questions/${questionId}`, {
-          method: 'DELETE',
+        await apiFetch(`/questions/${questionId}`, {
+          method: 'PATCH',
+          body: { oldExamId: null },
         });
-
-        if (response.ok) {
-          setQuestions((prev) => prev.filter((q) => q.id !== questionId));
-          return true;
-        }
-        return false;
+        setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+        return true;
       } catch (err) {
         console.error('Failed to remove question:', err);
         return false;
       }
     },
-    [examId]
+    []
   );
 
   useEffect(() => {

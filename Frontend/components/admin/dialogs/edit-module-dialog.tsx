@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { apiFetch } from '@/lib/api/client';
 
 interface EditModuleDialogProps {
   moduleId: string | null;
@@ -27,7 +28,7 @@ export default function EditModuleDialog({
   onModuleUpdated,
 }: EditModuleDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', order_index: 0 });
+  const [formData, setFormData] = useState({ name: '', description: '', orderIndex: 0 });
 
   useEffect(() => {
     if (moduleId && open) {
@@ -37,17 +38,14 @@ export default function EditModuleDialog({
 
   const fetchModule = async () => {
     if (!moduleId) return;
-    
+
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}`);
-      const data = await response.json();
-      if (data.module) {
-        setFormData({
-          name: data.module.name,
-          description: data.module.description || '',
-          order_index: data.module.order_index || 0,
-        });
-      }
+      const data = await apiFetch<any>(`/materials/modules/${moduleId}`);
+      setFormData({
+        name: data.name,
+        description: data.description || '',
+        orderIndex: data.orderIndex || 0,
+      });
     } catch (error) {
       console.error('Failed to fetch module:', error);
     }
@@ -56,20 +54,16 @@ export default function EditModuleDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!moduleId) return;
-    
+
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/modules/${moduleId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      await apiFetch(`/materials/modules/${moduleId}`, {
+        method: 'PATCH',
+        body: { name: formData.name, description: formData.description, orderIndex: formData.orderIndex },
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onModuleUpdated();
-      }
+      onOpenChange(false);
+      onModuleUpdated();
     } catch (error) {
       console.error('Failed to update module:', error);
     } finally {
@@ -108,10 +102,10 @@ export default function EditModuleDialog({
           <div className="space-y-2">
             <Label htmlFor="order_index">Order Index</Label>
             <Input
-              id="order_index"
+              id="orderIndex"
               type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

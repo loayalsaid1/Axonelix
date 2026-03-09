@@ -26,7 +26,7 @@ export function ExamHeader({ examId, backHref = '/admin/questions', backLabel = 
       </Link>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2 uppercase">
-          {exam.exam_type} {exam.year}
+          {exam.examType} {exam.year}
         </h1>
         <p className="text-muted-foreground mb-4">Exam Collection ID: {exam.id}</p>
       </div>

@@ -78,10 +78,10 @@ export function SubjectsList({ moduleId }: SubjectsListProps) {
             <AdminResourceCard
               key={subject.id}
               title={subject.name}
-              description={subject.description}
+              description={subject.description ?? undefined}
               href={`/admin/materials/${moduleId}/${subject.id}`}
-              date={new Date(subject.created_at).toLocaleDateString()}
-              order={subject.order_index}
+              date={new Date(subject.createdAt).toLocaleDateString()}
+              order={subject.orderIndex ?? undefined}
               badge={
                 <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground shrink-0">
                   {subject.type}

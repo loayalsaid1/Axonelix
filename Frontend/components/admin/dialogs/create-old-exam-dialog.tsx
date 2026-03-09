@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Module, University } from "@/lib/types";
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateOldExamDialogProps {
   open: boolean;
@@ -33,13 +33,13 @@ export default function CreateOldExamDialog({
   onExamCreated,
 }: CreateOldExamDialogProps) {
   const [loading, setLoading] = useState(false);
-  const [modules, setModules] = useState<Module[]>([]);
-  const [universities, setUniversities] = useState<University[]>([]);
+  const [modules, setModules] = useState<{ id: string; name: string }[]>([]);
+  const [universities, setUniversities] = useState<{ id: string; name: string }[]>([]);
   const [formData, setFormData] = useState({
-    exam_type: 'final' as 'final' | 'midterm' | 'tpl' | 'flipped',
-    module_id: '',
-    module_type: 'theoretical' as 'theoretical' | 'practical',
-    university_id: '',
+    examType: 'final' as 'final' | 'midterm' | 'tpl' | 'flipped',
+    moduleId: '',
+    moduleType: 'theoretical' as 'theoretical' | 'practical',
+    universityId: '',
     year: new Date().getFullYear(),
   });
 
@@ -51,36 +51,30 @@ export default function CreateOldExamDialog({
   }, [open]);
 
   const fetchModules = async () => {
-    const res = await fetch('/api/admin/modules');
-    const data = await res.json();
-    setModules(data.modules || []);
+    const data = await apiFetch<any[]>('/materials/modules');
+    setModules(data.map((m) => ({ id: String(m.id), name: m.name })));
   };
 
   const fetchUniversities = async () => {
-    const res = await fetch('/api/admin/universities');
-    const data = await res.json();
-    setUniversities(data.universities || []);
+    const data = await apiFetch<any[]>('/questions/universities');
+    setUniversities(data.map((u) => ({ id: String(u.id), name: u.name })));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.module_id || !formData.university_id) {
+    if (!formData.moduleId || !formData.universityId) {
       alert('Please select module and university');
       return;
     }
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/old-exams', {
+      await apiFetch('/questions/old-exams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: { examType: formData.examType, moduleId: Number(formData.moduleId), moduleType: formData.moduleType, universityId: Number(formData.universityId), year: formData.year },
       });
-
-      if (response.ok) {
-        onOpenChange(false);
-        onExamCreated();
-      }
+      onOpenChange(false);
+      onExamCreated();
     } catch (error) {
       console.error('Failed to create old exam:', error);
     } finally {
@@ -98,9 +92,9 @@ export default function CreateOldExamDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="exam_type">Exam Type</Label>
-            <Select 
-              value={formData.exam_type} 
-              onValueChange={(value: any) => setFormData({ ...formData, exam_type: value })}
+            <Select
+              value={formData.examType}
+              onValueChange={(value: any) => setFormData({ ...formData, examType: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select type" />
@@ -116,9 +110,9 @@ export default function CreateOldExamDialog({
 
           <div className="space-y-2">
             <Label htmlFor="module">Module</Label>
-            <Select 
-              value={formData.module_id} 
-              onValueChange={(value) => setFormData({ ...formData, module_id: value })}
+            <Select
+              value={formData.moduleId}
+              onValueChange={(value) => setFormData({ ...formData, moduleId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select module" />
@@ -133,9 +127,9 @@ export default function CreateOldExamDialog({
 
           <div className="space-y-2">
             <Label htmlFor="module_type">Module Type</Label>
-            <Select 
-              value={formData.module_type} 
-              onValueChange={(value: any) => setFormData({ ...formData, module_type: value })}
+            <Select
+              value={formData.moduleType}
+              onValueChange={(value: any) => setFormData({ ...formData, moduleType: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select module type" />
@@ -149,9 +143,9 @@ export default function CreateOldExamDialog({
 
           <div className="space-y-2">
             <Label htmlFor="university">University</Label>
-            <Select 
-              value={formData.university_id} 
-              onValueChange={(value) => setFormData({ ...formData, university_id: value })}
+            <Select
+              value={formData.universityId}
+              onValueChange={(value) => setFormData({ ...formData, universityId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select university" />

@@ -10,7 +10,7 @@ interface AdminQuestionCardProps {
   id: string;
   statement: string;
   questionType: 'mcq' | 'written';
-  options: { id: string; option_text: string; is_correct: boolean }[];
+  options: { id: string; optionText: string; isCorrect: boolean }[];
   isMisc: boolean;
   href: string;
   onDelete: () => void;
@@ -47,7 +47,7 @@ export function AdminQuestionCard({
               <CardDescription className="mt-2">
                 {options.length} option{options.length !== 1 ? 's' : ''}
                 {' • '}
-                {options.filter((o) => o.is_correct).length} correct
+                {options.filter((o) => o.isCorrect).length} correct
               </CardDescription>
             )}
           </div>
@@ -86,17 +86,16 @@ export function AdminQuestionCard({
         <CardContent>
           <div className="text-sm space-y-1">
             {options.slice(0, 3).map((option, optIndex) => (
-                    <div
-                      key={optIndex}
-                      className={`p-2 rounded text-sm ${
-                        option.is_correct
-                          ? 'bg-green-50 border border-green-200 text-green-700'
-                          : 'bg-gray-50 border border-gray-100'
-                      }`}
-                    >
-                      <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
-                      {option.option_text}
-                    </div>
+              <div
+                key={optIndex}
+                className={`p-2 rounded text-sm ${option.isCorrect
+                    ? 'bg-green-50 border border-green-200 text-green-700'
+                    : 'bg-gray-50 border border-gray-100'
+                  }`}
+              >
+                <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
+                {option.optionText}
+              </div>
             ))}
             {options.length > 3 && (
               <div className="text-xs text-muted-foreground mt-1">

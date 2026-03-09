@@ -9,12 +9,12 @@ type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
  */
 export async function apiFetch<T>(
   path: string,
-  { body, ...options }: FetchOptions = {}
+  { body, headers: extraHeaders, ...options }: FetchOptions = {}
 ): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(options.headers ?? {}),
+      ...(extraHeaders ?? {}),
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     ...options,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,9 +15,11 @@ import { useModules } from '@/hooks/admin/use-modules';
 import { useUniversities } from '@/hooks/admin/use-universities';
 import { useOldExams } from '@/hooks/admin/use-old-exams';
 import { useOldExamManager } from '@/hooks/admin/use-old-exam-manager';
+import { useMaterialHierarchy } from '@/hooks/admin/use-material-hierarchy';
 import { MaterialSelector } from '@/components/admin/shared/material-selector';
 import { OldExamForm } from '@/components/admin/shared/old-exam-form';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
+import { apiFetch } from '@/lib/api/client';
 
 interface CreateQuestionDialogProps {
   parentId?: string;
@@ -25,22 +27,6 @@ interface CreateQuestionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onQuestionCreated: () => void;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  type: string;
-}
-
-interface Chapter {
-  id: string;
-  name: string;
-}
-
-interface Lesson {
-  id: string;
-  name: string;
 }
 
 export default function CreateQuestionDialog({
@@ -51,114 +37,60 @@ export default function CreateQuestionDialog({
   onQuestionCreated,
 }: CreateQuestionDialogProps) {
   const [loading, setLoading] = useState(false);
-  
+
   // Use custom hooks
   const { modules } = useModules();
   const { universities, createUniversity } = useUniversities();
   const { exams, refetch: refetchExams } = useOldExams();
   const { findOrCreateOldExam } = useOldExamManager(exams);
-  
-  // Material hierarchy state
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  
-  // Material selection state
-  const [selectedModule, setSelectedModule] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
-  const [selectedChapter, setSelectedChapter] = useState('');
-  
+
+  // Material hierarchy
+  const {
+    selectedModule,
+    setSelectedModule,
+    selectedSubject,
+    setSelectedSubject,
+    selectedChapter,
+    setSelectedChapter,
+    subjects,
+    chapters,
+    lessons,
+  } = useMaterialHierarchy();
+
   // Old exam toggle and data
   const [isOldExamQuestion, setIsOldExamQuestion] = useState(false);
-  
+
   // Old exam data
   const [oldExamData, setOldExamData] = useState({
-    university_id: '',
-    module_id: '',
-    module_type: 'theoretical' as 'theoretical' | 'practical',
-    exam_type: 'final' as 'final' | 'midterm' | 'tpl' | 'flipped',
+    universityId: '',
+    moduleId: '',
+    moduleType: 'theoretical' as 'theoretical' | 'practical',
+    examType: 'final' as 'final' | 'midterm' | 'tpl' | 'flipped',
     year: new Date().getFullYear(),
   });
-  
+
   // Question form data
   const [formData, setFormData] = useState({
-    question_type: 'mcq' as 'mcq' | 'written',
+    questionType: 'mcq' as 'mcq' | 'written',
     statement: '',
-    statement_format: 'text' as 'text' | 'tiptap_json',
+    statementFormat: 'text' as 'text' | 'tiptap_json',
     explanation: '',
-    lesson_id: parentType === 'lesson' ? parentId : '',
-    chapter_id: parentType === 'chapter' ? parentId : '',
-    old_exam_id: parentType === 'old_exam' ? parentId : '',
-    is_misc: false,
+    lessonId: parentType === 'lesson' ? parentId : '',
+    chapterId: parentType === 'chapter' ? parentId : '',
+    oldExamId: parentType === 'old_exam' ? parentId : '',
+    isMisc: false,
     options: [
-      { option_text: '', is_correct: true },
-      { option_text: '', is_correct: false },
+      { optionText: '', isCorrect: true },
+      { optionText: '', isCorrect: false },
     ],
   });
 
-  
 
-  // Effects for cascading material selection
-  useEffect(() => {
-    if (selectedModule) {
-      fetchSubjects(selectedModule);
-      setSelectedSubject('');
-      setSelectedChapter('');
-      setFormData({ ...formData, lesson_id: '', chapter_id: '' });
-    }
-  }, [selectedModule]);
 
-  useEffect(() => {
-    if (selectedSubject) {
-      fetchChapters(selectedSubject);
-      setSelectedChapter('');
-      setFormData({ ...formData, lesson_id: '', chapter_id: '' });
-    }
-  }, [selectedSubject]);
-
-  useEffect(() => {
-    if (selectedChapter) {
-      fetchLessons(selectedChapter);
-      setFormData({ ...formData, chapter_id: selectedChapter, lesson_id: '' });
-    }
-  }, [selectedChapter]);
-
-  // Fetch functions for material hierarchy
-  const fetchSubjects = async (moduleId: string) => {
-    try {
-      const res = await fetch(`/api/admin/modules/${moduleId}/subjects`);
-      const data = await res.json();
-      setSubjects(data.subjects || []);
-    } catch (error) {
-      console.error('Failed to fetch subjects:', error);
-    }
-  };
-
-  const fetchChapters = async (subjectId: string) => {
-    try {
-      const res = await fetch(`/api/admin/subjects/${subjectId}/chapters`);
-      const data = await res.json();
-      setChapters(data.chapters || []);
-    } catch (error) {
-      console.error('Failed to fetch chapters:', error);
-    }
-  };
-
-  const fetchLessons = async (chapterId: string) => {
-    try {
-      const res = await fetch(`/api/admin/chapters/${chapterId}/lessons`);
-      const data = await res.json();
-      setLessons(data.lessons || []);
-    } catch (error) {
-      console.error('Failed to fetch lessons:', error);
-    }
-  };
-
-  // Handler for creating university
   const handleCreateUniversity = async (name: string) => {
     const newUniversity = await createUniversity(name);
     if (newUniversity) {
-      setOldExamData({ ...oldExamData, university_id: newUniversity.id });
+      setOldExamData({ ...oldExamData, universityId: newUniversity.id });
     }
   };
 
@@ -173,7 +105,7 @@ export default function CreateQuestionDialog({
 
     // Validate old exam data if marked as old exam
     if (isOldExamQuestion) {
-      if (!oldExamData.university_id || !oldExamData.module_id) {
+      if (!oldExamData.universityId || !oldExamData.moduleId) {
         alert('Please select university and module for old exam question');
         return;
       }
@@ -181,13 +113,13 @@ export default function CreateQuestionDialog({
 
     // Validate material linkage (unless it's a parent context or old exam only)
     if (!parentId && !isOldExamQuestion) {
-      if (!formData.chapter_id) {
+      if (!formData.chapterId) {
         alert('Please select a chapter for this question');
         return;
       }
     }
 
-    if (formData.question_type === 'mcq' && formData.options.some((opt) => !opt.option_text)) {
+    if (formData.questionType === 'mcq' && formData.options.some((opt) => !opt.optionText)) {
       alert('Please fill in all options');
       return;
     }
@@ -195,7 +127,7 @@ export default function CreateQuestionDialog({
     setLoading(true);
 
     try {
-      let oldExamId = formData.old_exam_id;
+      let oldExamId = formData.oldExamId;
 
       // If this is marked as an old exam question, create or find the old exam
       if (isOldExamQuestion) {
@@ -211,42 +143,41 @@ export default function CreateQuestionDialog({
       }
 
       const payload = {
-        ...formData,
-        old_exam_id: oldExamId || null,
+        questionType: formData.questionType,
+        statement: formData.statement,
+        statementFormat: formData.statementFormat,
+        lessonId: formData.lessonId ? Number(formData.lessonId) : null,
+        chapterId: formData.chapterId ? Number(formData.chapterId) : null,
+        isMisc: formData.isMisc,
+        oldExamId: oldExamId ? Number(oldExamId) : null,
         explanation: formData.explanation
           ? {
-              type: 'doc',
-              content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
-            }
+            type: 'doc',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
+          }
           : null,
+        options: formData.questionType === 'mcq'
+          ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
+          : [],
       };
 
-      const response = await fetch('/api/admin/questions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      await apiFetch('/questions', { method: 'POST', body: payload });
 
-      if (response.ok) {
-        // Clear only the statement, explanation and options so the user can
-        // quickly add another question while keeping the selected material
-        // hierarchy and old-exam state intact.
-        setFormData((prev) => ({
-          ...prev,
-          question_type: 'mcq',
-          statement: '',
-          statement_format: 'text',
-          explanation: '',
-          options: [
-            { option_text: '', is_correct: true },
-            { option_text: '', is_correct: false },
-          ],
-        }));
+      setFormData((prev) => ({
+        ...prev,
+        questionType: 'mcq',
+        statement: '',
+        statementFormat: 'text',
+        explanation: '',
+        options: [
+          { optionText: '', isCorrect: true },
+          { optionText: '', isCorrect: false },
+        ],
+      }));
 
-        // Keep selectedModule / selectedSubject / selectedChapter and
-        // old exam toggles as-is so the dialog remains in the same context.
-        onQuestionCreated();
-      }
+      // Keep selectedModule / selectedSubject / selectedChapter and
+      // old exam toggles as-is so the dialog remains in the same context.
+      onQuestionCreated();
     } catch (error) {
       console.error('Failed to create question:', error);
     } finally {
@@ -273,15 +204,24 @@ export default function CreateQuestionDialog({
                 selectedModule={selectedModule}
                 selectedSubject={selectedSubject}
                 selectedChapter={selectedChapter}
-                lessonId={formData.lesson_id || ''}
-                isMisc={formData.is_misc}
-                onModuleChange={setSelectedModule}
-                onSubjectChange={setSelectedSubject}
-                onChapterChange={setSelectedChapter}
+                lessonId={formData.lessonId || ''}
+                isMisc={formData.isMisc}
+                onModuleChange={(moduleId) => {
+                  setSelectedModule(moduleId);
+                  setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
+                }}
+                onSubjectChange={(subjectId) => {
+                  setSelectedSubject(subjectId);
+                  setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
+                }}
+                onChapterChange={(chapterId) => {
+                  setSelectedChapter(chapterId);
+                  setFormData((prev) => ({ ...prev, chapterId: chapterId, lessonId: '' }));
+                }}
                 onLessonChange={(lessonId) =>
-                  setFormData({ ...formData, lesson_id: lessonId })
+                  setFormData((prev) => ({ ...prev, lessonId }))
                 }
-                onIsMiscChange={(isMisc) => setFormData({ ...formData, is_misc: isMisc })}
+                onIsMiscChange={(isMisc) => setFormData((prev) => ({ ...prev, isMisc }))}
               />
 
               {/* Old Exam Checkbox */}
@@ -326,7 +266,7 @@ export default function CreateQuestionDialog({
           {/* Question Form Fields */}
           <QuestionFormFields
             data={{
-              question_type: formData.question_type,
+              questionType: formData.questionType,
               statement: formData.statement,
               explanation: formData.explanation,
               options: formData.options,

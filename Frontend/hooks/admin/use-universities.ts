@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 
 export interface University {
   id: string;
   name: string;
-  created_at?: string;
+  createdAt?: string;
 }
 
 export function useUniversities() {
@@ -15,9 +16,8 @@ export function useUniversities() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/admin/universities');
-      const data = await response.json();
-      setUniversities(data.universities || []);
+      const data = await apiFetch<University[]>('/questions/universities');
+      setUniversities(data.map((u) => ({ ...u, id: String(u.id) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch universities'));
       console.error('Failed to fetch universities:', err);
@@ -28,18 +28,13 @@ export function useUniversities() {
 
   const createUniversity = useCallback(async (name: string) => {
     try {
-      const response = await fetch('/api/admin/universities', {
+      const data = await apiFetch<University>('/questions/universities', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: { name },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUniversities((prev) => [...prev, data.university]);
-        return data.university;
-      }
-      return null;
+      const university = { ...data, id: String(data.id) };
+      setUniversities((prev) => [...prev, university]);
+      return university;
     } catch (err) {
       console.error('Failed to create university:', err);
       return null;

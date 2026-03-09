@@ -39,12 +39,12 @@ export function OldExamsList() {
           {exams.map((exam) => (
             <AdminResourceCard
               key={exam.id}
-              title={`${exam.exam_type.toUpperCase()} ${exam.year}`}
-              description={`${exam.module_name || 'Module'} - ${exam.university_name || 'University'}`}
+              title={`${exam.examType.toUpperCase()} ${exam.year}`}
+              description={`${exam.module?.name || 'Module'} - ${exam.university?.name || 'University'}`}
               href={'/admin/questions/exams/' + exam.id}
               badge={
                 <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
-                  {exam.module_type}
+                  {exam.moduleType}
                 </span>
               }
             />

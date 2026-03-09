@@ -15,6 +15,62 @@
       "when": 1771208864743,
       "tag": "0001_sticky_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771978644263,
+      "tag": "0002_elite_wolf_cub",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772227484766,
+      "tag": "0003_careful_silver_samurai",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772227000001,
+      "tag": "0004_quiz_triggers_and_views",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772322394652,
+      "tag": "0006_lyrical_gunslinger",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772400000000,
+      "tag": "0007_hierarchy_views_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773059861668,
+      "tag": "0007_narrow_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1773060363248,
+      "tag": "0008_wet_emma_frost",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1773071357759,
+      "tag": "0009_delete_orphaned_questions_before_parent_delete",
+      "breakpoints": true
     }
   ]
 }

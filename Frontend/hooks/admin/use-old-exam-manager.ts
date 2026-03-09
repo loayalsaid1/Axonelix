@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
+import { apiFetch } from '@/lib/api/client';
 import { OldExam } from './use-old-exams';
 
 export interface OldExamParams {
-  university_id: string;
-  module_id: string;
-  module_type: 'theoretical' | 'practical';
-  exam_type: 'final' | 'midterm' | 'tpl' | 'flipped';
+  universityId: string;
+  moduleId: string;
+  moduleType: 'theoretical' | 'practical';
+  examType: 'final' | 'midterm' | 'tpl' | 'flipped';
   year: number;
 }
 
@@ -15,11 +16,11 @@ export function useOldExamManager(existingExams: OldExam[]) {
       return (
         existingExams.find(
           (exam) =>
-            exam.module_id === params.module_id &&
-            exam.module_type === params.module_type &&
-            exam.university_id === params.university_id &&
+            exam.moduleId === params.moduleId &&
+            exam.moduleType === params.moduleType &&
+            exam.universityId === params.universityId &&
             exam.year === params.year &&
-            exam.exam_type === params.exam_type
+            exam.examType === params.examType
         ) || null
       );
     },
@@ -28,17 +29,24 @@ export function useOldExamManager(existingExams: OldExam[]) {
 
   const createOldExam = useCallback(async (params: OldExamParams): Promise<OldExam | null> => {
     try {
-      const response = await fetch('/api/admin/old-exams', {
+      const data = await apiFetch<any>('/questions/old-exams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
+        body: {
+          examType: params.examType,
+          moduleId: Number(params.moduleId),
+          moduleType: params.moduleType,
+          universityId: Number(params.universityId),
+          year: params.year,
+        },
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.exam;
-      }
-      return null;
+      return {
+        ...data,
+        id: String(data.id),
+        universityId: String(data.universityId),
+        moduleId: String(data.moduleId),
+        module: data.module ? { id: String(data.module.id), name: data.module.name } : undefined,
+        university: data.university ? { id: String(data.university.id), name: data.university.name } : undefined,
+      };
     } catch (error) {
       console.error('Failed to create old exam:', error);
       return null;
@@ -47,13 +55,10 @@ export function useOldExamManager(existingExams: OldExam[]) {
 
   const findOrCreateOldExam = useCallback(
     async (params: OldExamParams): Promise<string | null> => {
-      // Check if exists
       const existing = findExistingExam(params);
       if (existing) {
         return existing.id;
       }
-
-      // Create new
       const newExam = await createOldExam(params);
       return newExam?.id || null;
     },

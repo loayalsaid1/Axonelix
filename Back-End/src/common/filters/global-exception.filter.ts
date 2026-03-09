@@ -19,10 +19,16 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    if (!(exception instanceof HttpException)) {
+      console.error('[GlobalExceptionFilter] Unhandled exception:', exception);
+    }
+
     const message =
       exception instanceof HttpException
         ? exception.getResponse()
-        : 'Internal server error';
+        : exception instanceof Error
+          ? exception.message
+          : 'Internal server error';
 
     response.status(status).json({
       statusCode: status,
