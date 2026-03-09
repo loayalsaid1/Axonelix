@@ -1,0 +1,119 @@
+'use client';
+
+import React from "react"
+
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from "@/components/ui/checkbox"
+import { apiFetch } from '@/lib/api/client';
+
+interface CreateChapterDialogProps {
+  subjectId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onChapterCreated: () => void;
+}
+
+export default function CreateChapterDialog({
+  subjectId,
+  open,
+  onOpenChange,
+  onChapterCreated,
+}: CreateChapterDialogProps) {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    isMiscellaneous: false,
+    orderIndex: 0
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await apiFetch('/materials/chapters', {
+        method: 'POST',
+        body: { subjectId: Number(subjectId), name: formData.name, description: formData.description, isMiscellaneous: formData.isMiscellaneous, orderIndex: formData.orderIndex },
+      });
+      setFormData({ name: '', description: '', isMiscellaneous: false, orderIndex: 0 });
+      onOpenChange(false);
+      onChapterCreated();
+    } catch (error) {
+      console.error('Failed to create chapter:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create New Chapter</DialogTitle>
+          <DialogDescription>Add a new chapter to organize your lessons</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Chapter Name</Label>
+            <Input
+              id="name"
+              placeholder="e.g., Functions and Graphs"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Describe the chapter content..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              required
+            />
+          </div>
+          {/* <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="is_miscellaneous" 
+              checked={formData.is_miscellaneous}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_miscellaneous: checked === true })}
+            />
+            <Label htmlFor="is_miscellaneous" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Is Miscellaneous
+            </Label>
+          </div> */}
+          <div className="space-y-2">
+            <Label htmlFor="order_index">Order Index</Label>
+            <Input
+              id="orderIndex"
+              type="number"
+              value={formData.orderIndex}
+              onChange={(e) => setFormData({ ...formData, orderIndex: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Creating...' : 'Create Chapter'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

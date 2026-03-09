@@ -21,7 +21,7 @@ export class LessonsController {
   constructor(
     private readonly lessonsService: LessonsService,
     private readonly chaptersService: ChaptersService,
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -44,6 +44,11 @@ export class LessonsController {
   @Get()
   findAll(@Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number): Promise<LessonResponseDto[]> {
     return this.lessonsService.findAll(chapterId);
+  }
+
+  @Get('recent')
+  findRecent(@Query('limit', new ParseIntPipe({ optional: true })) limit = 10) {
+    return this.lessonsService.findRecent(limit);
   }
 
   @Get('search')
