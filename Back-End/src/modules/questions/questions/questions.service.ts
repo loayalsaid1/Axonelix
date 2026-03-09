@@ -2,16 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
 import { QuestionOptionsService } from '../question-options/question-options.service';
 import { questions } from '../../../database/entities/questions';
+import { questionOptions } from '../../../database/entities/question-options';
 import { lessons as lessonsTable } from '../../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
-import { and, eq, inArray, or, SQL, count } from 'drizzle-orm';
+import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
   CreateQuestionDto,
   UpdateQuestionDto,
   QuestionFilterDto,
   PaginatedQuestionsDto,
   QuestionIdsDto,
+  BulkCreateQuestionsDto,
+  BulkCreateResultDto,
 } from './dto';
 
 // Columns returned on a full question fetch
@@ -40,9 +43,60 @@ export class QuestionsService {
   constructor(
     private readonly drizzleService: DrizzleService,
     private readonly questionOptionsService: QuestionOptionsService,
-  ) {}
+  ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
+
+  /**
+   * Bulk-insert many questions + their options in a single atomic transaction.
+   * All questions share the same validation constraints as `create()`.
+   * If anything fails, the entire batch is rolled back.
+   */
+  async bulkCreate(dto: BulkCreateQuestionsDto): Promise<BulkCreateResultDto> {
+    return this.drizzleService.db.transaction(async (tx) => {
+      // ── 1. Batch-insert all question rows ──────────────────────────────
+      const questionPayloads: (typeof questions.$inferInsert)[] = dto.questions.map((q) => ({
+        questionType: q.questionType,
+        statement: q.statement,
+        statementFormat: q.statementFormat ?? 'text',
+        explanation: q.explanation ?? null,
+        lessonId: q.lessonId ?? null,
+        chapterId: q.chapterId ?? null,
+        isMisc: q.isMisc ?? false,
+        oldExamId: q.oldExamId ?? null,
+      }));
+
+      const insertedQuestions = await tx
+        .insert(questions)
+        .values(questionPayloads)
+        .returning({ id: questions.id });
+
+      // ── 2. Batch-insert all options (single round-trip) ─────────────────
+      const optionPayloads: (typeof questionOptions.$inferInsert)[] = [];
+
+      insertedQuestions.forEach(({ id: questionId }, i) => {
+        const q = dto.questions[i];
+        if (q.questionType === 'mcq' && q.options?.length) {
+          q.options.forEach((opt) => {
+            optionPayloads.push({
+              questionId,
+              optionText: opt.optionText,
+              isCorrect: opt.isCorrect,
+            });
+          });
+        }
+      });
+
+      if (optionPayloads.length) {
+        await tx.insert(questionOptions).values(optionPayloads);
+      }
+
+      return {
+        count: insertedQuestions.length,
+        questionIds: insertedQuestions.map((q) => q.id),
+      };
+    });
+  }
 
   async create(dto: CreateQuestionDto) {
     const payload: typeof questions.$inferInsert = {
@@ -85,11 +139,11 @@ export class QuestionsService {
   ): Promise<PaginatedQuestionsDto> {
     const conditions: SQL[] = [];
 
-    if (params.lessonId != null)    conditions.push(eq(questions.lessonId, params.lessonId));
-    if (params.chapterId != null)   conditions.push(eq(questions.chapterId, params.chapterId));
-    if (params.oldExamId != null)   conditions.push(eq(questions.oldExamId, params.oldExamId));
+    if (params.lessonId != null) conditions.push(eq(questions.lessonId, params.lessonId));
+    if (params.chapterId != null) conditions.push(eq(questions.chapterId, params.chapterId));
+    if (params.oldExamId != null) conditions.push(eq(questions.oldExamId, params.oldExamId));
     if (params.questionType != null) conditions.push(eq(questions.questionType, params.questionType));
-    if (params.isMisc != null)      conditions.push(eq(questions.isMisc, params.isMisc));
+    if (params.isMisc != null) conditions.push(eq(questions.isMisc, params.isMisc));
 
     const where = conditions.length ? and(...conditions) : undefined;
     return this._paginateQuery(where, page, limit);
@@ -118,13 +172,13 @@ export class QuestionsService {
     // Build the update payload, only include defined fields
     const updatePayload: Partial<typeof questions.$inferInsert> = {};
     if (questionFields.questionType !== undefined) updatePayload.questionType = questionFields.questionType;
-    if (questionFields.statement !== undefined)    updatePayload.statement = questionFields.statement;
+    if (questionFields.statement !== undefined) updatePayload.statement = questionFields.statement;
     if (questionFields.statementFormat !== undefined) updatePayload.statementFormat = questionFields.statementFormat;
-    if (questionFields.explanation !== undefined)  updatePayload.explanation = questionFields.explanation;
-    if (questionFields.lessonId !== undefined)     updatePayload.lessonId = questionFields.lessonId;
-    if (questionFields.chapterId !== undefined)    updatePayload.chapterId = questionFields.chapterId;
-    if (questionFields.isMisc !== undefined)       updatePayload.isMisc = questionFields.isMisc;
-    if (questionFields.oldExamId !== undefined)    updatePayload.oldExamId = questionFields.oldExamId;
+    if (questionFields.explanation !== undefined) updatePayload.explanation = questionFields.explanation;
+    if (questionFields.lessonId !== undefined) updatePayload.lessonId = questionFields.lessonId;
+    if (questionFields.chapterId !== undefined) updatePayload.chapterId = questionFields.chapterId;
+    if (questionFields.isMisc !== undefined) updatePayload.isMisc = questionFields.isMisc;
+    if (questionFields.oldExamId !== undefined) updatePayload.oldExamId = questionFields.oldExamId;
 
     if (Object.keys(updatePayload).length) {
       await this.drizzleService.db
@@ -227,11 +281,16 @@ export class QuestionsService {
   buildFilterConditions(filter: QuestionFilterDto): SQL[] {
     const conditions: SQL[] = [];
 
+    // ── Text search ────────────────────────────────
+    if (filter.searchQuery?.trim()) {
+      conditions.push(ilike(questions.statement, `%${filter.searchQuery.trim()}%`));
+    }
+
     // ── Question-level (no join needed) ──────────────────────────────────
-    if (filter.questionType)       conditions.push(eq(questions.questionType, filter.questionType));
-    if (filter.isMisc != null)     conditions.push(eq(questions.isMisc, filter.isMisc));
-    if (filter.oldExamId != null)  conditions.push(eq(questions.oldExamId, filter.oldExamId));
-    if (filter.lessonIds?.length)  conditions.push(inArray(questions.lessonId, filter.lessonIds));
+    if (filter.questionType) conditions.push(eq(questions.questionType, filter.questionType));
+    if (filter.isMisc != null) conditions.push(eq(questions.isMisc, filter.isMisc));
+    if (filter.oldExamId != null) conditions.push(eq(questions.oldExamId, filter.oldExamId));
+    if (filter.lessonIds?.length) conditions.push(inArray(questions.lessonId, filter.lessonIds));
 
     // ── Chapter-level (needs lessons join) ───────────────────────────────
     // Catches: misc questions directly on the chapter AND lesson questions inside it.
@@ -249,8 +308,8 @@ export class QuestionsService {
     }
 
     // ── Module-level (needs subjects join) ───────────────────────────────
-    if (filter.moduleIds?.length)  conditions.push(inArray(subjectsTable.moduleId, filter.moduleIds));
-    if (filter.moduleType)         conditions.push(eq(subjectsTable.type, filter.moduleType));
+    if (filter.moduleIds?.length) conditions.push(inArray(subjectsTable.moduleId, filter.moduleIds));
+    if (filter.moduleType) conditions.push(eq(subjectsTable.type, filter.moduleType));
 
     return conditions;
   }

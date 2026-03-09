@@ -11,6 +11,10 @@ import {
 import { useRouter } from "next/navigation"
 import { useClerk, useUser } from "@clerk/nextjs"
 
+export interface NavUserConfig {
+  isAdmin?: boolean
+}
+
 import {
   Avatar,
   AvatarFallback,
@@ -32,7 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function NavUser() {
+export function NavUser({ isAdmin = false }: NavUserConfig = {}) {
   const { isMobile } = useSidebar()
   const { user } = useUser()
   const { signOut } = useClerk()
@@ -89,22 +93,28 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            {!isAdmin && (
+              <>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <Sparkles />
+                    Upgrade to Pro
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuGroup>
               <DropdownMenuItem onSelect={() => router.push("/account")}>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
+              {!isAdmin && (
+                <DropdownMenuItem>
+                  <CreditCard />
+                  Billing
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem>
                 <Bell />
                 Notifications
