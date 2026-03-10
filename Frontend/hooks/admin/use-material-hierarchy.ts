@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface Subject {
 	id: string;
@@ -18,6 +18,7 @@ export interface Lesson {
 }
 
 export function useMaterialHierarchy() {
+	const authFetch = useApiFetch();
 	const [selectedModule, setSelectedModule] = useState('');
 	const [selectedSubject, setSelectedSubject] = useState('');
 	const [selectedChapter, setSelectedChapter] = useState('');
@@ -28,7 +29,7 @@ export function useMaterialHierarchy() {
 
 	useEffect(() => {
 		if (selectedModule) {
-			apiFetch<any[]>(`/materials/subjects?moduleId=${selectedModule}`)
+			authFetch<any[]>(`/materials/subjects?moduleId=${selectedModule}`)
 				.then((data) =>
 					setSubjects(data.map((s) => ({ id: String(s.id), name: s.name, type: s.type })))
 				)
@@ -38,11 +39,11 @@ export function useMaterialHierarchy() {
 		}
 		setSelectedSubject('');
 		setSelectedChapter('');
-	}, [selectedModule]);
+	}, [selectedModule, authFetch]);
 
 	useEffect(() => {
 		if (selectedSubject) {
-			apiFetch<any[]>(`/materials/subjects/${selectedSubject}/chapters`)
+			authFetch<any[]>(`/materials/subjects/${selectedSubject}/chapters`)
 				.then((data) =>
 					setChapters(data.map((c) => ({ id: String(c.id), name: c.name })))
 				)
@@ -51,11 +52,11 @@ export function useMaterialHierarchy() {
 			setChapters([]);
 		}
 		setSelectedChapter('');
-	}, [selectedSubject]);
+	}, [selectedSubject, authFetch]);
 
 	useEffect(() => {
 		if (selectedChapter) {
-			apiFetch<any[]>(`/materials/chapters/${selectedChapter}/lessons`)
+			authFetch<any[]>(`/materials/chapters/${selectedChapter}/lessons`)
 				.then((data) =>
 					setLessons(data.map((l) => ({ id: String(l.id), name: l.name })))
 				)
@@ -63,7 +64,7 @@ export function useMaterialHierarchy() {
 		} else {
 			setLessons([]);
 		}
-	}, [selectedChapter]);
+	}, [selectedChapter, authFetch]);
 
 	// Expose a way to reset downstream states when the form is submitted/reset
 	const resetHierarchy = () => {

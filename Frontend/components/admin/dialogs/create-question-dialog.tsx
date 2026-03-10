@@ -19,7 +19,7 @@ import { useMaterialHierarchy } from '@/hooks/admin/use-material-hierarchy';
 import { MaterialSelector } from '@/components/admin/shared/material-selector';
 import { OldExamForm } from '@/components/admin/shared/old-exam-form';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface CreateQuestionDialogProps {
   parentId?: string;
@@ -36,6 +36,7 @@ export default function CreateQuestionDialog({
   onOpenChange,
   onQuestionCreated,
 }: CreateQuestionDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
 
   // Use custom hooks
@@ -161,7 +162,7 @@ export default function CreateQuestionDialog({
           : [],
       };
 
-      await apiFetch('/questions', { method: 'POST', body: payload });
+      await authFetch('/questions', { method: 'POST', body: payload });
 
       setFormData((prev) => ({
         ...prev,

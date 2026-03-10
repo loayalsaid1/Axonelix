@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 import type { RecentMaterial } from '@/lib/admin-db';
 
 export function useRecentMaterials(limit: number = 10) {
+  const authFetch = useApiFetch();
   const [materials, setMaterials] = useState<RecentMaterial[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch<any[]>(`/materials/lessons/recent?limit=${limit}`);
+      const data = await authFetch<any[]>(`/materials/lessons/recent?limit=${limit}`);
       const mapped: RecentMaterial[] = (data || []).map((lesson: any) => ({
         id: String(lesson.id),
         name: lesson.name,
@@ -36,7 +37,7 @@ export function useRecentMaterials(limit: number = 10) {
 
   useEffect(() => {
     fetchMaterials();
-  }, [limit]);
+  }, [limit, authFetch]);
 
   return { materials, loading, refetch: fetchMaterials };
 }

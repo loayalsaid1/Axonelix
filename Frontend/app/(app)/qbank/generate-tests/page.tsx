@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { API_BASE_URL } from '@/lib/constants';
 import type { ModuleHierarchy, ModuleWithSubjects } from '@/lib/types/materials';
 import { GenerateTestPage } from '@/components/qbank/generate/GenerateTestPage';
+import { serverAuthOpts } from '@/lib/api/server-auth-opts';
 
 export const metadata: Metadata = { title: 'Generate Test' };
 
@@ -18,6 +19,7 @@ export const metadata: Metadata = { title: 'Generate Test' };
 async function fetchHierarchy(): Promise<ModuleHierarchy[]> {
   // 1. Fetch module list (includes subjects for ordering/display)
   const modulesRes = await fetch(`${API_BASE_URL}/materials/modules`, {
+    ...await serverAuthOpts(),
     next: { revalidate: 60 },
   });
   if (!modulesRes.ok) return [];
@@ -29,6 +31,7 @@ async function fetchHierarchy(): Promise<ModuleHierarchy[]> {
   const hierarchies = await Promise.all(
     modules.map(async (m) => {
       const res = await fetch(`${API_BASE_URL}/materials/modules/${m.id}/hierarchy`, {
+        ...(await serverAuthOpts()),
         next: { revalidate: 60 },
       });
       if (!res.ok) {

@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from "@/components/ui/checkbox"
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface CreateChapterDialogProps {
   subjectId: string;
@@ -30,6 +30,7 @@ export default function CreateChapterDialog({
   onOpenChange,
   onChapterCreated,
 }: CreateChapterDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -43,7 +44,7 @@ export default function CreateChapterDialog({
     setLoading(true);
 
     try {
-      await apiFetch('/materials/chapters', {
+      await authFetch('/materials/chapters', {
         method: 'POST',
         body: { subjectId: Number(subjectId), name: formData.name, description: formData.description, isMiscellaneous: formData.isMiscellaneous, orderIndex: formData.orderIndex },
       });

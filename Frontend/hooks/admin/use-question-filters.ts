@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 import { Question } from './use-questions';
 
 export interface Module {
@@ -46,6 +46,7 @@ export interface FilterOptions {
  * Custom hook to manage question filtering with cascading filter options
  */
 export function useQuestionFilters() {
+  const authFetch = useApiFetch();
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     modules: [],
     subjects: [],
@@ -73,7 +74,7 @@ export function useQuestionFilters() {
   const fetchModules = async () => {
     try {
       setOptionsLoading(true);
-      const data = await apiFetch<any[]>('/materials/modules');
+      const data = await authFetch<any[]>('/materials/modules');
       setFilterOptions((prev) => ({
         ...prev,
         modules: data.map((m) => ({ id: String(m.id), name: m.name })),
@@ -88,7 +89,7 @@ export function useQuestionFilters() {
   const fetchSubjectsForModule = useCallback(async (moduleId: string) => {
     if (!moduleId) return;
     try {
-      const data = await apiFetch<any[]>(`/materials/subjects?moduleId=${moduleId}`);
+      const data = await authFetch<any[]>(`/materials/subjects?moduleId=${moduleId}`);
       setFilterOptions((prev) => ({
         ...prev,
         subjects: data.map((s) => ({ id: String(s.id), name: s.name, type: s.type, moduleId: String(s.moduleId) })),
@@ -98,33 +99,33 @@ export function useQuestionFilters() {
     } catch (error) {
       console.error('Failed to fetch subjects:', error);
     }
-  }, []);
+  }, [authFetch]);
 
   const fetchChaptersForSubjects = useCallback(async (subjectIds: string[]) => {
     if (!subjectIds.length) return;
     try {
       const results = await Promise.all(
-        subjectIds.map((id) => apiFetch<any[]>(`/materials/subjects/${id}/chapters`))
+        subjectIds.map((id) => authFetch<any[]>(`/materials/subjects/${id}/chapters`))
       );
       const chapters = results.flat().map((c) => ({ id: String(c.id), name: c.name, subjectId: String(c.subjectId) }));
       setFilterOptions((prev) => ({ ...prev, chapters, lessons: [] }));
     } catch (error) {
       console.error('Failed to fetch chapters:', error);
     }
-  }, []);
+  }, [authFetch]);
 
   const fetchLessonsForChapters = useCallback(async (chapterIds: string[]) => {
     if (!chapterIds.length) return;
     try {
       const results = await Promise.all(
-        chapterIds.map((id) => apiFetch<any[]>(`/materials/chapters/${id}/lessons`))
+        chapterIds.map((id) => authFetch<any[]>(`/materials/chapters/${id}/lessons`))
       );
       const lessons = results.flat().map((l) => ({ id: String(l.id), name: l.name, chapterId: String(l.chapterId) }));
       setFilterOptions((prev) => ({ ...prev, lessons }));
     } catch (error) {
       console.error('Failed to fetch lessons:', error);
     }
-  }, []);
+  }, [authFetch]);
 
   const getFilteredSubjects = useCallback(() => {
     if (!filters.moduleId) return [];
@@ -176,7 +177,7 @@ export function useQuestionFilters() {
       if (filters.lessonIds?.length) body.lessonIds = filters.lessonIds.map(Number);
       if (filters.isMisc !== undefined) body.isMisc = filters.isMisc;
 
-      const data = await apiFetch<{ data: any[]; total: number }>('/questions/filter', {
+      const data = await authFetch<{ data: any[]; total: number }>('/questions/filter', {
         method: 'POST',
         body,
       });
@@ -193,7 +194,7 @@ export function useQuestionFilters() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, authFetch]);
 
   const clearFilters = useCallback(() => {
     setFilters({

@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import { useQuestionFilters } from '@/hooks/admin/use-question-filters';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface Question {
   id: string;
@@ -36,6 +36,7 @@ export default function AddQuestionToExamDialog({
   onOpenChange,
   onQuestionAdded,
 }: AddQuestionToExamDialogProps) {
+  const authFetch = useApiFetch();
   const [submitting, setSubmitting] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<string>('');
 
@@ -87,7 +88,7 @@ export default function AddQuestionToExamDialog({
     setSubmitting(true);
 
     try {
-      await apiFetch(`/questions/${selectedQuestion}`, {
+      await authFetch(`/questions/${selectedQuestion}`, {
         method: 'PATCH',
         body: { oldExamId: Number(examId) },
       });

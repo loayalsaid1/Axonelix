@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface QuestionOption {
   id?: string;
@@ -40,6 +40,7 @@ export default function EditQuestionDialog({
   onOpenChange,
   onQuestionUpdated,
 }: EditQuestionDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
@@ -66,7 +67,7 @@ export default function EditQuestionDialog({
 
     setFetching(true);
     try {
-      const question = await apiFetch<QuestionData>(`/questions/${questionId}`);
+      const question = await authFetch<QuestionData>(`/questions/${questionId}`);
 
       let explanationText = '';
       if (question.explanation) {
@@ -152,7 +153,7 @@ export default function EditQuestionDialog({
           : [],
       };
 
-      await apiFetch(`/questions/${questionId}`, {
+      await authFetch(`/questions/${questionId}`, {
         method: 'PATCH',
         body: payload,
       });

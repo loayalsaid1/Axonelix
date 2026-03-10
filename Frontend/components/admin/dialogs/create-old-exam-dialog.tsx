@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface CreateOldExamDialogProps {
   open: boolean;
@@ -32,6 +32,7 @@ export default function CreateOldExamDialog({
   onOpenChange,
   onExamCreated,
 }: CreateOldExamDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [modules, setModules] = useState<{ id: string; name: string }[]>([]);
   const [universities, setUniversities] = useState<{ id: string; name: string }[]>([]);
@@ -51,12 +52,12 @@ export default function CreateOldExamDialog({
   }, [open]);
 
   const fetchModules = async () => {
-    const data = await apiFetch<any[]>('/materials/modules');
+    const data = await authFetch<any[]>('/materials/modules');
     setModules(data.map((m) => ({ id: String(m.id), name: m.name })));
   };
 
   const fetchUniversities = async () => {
-    const data = await apiFetch<any[]>('/questions/universities');
+    const data = await authFetch<any[]>('/questions/universities');
     setUniversities(data.map((u) => ({ id: String(u.id), name: u.name })));
   };
 
@@ -69,7 +70,7 @@ export default function CreateOldExamDialog({
     setLoading(true);
 
     try {
-      await apiFetch('/questions/old-exams', {
+      await authFetch('/questions/old-exams', {
         method: 'POST',
         body: { examType: formData.examType, moduleId: Number(formData.moduleId), moduleType: formData.moduleType, universityId: Number(formData.universityId), year: formData.year },
       });
