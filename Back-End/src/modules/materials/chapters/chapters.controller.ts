@@ -12,14 +12,16 @@ import {
 } from '@nestjs/common';
 import { ChaptersService } from './chapters.service';
 import { CreateChapterDto, UpdateChapterDto, ChapterResponseDto, ChapterLessonDto } from './dto';
-import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { paramIntId, Roles } from '../../../common/decorators';
+import { Role } from '../../../common/enums';
 
 @Controller('materials/chapters')
 export class ChaptersController {
-  constructor(private readonly chaptersService: ChaptersService) {}
+  constructor(private readonly chaptersService: ChaptersService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   create(@Body() createChapterDto: CreateChapterDto): Promise<ChapterResponseDto> {
     return this.chaptersService.create(createChapterDto);
   }
@@ -40,6 +42,7 @@ export class ChaptersController {
   }
 
   @Patch(':id')
+  @Roles([Role.Admin])
   update(
     @paramIntId() id: number,
     @Body() updateChapterDto: UpdateChapterDto,
@@ -49,6 +52,7 @@ export class ChaptersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
   async remove(@paramIntId() id: number): Promise<void> {
     await this.chaptersService.remove(id);
   }

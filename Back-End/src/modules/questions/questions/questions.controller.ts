@@ -17,7 +17,8 @@ import {
   QuestionFilterDto,
   BulkCreateQuestionsDto,
 } from './dto';
-import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { paramIntId, Roles } from '../../../common/decorators';
+import { Role } from '../../../common/enums';
 
 @Controller('questions')
 export class QuestionsController {
@@ -27,6 +28,7 @@ export class QuestionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   create(@Body() dto: CreateQuestionDto) {
     return this.questionsService.create(dto);
   }
@@ -38,6 +40,7 @@ export class QuestionsController {
    */
   @Post('bulk')
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   bulkCreate(@Body() dto: BulkCreateQuestionsDto) {
     return this.questionsService.bulkCreate(dto);
   }
@@ -70,12 +73,14 @@ export class QuestionsController {
   }
 
   @Patch(':id')
+  @Roles([Role.Admin])
   update(@paramIntId() id: number, @Body() dto: UpdateQuestionDto) {
     return this.questionsService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
   async remove(@paramIntId() id: number): Promise<void> {
     await this.questionsService.remove(id);
   }
