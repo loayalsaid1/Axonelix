@@ -1,11 +1,4 @@
-import { Role } from '../../../common/enums';
+import { users } from '../../../database/entities/users';
 
-/** Shape of a user row returned from the database. */
-export interface UserRecord {
-  id: number;
-  clerkId: string;
-  email: string;
-  role: Role;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+/** Derived directly from the Drizzle schema — single source of truth. */
+export type UserRecord = typeof users.$inferSelect;
