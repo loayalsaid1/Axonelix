@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface OldExam {
   id: string;
@@ -15,6 +15,7 @@ export interface OldExam {
 }
 
 export function useOldExams() {
+  const authFetch = useApiFetch();
   const [exams, setExams] = useState<OldExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -23,7 +24,7 @@ export function useOldExams() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<OldExam[]>('/questions/old-exams');
+      const data = await authFetch<OldExam[]>('/questions/old-exams');
       setExams(
         data.map((e) => ({
           ...e,
@@ -40,18 +41,18 @@ export function useOldExams() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authFetch]);
 
   const deleteExam = useCallback(async (examId: string) => {
     try {
-      await apiFetch(`/questions/old-exams/${examId}`, { method: 'DELETE' });
+      await authFetch(`/questions/old-exams/${examId}`, { method: 'DELETE' });
       setExams((prev) => prev.filter((e) => e.id !== examId));
       return true;
     } catch (err) {
       console.error('Failed to delete old exam:', err);
       return false;
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchExams();

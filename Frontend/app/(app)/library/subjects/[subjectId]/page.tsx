@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSubject } from "@/lib/api/materials";
 import { getLessons } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { HierarchyPageHeader } from "@/components/library/HierarchyPageHeader";
 import { LessonCard } from "@/components/library/LessonCard";
@@ -17,7 +18,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { subjectId } = await params;
   try {
-    const subject = await getSubject(Number(subjectId));
+    const opts = await serverAuthOpts();
+    const subject = await getSubject(Number(subjectId), opts);
     return { title: subject.name };
   } catch {
     return { title: "Subject" };
@@ -28,12 +30,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function chaptersWithLessons(
   chapters: Chapter[],
-  subjectType: "theoretical" | "practical"
+  subjectType: "theoretical" | "practical",
+  opts?: RequestInit,
 ): Promise<Array<Chapter & { lessons: Lesson[] }>> {
   const results = await Promise.all(
     chapters.map(async (chapter) => {
       const lessons = await getLessons(chapter.id, {
         next: { revalidate: 60 },
+        ...opts,
       });
       return { ...chapter, lessons };
     })
@@ -88,10 +92,11 @@ function ChapterSection({
 export default async function SubjectPage({ params }: Props) {
   const { subjectId } = await params;
   const id = Number(subjectId);
+  const opts = await serverAuthOpts();
 
   let subject;
   try {
-    subject = await getSubject(id);
+    subject = await getSubject(id, opts);
   } catch {
     notFound();
   }
@@ -102,7 +107,8 @@ export default async function SubjectPage({ params }: Props) {
 
   const chapters = await chaptersWithLessons(
     sortedChapters,
-    subject.type as "theoretical" | "practical"
+    subject.type as "theoretical" | "practical",
+    opts,
   );
 
   // Separate misc chapter(s) to show last

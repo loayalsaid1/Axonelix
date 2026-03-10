@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { BookOpen, Search } from "lucide-react";
 import Link from "next/link";
 import { getModules } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyTreeClient } from "@/components/library/HierarchyTreeClient";
 import { RecentLessonsPanel } from "@/components/library/RecentLessonsPanel";
 import { LessonSearchBox } from "@/components/library/LessonSearchBox";
@@ -25,14 +26,15 @@ function TreeSkeleton() {
 async function HierarchyTree() {
   // We fetch all module hierarchies to build the full nav tree.
   // Uses ISR (revalidate: 60) set in the API helper.
-  const modules = await getModules();
+  const opts = await serverAuthOpts();
+  const modules = await getModules(opts);
 
   // For the sidebar tree we need chapters+lessons too; fetch hierarchies in parallel
   const hierarchies = await Promise.all(
     modules.map((m) =>
       fetch(
         `${API_BASE_URL}/materials/modules/${m.id}/hierarchy`,
-        { next: { revalidate: 60 } }
+        { next: { revalidate: 60 }, ...opts }
       ).then((r) => r.json())
     )
   );

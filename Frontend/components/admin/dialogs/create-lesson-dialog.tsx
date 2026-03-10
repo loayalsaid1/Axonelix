@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { JSONContent } from '@tiptap/react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface CreateLessonDialogProps {
   chapterId?: string;
@@ -35,6 +35,7 @@ export default function CreateLessonDialog({
   onOpenChange,
   onLessonCreated,
 }: CreateLessonDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const editorRef = useRef<SimpleEditorRefHandler>(null);
   const [name, setName] = useState('');
@@ -54,7 +55,7 @@ export default function CreateLessonDialog({
     try {
       const content = editorRef.current?.getJSON() || {};
 
-      await apiFetch('/materials/lessons', {
+      await authFetch('/materials/lessons', {
         method: 'POST',
         body: {
           name,

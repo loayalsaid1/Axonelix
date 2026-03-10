@@ -24,10 +24,12 @@ export interface BulkCreateResult {
 
 export function bulkCreateQuestions(
   questions: BulkCreateQuestionInput[],
+  token?: string,
 ): Promise<BulkCreateResult> {
   return apiFetch<BulkCreateResult>('/questions/bulk', {
     method: 'POST',
     body: { questions },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
 

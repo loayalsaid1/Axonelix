@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useReducer } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { getOldExamQuestions } from "@/lib/api/old-exams";
 import { QuestionCard } from "@/components/library/QuestionCard";
@@ -51,15 +52,19 @@ export function OldExamQuestionsContent({ examId }: OldExamQuestionsContentProps
   const limit = (VALID_LIMITS as readonly number[]).includes(limitParam) ? limitParam : 10;
 
   const [state, dispatch] = useReducer(reducer, { status: "loading" });
+  const { getToken } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
     dispatch({ type: "FETCH" });
-    getOldExamQuestions(examId, page, limit)
-      .then((result) => { if (!cancelled) dispatch({ type: "SUCCESS", result }); })
-      .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    getToken().then((token) => {
+      const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      getOldExamQuestions(examId, page, limit, opts)
+        .then((result) => { if (!cancelled) dispatch({ type: "SUCCESS", result }); })
+        .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    });
     return () => { cancelled = true; };
-  }, [examId, page, limit]);
+  }, [examId, page, limit, getToken]);
 
   // ── Loading ────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface QuestionOption {
   id: string;
@@ -30,6 +30,7 @@ interface PaginatedQuestions {
 }
 
 export function useQuestions() {
+  const authFetch = useApiFetch();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -38,7 +39,7 @@ export function useQuestions() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<PaginatedQuestions>('/questions?limit=100');
+      const data = await authFetch<PaginatedQuestions>('/questions?limit=100');
       setQuestions(
         (data.data || []).map((q) => ({
           ...q,
@@ -55,18 +56,18 @@ export function useQuestions() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authFetch]);
 
   const deleteQuestion = useCallback(async (questionId: string) => {
     try {
-      await apiFetch(`/questions/${questionId}`, { method: 'DELETE' });
+      await authFetch(`/questions/${questionId}`, { method: 'DELETE' });
       setQuestions((prev) => prev.filter((q) => q.id !== questionId));
       return true;
     } catch (err) {
       console.error('Failed to delete question:', err);
       return false;
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchQuestions();

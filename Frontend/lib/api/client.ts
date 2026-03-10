@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../constants";
-type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
+export type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
 /**
  * Typed fetch wrapper.

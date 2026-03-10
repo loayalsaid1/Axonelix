@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface QuickCreateLessonDialogProps {
   open: boolean;
@@ -36,6 +36,7 @@ export default function QuickCreateLessonDialog({
 }: QuickCreateLessonDialogProps) {
   const router = useRouter();
   const editorRef = useRef<SimpleEditorRefHandler>(null);
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
 
   const [lessonName, setLessonName] = useState('');
@@ -67,7 +68,7 @@ export default function QuickCreateLessonDialog({
 
       const actualChapterId = isMisc ? '' : chapterId;
 
-      const data = await apiFetch<any>('/materials/lessons', {
+      const data = await authFetch<any>('/materials/lessons', {
         method: 'POST',
         body: {
           name: lessonName,

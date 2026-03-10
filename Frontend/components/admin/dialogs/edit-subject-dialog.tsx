@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface EditSubjectDialogProps {
   subjectId: string | null;
@@ -28,6 +28,7 @@ export default function EditSubjectDialog({
   onOpenChange,
   onSubjectUpdated,
 }: EditSubjectDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,7 +47,7 @@ export default function EditSubjectDialog({
     if (!subjectId) return;
 
     try {
-      const data = await apiFetch<any>(`/materials/subjects/${subjectId}`);
+      const data = await authFetch<any>(`/materials/subjects/${subjectId}`);
       setFormData({
         name: data.name,
         description: data.description || '',
@@ -65,7 +66,7 @@ export default function EditSubjectDialog({
     setLoading(true);
 
     try {
-      await apiFetch(`/materials/subjects/${subjectId}`, {
+      await authFetch(`/materials/subjects/${subjectId}`, {
         method: 'PATCH',
         body: { name: formData.name, description: formData.description, type: formData.type, orderIndex: formData.orderIndex },
       });

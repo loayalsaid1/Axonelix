@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getModules } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { EntityCard } from "@/components/library/EntityCard";
 import { mockProgress, mockQuestionCount } from "@/lib/utils/mock-stats";
@@ -7,7 +8,8 @@ import { mockProgress, mockQuestionCount } from "@/lib/utils/mock-stats";
 export const metadata: Metadata = { title: "Modules" };
 
 export default async function ModulesPage() {
-  const modules = await getModules();
+  const opts = await serverAuthOpts();
+  const modules = await getModules(opts);
 
   return (
     <div className="p-6 space-y-6">

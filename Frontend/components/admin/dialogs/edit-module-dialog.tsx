@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface EditModuleDialogProps {
   moduleId: string | null;
@@ -27,6 +27,7 @@ export default function EditModuleDialog({
   onOpenChange,
   onModuleUpdated,
 }: EditModuleDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', orderIndex: 0 });
 
@@ -40,7 +41,7 @@ export default function EditModuleDialog({
     if (!moduleId) return;
 
     try {
-      const data = await apiFetch<any>(`/materials/modules/${moduleId}`);
+      const data = await authFetch<any>(`/materials/modules/${moduleId}`);
       setFormData({
         name: data.name,
         description: data.description || '',
@@ -58,7 +59,7 @@ export default function EditModuleDialog({
     setLoading(true);
 
     try {
-      await apiFetch(`/materials/modules/${moduleId}`, {
+      await authFetch(`/materials/modules/${moduleId}`, {
         method: 'PATCH',
         body: { name: formData.name, description: formData.description, orderIndex: formData.orderIndex },
       });

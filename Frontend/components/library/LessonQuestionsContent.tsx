@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useReducer } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { getLessonQuestions } from "@/lib/api/questions";
 import { QuestionCard } from "@/components/library/QuestionCard";
@@ -30,9 +31,9 @@ type Action =
 
 function reducer(_: State, action: Action): State {
   switch (action.type) {
-    case "FETCH":   return { status: "loading" };
+    case "FETCH": return { status: "loading" };
     case "SUCCESS": return { status: "success", result: action.result };
-    case "ERROR":   return { status: "error" };
+    case "ERROR": return { status: "error" };
   }
 }
 
@@ -49,15 +50,19 @@ export function LessonQuestionsContent({ lessonId }: LessonQuestionsContentProps
   const limit = (VALID_LIMITS as readonly number[]).includes(limitParam) ? limitParam : 10;
 
   const [state, dispatch] = useReducer(reducer, { status: "loading" });
+  const { getToken } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
     dispatch({ type: "FETCH" });
-    getLessonQuestions(lessonId, page, limit)
-      .then((result) => { if (!cancelled) dispatch({ type: "SUCCESS", result }); })
-      .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    getToken().then((token) => {
+      const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      getLessonQuestions(lessonId, page, limit, opts)
+        .then((result) => { if (!cancelled) dispatch({ type: "SUCCESS", result }); })
+        .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    });
     return () => { cancelled = true; };
-  }, [lessonId, page, limit]);
+  }, [lessonId, page, limit, getToken]);
 
   if (state.status === "loading") {
     return (

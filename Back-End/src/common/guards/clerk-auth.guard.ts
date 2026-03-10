@@ -4,9 +4,11 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { AuthService } from '../../modules/auth/auth.service';
 import { UserRecord } from '../../modules/users/interfaces/user-record.interface';
+import { IS_PUBLIC_KEY } from '../decorators/is-public.decorator';
 
 /** Extend express Request so TypeScript knows about the attached user */
 export interface AuthenticatedRequest extends Request {
@@ -15,9 +17,18 @@ export interface AuthenticatedRequest extends Request {
 
 @Injectable()
 export class ClerkAuthGuard implements CanActivate {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly reflector: Reflector,
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
+
     const request = context
       .switchToHttp()
       .getRequest<Request>();

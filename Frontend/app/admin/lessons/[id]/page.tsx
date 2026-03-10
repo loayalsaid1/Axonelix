@@ -13,7 +13,7 @@ import { JSONContent } from '@tiptap/core';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null;
@@ -48,6 +48,7 @@ export default function LessonEditPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const authFetch = useApiFetch();
   const editorRef = useRef<SimpleEditorRefHandler>(null);
 
   const lessonId = params.id as string;
@@ -67,7 +68,7 @@ export default function LessonEditPage() {
     const fetchLesson = async () => {
       try {
         setIsLoading(true);
-        const lessonData = await apiFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`);
+        const lessonData = await authFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`);
 
         // Parse content if it's a string
         if (typeof lessonData.content === 'string') {
@@ -124,7 +125,7 @@ export default function LessonEditPage() {
 
       const actualChapterId = isMisc ? null : Number(chapterId || lesson?.chapterId);
 
-      const updated = await apiFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`, {
+      const updated = await authFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`, {
         method: 'PATCH',
         body: {
           name,

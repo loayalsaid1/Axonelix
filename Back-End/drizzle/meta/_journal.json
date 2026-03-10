@@ -71,6 +71,13 @@
       "when": 1773071357759,
       "tag": "0009_delete_orphaned_questions_before_parent_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773103379625,
+      "tag": "0010_nifty_bloodstorm",
+      "breakpoints": true
     }
   ]
 }

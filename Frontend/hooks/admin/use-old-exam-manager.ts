@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 import { OldExam } from './use-old-exams';
 
 export interface OldExamParams {
@@ -11,6 +11,7 @@ export interface OldExamParams {
 }
 
 export function useOldExamManager(existingExams: OldExam[]) {
+  const authFetch = useApiFetch();
   const findExistingExam = useCallback(
     (params: OldExamParams): OldExam | null => {
       return (
@@ -29,7 +30,7 @@ export function useOldExamManager(existingExams: OldExam[]) {
 
   const createOldExam = useCallback(async (params: OldExamParams): Promise<OldExam | null> => {
     try {
-      const data = await apiFetch<any>('/questions/old-exams', {
+      const data = await authFetch<any>('/questions/old-exams', {
         method: 'POST',
         body: {
           examType: params.examType,
@@ -51,7 +52,7 @@ export function useOldExamManager(existingExams: OldExam[]) {
       console.error('Failed to create old exam:', error);
       return null;
     }
-  }, []);
+  }, [authFetch]);
 
   const findOrCreateOldExam = useCallback(
     async (params: OldExamParams): Promise<string | null> => {

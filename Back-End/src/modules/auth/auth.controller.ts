@@ -13,7 +13,9 @@ import type { Request as ExpressRequest } from 'express';
 import { verifyWebhook } from '@clerk/backend/webhooks';
 import type { WebhookEvent } from '@clerk/backend';
 import { ClerkWebhookService } from './clerk-webhook.service';
+import { IsPublic } from '../../common/decorators';
 
+@IsPublic()
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);

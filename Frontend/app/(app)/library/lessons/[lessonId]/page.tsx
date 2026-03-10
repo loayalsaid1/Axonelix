@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLesson } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { HierarchyPageHeader } from "@/components/library/HierarchyPageHeader";
 import { LessonTabs } from "@/components/library/LessonTabs";
@@ -16,7 +17,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lessonId } = await params;
   try {
-    const lesson = await getLesson(Number(lessonId));
+    const opts = await serverAuthOpts();
+    const lesson = await getLesson(Number(lessonId), opts);
     return { title: lesson.name };
   } catch {
     return { title: "Lesson" };
@@ -26,10 +28,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LessonPage({ params }: Props) {
   const { lessonId } = await params;
   const id = Number(lessonId);
+  const opts = await serverAuthOpts();
 
   let lesson;
   try {
-    lesson = await getLesson(id);
+    lesson = await getLesson(id, opts);
   } catch {
     notFound();
   }
