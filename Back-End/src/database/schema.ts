@@ -16,6 +16,7 @@ import {
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
 } from "./entities/enums/quiz-enums";
+import { userRoleEnum } from "./entities/enums/user-enums";
 import {
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
@@ -45,6 +46,7 @@ export {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	userRoleEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
 	vwQuestionAncestry,
@@ -69,6 +71,7 @@ export const schema = {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	userRoleEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
 	vwQuestionAncestry,
