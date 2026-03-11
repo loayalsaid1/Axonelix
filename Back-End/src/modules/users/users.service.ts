@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { DrizzleService } from '../../database/drizzle.service';
 import { users } from '../../database/entities/users';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,19 +11,51 @@ export interface UserFilters {
   role?: Role;
 }
 
+export interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 @Injectable()
 export class UsersService {
   constructor(private readonly drizzleService: DrizzleService) { }
 
-  async findAll(filters?: UserFilters): Promise<UserRecord[]> {
+  async findAll(
+    filters?: UserFilters,
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<UserRecord>> {
     const conditions: ReturnType<typeof eq>[] = [];
     if (filters?.role) {
       conditions.push(eq(users.role, filters.role));
     }
-    return this.drizzleService.db
-      .select()
-      .from(users)
-      .where(conditions.length ? and(...conditions) : undefined);
+    const where = conditions.length ? and(...conditions) : undefined;
+
+    const page = pagination?.page ?? 1;
+    const limit = pagination?.limit ?? 20;
+    const offset = (page - 1) * limit;
+
+    const [data, [{ total }]] = await Promise.all([
+      this.drizzleService.db
+        .select()
+        .from(users)
+        .where(where)
+        .limit(limit)
+        .offset(offset),
+      this.drizzleService.db
+        .select({ total: count() })
+        .from(users)
+        .where(where),
+    ]);
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async create(dto: CreateUserDto): Promise<UserRecord> {
