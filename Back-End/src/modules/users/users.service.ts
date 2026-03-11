@@ -1,14 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DrizzleService } from '../../database/drizzle.service';
 import { users } from '../../database/entities/users';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRecord } from './interfaces/user-record.interface';
+import { Role } from '../../common/enums';
+
+export interface UserFilters {
+  role?: Role;
+}
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(private readonly drizzleService: DrizzleService) { }
+
+  async findAll(filters?: UserFilters): Promise<UserRecord[]> {
+    const conditions: ReturnType<typeof eq>[] = [];
+    if (filters?.role) {
+      conditions.push(eq(users.role, filters.role));
+    }
+    return this.drizzleService.db
+      .select()
+      .from(users)
+      .where(conditions.length ? and(...conditions) : undefined);
+  }
 
   async create(dto: CreateUserDto): Promise<UserRecord> {
     const [newUser] = await this.drizzleService.db
