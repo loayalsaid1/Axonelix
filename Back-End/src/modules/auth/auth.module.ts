@@ -3,11 +3,10 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ClerkWebhookService } from './clerk-webhook.service';
 import { UsersModule } from '../users/users.module';
-import { UsersController } from '../users/users.controller';
 
 @Module({
   imports: [UsersModule],
-  controllers: [AuthController, UsersController],
+  controllers: [AuthController],
   providers: [AuthService, ClerkWebhookService],
   exports: [AuthService],
 })
