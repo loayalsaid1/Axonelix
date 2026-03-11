@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClerkClient } from '@clerk/backend';
-import { UsersService, UserFilters } from './users.service';
+import { UsersService, UserFilters, PaginationParams, PaginatedResult } from './users.service';
 import { AdminUserProfileDto } from './dto/admin-user-profile.dto';
 import { Role } from '../../common/enums';
 
@@ -17,9 +17,15 @@ export class AdminUsersService {
     this.clerkClient = createClerkClient({ secretKey });
   }
 
-  async findAllWithProfile(filters?: UserFilters): Promise<AdminUserProfileDto[]> {
-    const dbUsers = await this.usersService.findAll(filters);
-    if (dbUsers.length === 0) return [];
+  async findAllWithProfile(
+    filters?: UserFilters,
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<AdminUserProfileDto>> {
+    const { data: dbUsers, ...meta } = await this.usersService.findAll(filters, pagination);
+
+    if (dbUsers.length === 0) {
+      return { data: [], ...meta };
+    }
 
     const { data: clerkUsers } = await this.clerkClient.users.getUserList({
       userId: dbUsers.map((u) => u.clerkId),
@@ -28,7 +34,7 @@ export class AdminUsersService {
 
     const clerkMap = new Map(clerkUsers.map((u) => [u.id, u]));
 
-    return dbUsers.map((dbUser) => {
+    const data = dbUsers.map((dbUser) => {
       const clerkUser = clerkMap.get(dbUser.clerkId);
       return {
         id: dbUser.id,
@@ -39,14 +45,29 @@ export class AdminUsersService {
         firstName: clerkUser?.firstName ?? null,
         lastName: clerkUser?.lastName ?? null,
         imageUrl: clerkUser?.imageUrl ?? null,
-        lastSignInAt: clerkUser?.lastSignInAt
-          ? new Date(clerkUser.lastSignInAt)
-          : null,
+        lastSignInAt: clerkUser?.lastSignInAt ? new Date(clerkUser.lastSignInAt) : null,
       };
     });
+
+    return { data, ...meta };
   }
 
-  findStudents(): Promise<AdminUserProfileDto[]> {
-    return this.findAllWithProfile({ role: Role.Student });
+  findStudents(pagination?: PaginationParams): Promise<PaginatedResult<AdminUserProfileDto>> {
+    return this.findAllWithProfile({ role: Role.Student }, pagination);
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    const user = await this.usersService.findById(id);
+    try {
+      await this.clerkClient.users.deleteUser(user.clerkId);
+    } catch (err: any) {
+      // If Clerk doesn't know about this user (e.g. test/seed data), proceed anyway
+      if (err?.status !== 404) throw err;
+    }
+    await this.usersService.deleteByClerkId(user.clerkId);
+  }
+
+  async bulkDeleteUsers(ids: number[]): Promise<void> {
+    await Promise.all(ids.map((id) => this.deleteUser(id)));
   }
 }
