@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { sql, eq, and, count, inArray } from 'drizzle-orm';
+import { sql, eq, and, count, inArray, avg } from 'drizzle-orm';
 import { DrizzleService, type DRIZZLE_PROVIDER } from '../../database/drizzle.service';
 import { quizSessions } from '../../database/entities/quiz-sessions';
 import { quizSessionAnswers } from '../../database/entities/quiz-session-answers';
@@ -136,7 +136,7 @@ export class QuizSessionsService {
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   /**
-   * Returns aggregated statistics for the authenticated user's test history.
+   * Aggregated statistics for the user's test history.
    *
    * Single Postgres round-trip using conditional COUNT + AVG FILTER aggregates —
    * no N+1 queries and no in-memory grouping.
@@ -163,6 +163,36 @@ export class QuizSessionsService {
       notStartedCount: row.notStartedCount,
       averageScore: row.averageScore != null ? parseFloat(row.averageScore) : null,
     };
+  }
+
+  /**
+   * Returns the average score across all completed sessions for this user.
+   */
+  async getAverageScore(userId: number): Promise<number | null> {
+    const [row] = await this.drizzleService.db
+      .select({
+        averageScore: avg(quizSessions.scorePct),
+      })
+      .from(quizSessions)
+      .where(and(
+        eq(quizSessions.userId, userId),
+        eq(quizSessions.status, 'completed'),
+      ));
+
+    return row.averageScore != null ? parseFloat(row.averageScore) : null;
+  }
+
+  /**
+   * Returns the total count of unique questions this user has attempted.
+   * Pulls from the denormalized `user_question_status` table.
+   */
+  async getUniqueAnsweredCount(userId: number): Promise<number> {
+    const [{ value }] = await this.drizzleService.db
+      .select({ value: count() })
+      .from(userQuestionStatus)
+      .where(eq(userQuestionStatus.userId, userId));
+
+    return value;
   }
 
   // ── Remove ────────────────────────────────────────────────────────────────
