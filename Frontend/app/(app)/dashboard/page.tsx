@@ -21,32 +21,10 @@ import {
   FileQuestion,
   CalendarDays,
   CreditCard,
-  Flame,
-  Target,
   Zap,
 } from "lucide-react"
 import { RecentTestsCard, RecentTestsCardSkeleton } from "@/components/dashboard/RecentTestsCard"
-
-const statCards = [
-  {
-    label: "Questions Answered",
-    value: "—",
-    icon: FileQuestion,
-    hint: "Start a test to track your progress",
-  },
-  {
-    label: "Study Streak",
-    value: "—",
-    icon: Flame,
-    hint: "Log in daily to build your streak",
-  },
-  {
-    label: "Avg. Score",
-    value: "—",
-    icon: Target,
-    hint: "Complete at least one test to see results",
-  },
-]
+import { DashboardStats, DashboardStatsSkeleton } from "@/components/dashboard/DashboardStats"
 
 const quickLinks = [
   { label: "Library", href: "/library", icon: BookOpen, desc: "Browse materials" },
@@ -102,20 +80,9 @@ export default function DashboardPage() {
 
         {/* Stats grid */}
         <div className="gap-4 grid grid-cols-2 lg:grid-cols-4">
-          {statCards.map(({ label, value, icon: Icon, hint }) => (
-            <Card key={label} className="gap-3 py-4">
-              <CardHeader className="flex-row justify-between items-center gap-2 space-y-0 px-4 pt-0 pb-0">
-                <CardTitle className="font-medium text-muted-foreground text-xs">{label}</CardTitle>
-                <div className="flex justify-center items-center bg-muted rounded-md w-7 h-7 shrink-0">
-                  <Icon className="w-3.5 h-3.5 text-primary" />
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-1 px-4">
-                <span className="font-bold text-foreground text-2xl">{value}</span>
-                <span className="text-muted-foreground/70 text-xs leading-snug">{hint}</span>
-              </CardContent>
-            </Card>
-          ))}
+          <Suspense fallback={<DashboardStatsSkeleton />}>
+            <DashboardStats />
+          </Suspense>
           <GenerateTestCard />
         </div>
 
