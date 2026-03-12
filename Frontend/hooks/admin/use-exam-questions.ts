@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface ExamQuestion {
   id: string;
@@ -18,6 +18,7 @@ interface PaginatedQuestions {
 }
 
 export function useExamQuestions(examId: string) {
+  const authFetch = useApiFetch();
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -28,7 +29,7 @@ export function useExamQuestions(examId: string) {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<PaginatedQuestions>(`/questions?oldExamId=${examId}&limit=100`);
+      const data = await authFetch<PaginatedQuestions>(`/questions?oldExamId=${examId}&limit=100`);
       setQuestions(
         (data.data || []).map((q) => ({
           ...q,
@@ -42,12 +43,12 @@ export function useExamQuestions(examId: string) {
     } finally {
       setLoading(false);
     }
-  }, [examId]);
+  }, [examId, authFetch]);
 
   const removeQuestion = useCallback(
     async (questionId: string) => {
       try {
-        await apiFetch(`/questions/${questionId}`, {
+        await authFetch(`/questions/${questionId}`, {
           method: 'PATCH',
           body: { oldExamId: null },
         });
@@ -58,7 +59,7 @@ export function useExamQuestions(examId: string) {
         return false;
       }
     },
-    []
+    [authFetch]
   );
 
   useEffect(() => {

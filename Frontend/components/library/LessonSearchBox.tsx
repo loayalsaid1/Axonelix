@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Loader2, File, Search } from "lucide-react";
 import {
@@ -28,6 +29,7 @@ function lessonBreadcrumb(lesson: LessonWithHierarchy): string {
 
 export function LessonSearchBox() {
   const router = useRouter();
+  const { getToken } = useAuth();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<LessonWithHierarchy[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,9 @@ export function LessonSearchBox() {
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const data = await searchLessons(trimmed);
+        const token = await getToken();
+        const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+        const data = await searchLessons(trimmed, opts);
         setResults(data);
       } catch {
         setResults([]);
@@ -63,7 +67,7 @@ export function LessonSearchBox() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [query, getToken]);
 
   function handleSelectLesson(id: number) {
     router.push(`/library/lessons/${id}`);

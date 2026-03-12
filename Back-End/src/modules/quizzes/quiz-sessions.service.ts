@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { sql, eq, and, count, inArray } from 'drizzle-orm';
+import { sql, eq, and, count, inArray, avg } from 'drizzle-orm';
 import { DrizzleService, type DRIZZLE_PROVIDER } from '../../database/drizzle.service';
 import { quizSessions } from '../../database/entities/quiz-sessions';
 import { quizSessionAnswers } from '../../database/entities/quiz-session-answers';
@@ -11,6 +11,7 @@ import { quizzes } from '../../database/entities/quizzes';
 import { questionOptions } from '../../database/entities/question-options';
 import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { UpdateSessionStatusDto, AnswerDto, UserTestStatsDto } from './dto';
+import { StreaksService } from '../streaks/streaks.service';
 import {
   PaginatedQuizSessionsDto,
   QuizSessionDetailResponseDto,
@@ -77,7 +78,10 @@ const OPTION_COLUMNS = {
 
 @Injectable()
 export class QuizSessionsService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly streaksService: StreaksService,
+  ) { }
 
   // ── List ──────────────────────────────────────────────────────────────────
 
@@ -132,7 +136,7 @@ export class QuizSessionsService {
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   /**
-   * Returns aggregated statistics for the authenticated user's test history.
+   * Aggregated statistics for the user's test history.
    *
    * Single Postgres round-trip using conditional COUNT + AVG FILTER aggregates —
    * no N+1 queries and no in-memory grouping.
@@ -140,25 +144,55 @@ export class QuizSessionsService {
   async getStats(userId: number): Promise<UserTestStatsDto> {
     const [row] = await this.drizzleService.db
       .select({
-        totalSessions:   sql<number>`count(*)::int`,
-        completedCount:  sql<number>`count(*) filter (where ${quizSessions.status} = 'completed')::int`,
-        suspendedCount:  sql<number>`count(*) filter (where ${quizSessions.status} = 'suspended')::int`,
+        totalSessions: sql<number>`count(*)::int`,
+        completedCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'completed')::int`,
+        suspendedCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'suspended')::int`,
         inProgressCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'in_progress')::int`,
         notStartedCount: sql<number>`count(*) filter (where ${quizSessions.status} = 'not_started')::int`,
         // AVG returns a string in Drizzle when the column is numeric — parse it
-        averageScore:    sql<string | null>`avg(${quizSessions.scorePct}) filter (where ${quizSessions.status} = 'completed')`,
+        averageScore: sql<string | null>`avg(${quizSessions.scorePct}) filter (where ${quizSessions.status} = 'completed')`,
       })
       .from(quizSessions)
       .where(eq(quizSessions.userId, userId));
 
     return {
-      totalSessions:   row.totalSessions,
-      completedCount:  row.completedCount,
-      suspendedCount:  row.suspendedCount,
+      totalSessions: row.totalSessions,
+      completedCount: row.completedCount,
+      suspendedCount: row.suspendedCount,
       inProgressCount: row.inProgressCount,
       notStartedCount: row.notStartedCount,
-      averageScore:    row.averageScore != null ? parseFloat(row.averageScore) : null,
+      averageScore: row.averageScore != null ? parseFloat(row.averageScore) : null,
     };
+  }
+
+  /**
+   * Returns the average score across all completed sessions for this user.
+   */
+  async getAverageScore(userId: number): Promise<number | null> {
+    const [row] = await this.drizzleService.db
+      .select({
+        averageScore: avg(quizSessions.scorePct),
+      })
+      .from(quizSessions)
+      .where(and(
+        eq(quizSessions.userId, userId),
+        eq(quizSessions.status, 'completed'),
+      ));
+
+    return row.averageScore != null ? parseFloat(row.averageScore) : null;
+  }
+
+  /**
+   * Returns the total count of unique questions this user has attempted.
+   * Pulls from the denormalized `user_question_status` table.
+   */
+  async getUniqueAnsweredCount(userId: number): Promise<number> {
+    const [{ value }] = await this.drizzleService.db
+      .select({ value: count() })
+      .from(userQuestionStatus)
+      .where(eq(userQuestionStatus.userId, userId));
+
+    return value;
   }
 
   // ── Remove ────────────────────────────────────────────────────────────────
@@ -301,7 +335,14 @@ export class QuizSessionsService {
       }
     });
 
-    // 4. Return the fresh session (with nested quiz info)
+    // 4. Update streak for progress-counting transitions (fire-and-forget — never blocks the session response)
+    if (dto.status === 'suspended' || dto.status === 'completed') {
+      this.streaksService.updateStreak(userId).catch(() => {
+        // Streak update failures are non-critical; session response is unaffected
+      });
+    }
+
+    // 5. Return the fresh session (with nested quiz info)
     return this.findOne(sessionId, userId);
   }
 
@@ -388,7 +429,7 @@ export class QuizSessionsService {
     const answers = await tx
       .select({
         questionId: quizSessionAnswers.questionId,
-        isCorrect:  quizSessionAnswers.isCorrect,
+        isCorrect: quizSessionAnswers.isCorrect,
       })
       .from(quizSessionAnswers)
       .where(eq(quizSessionAnswers.sessionId, sessionId));
@@ -400,17 +441,17 @@ export class QuizSessionsService {
       .values(
         answers.map((a) => ({
           userId,
-          questionId:     a.questionId,
-          lastIsCorrect:  a.isCorrect,
-          attemptCount:   1,
+          questionId: a.questionId,
+          lastIsCorrect: a.isCorrect,
+          attemptCount: 1,
           lastAnsweredAt: sql`CURRENT_TIMESTAMP`,
         })),
       )
       .onConflictDoUpdate({
         target: [userQuestionStatus.userId, userQuestionStatus.questionId],
         set: {
-          lastIsCorrect:  sql`EXCLUDED.last_is_correct`,
-          attemptCount:   sql`${userQuestionStatus.attemptCount} + 1`,
+          lastIsCorrect: sql`EXCLUDED.last_is_correct`,
+          attemptCount: sql`${userQuestionStatus.attemptCount} + 1`,
           lastAnsweredAt: sql`CURRENT_TIMESTAMP`,
         },
       });
@@ -538,7 +579,7 @@ export class QuizSessionsService {
     if (!allowed.includes(to)) {
       throw new BadRequestException(
         `Cannot transition session from '${from}' to '${to}'. ` +
-          `Allowed: [${allowed.join(', ') || 'none'}]`,
+        `Allowed: [${allowed.join(', ') || 'none'}]`,
       );
     }
   }

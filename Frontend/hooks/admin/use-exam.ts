@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 import type { OldExam } from './use-old-exams';
 
 // Re-use the same type
 export type Exam = OldExam;
 
 export function useExam(examId: string) {
+  const authFetch = useApiFetch();
   const [exam, setExam] = useState<Exam | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -16,7 +17,7 @@ export function useExam(examId: string) {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<Exam>(`/questions/old-exams/${examId}`);
+      const data = await authFetch<Exam>(`/questions/old-exams/${examId}`);
       setExam({
         ...data,
         id: String(data.id),
@@ -31,7 +32,7 @@ export function useExam(examId: string) {
     } finally {
       setLoading(false);
     }
-  }, [examId]);
+  }, [examId, authFetch]);
 
   useEffect(() => {
     fetchExam();

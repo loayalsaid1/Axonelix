@@ -16,6 +16,7 @@ import {
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
 } from "./entities/enums/quiz-enums";
+import { userRoleEnum } from "./entities/enums/user-enums";
 import {
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
@@ -25,6 +26,7 @@ import {
 	vwQuestionCounts,
 } from "./entities/question-hierarchy-views";
 import { userQuestionStatus } from "./entities/user-question-status";
+import { studyStreaks } from "./entities/study-streaks";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -45,11 +47,13 @@ export {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	userRoleEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
 	vwQuestionAncestry,
 	vwQuestionCounts,
 	userQuestionStatus,
+	studyStreaks,
 };
 
 export const schema = {
@@ -69,11 +73,13 @@ export const schema = {
 	quizQuestionTypeEnum,
 	quizQuestionStatusEnum,
 	quizSessionStatusEnum,
+	userRoleEnum,
 	vLatestUserQuestionStatus,
 	vUserSubjectAccuracy,
 	vwQuestionAncestry,
 	vwQuestionCounts,
 	userQuestionStatus,
+	studyStreaks,
 	...relations,
 };
 

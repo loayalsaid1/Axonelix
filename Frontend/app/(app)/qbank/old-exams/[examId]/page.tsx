@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getOldExam } from "@/lib/api/old-exams";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { OldExamQuestionsContent } from "@/components/qbank/OldExamQuestionsContent";
 import { QBankBreadcrumb } from "@/components/qbank/QBankBreadcrumb";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { examId } = await params;
   try {
-    const exam = await getOldExam(Number(examId));
+    const opts = await serverAuthOpts();
+    const exam = await getOldExam(Number(examId), opts);
     return {
       title: `${exam.university.name} ${exam.year} – ${EXAM_TYPE_LABELS[exam.examType]}`,
     };
@@ -37,10 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function OldExamDetailPage({ params }: Props) {
   const { examId } = await params;
   const id = Number(examId);
+  const opts = await serverAuthOpts();
 
   let exam;
   try {
-    exam = await getOldExam(id);
+    exam = await getOldExam(id, opts);
   } catch {
     notFound();
   }

@@ -13,23 +13,25 @@ import {
 import { OldExamsService } from './old-exams.service';
 import type { ExamType, ModuleType } from './dto';
 import { CreateOldExamDto } from './dto';
-import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { paramIntId, Roles } from '../../../common/decorators';
+import { Role } from '../../../common/enums';
 
 @Controller('questions/old-exams')
 export class OldExamsController {
-  constructor(private readonly oldExamsService: OldExamsService) {}
+  constructor(private readonly oldExamsService: OldExamsService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   create(@Body() dto: CreateOldExamDto) {
     return this.oldExamsService.create(dto);
   }
 
   @Get()
   findAll(
-    @Query('moduleId',     new ParseIntPipe({ optional: true })) moduleId?: number,
+    @Query('moduleId', new ParseIntPipe({ optional: true })) moduleId?: number,
     @Query('universityId', new ParseIntPipe({ optional: true })) universityId?: number,
-    @Query('year',         new ParseIntPipe({ optional: true })) year?: number,
+    @Query('year', new ParseIntPipe({ optional: true })) year?: number,
     @Query('examType') examType?: ExamType,
     @Query('moduleType') moduleType?: ModuleType,
   ) {
@@ -42,12 +44,14 @@ export class OldExamsController {
   }
 
   @Patch(':id')
+  @Roles([Role.Admin])
   update(@paramIntId() id: number, @Body() dto: Partial<CreateOldExamDto>) {
     return this.oldExamsService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
   async remove(@paramIntId() id: number): Promise<void> {
     await this.oldExamsService.remove(id);
   }

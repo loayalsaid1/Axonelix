@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface CreateSubjectDialogProps {
   moduleId: string;
@@ -36,6 +36,7 @@ export default function CreateSubjectDialog({
   onOpenChange,
   onSubjectCreated,
 }: CreateSubjectDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -49,7 +50,7 @@ export default function CreateSubjectDialog({
     setLoading(true);
 
     try {
-      await apiFetch('/materials/subjects', {
+      await authFetch('/materials/subjects', {
         method: 'POST',
         body: { moduleId: Number(moduleId), name: formData.name, type: formData.type, description: formData.description, orderIndex: formData.orderIndex },
       });

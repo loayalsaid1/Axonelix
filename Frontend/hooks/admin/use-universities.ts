@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface University {
   id: string;
@@ -8,6 +8,7 @@ export interface University {
 }
 
 export function useUniversities() {
+  const authFetch = useApiFetch();
   const [universities, setUniversities] = useState<University[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -16,7 +17,7 @@ export function useUniversities() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<University[]>('/questions/universities');
+      const data = await authFetch<University[]>('/questions/universities');
       setUniversities(data.map((u) => ({ ...u, id: String(u.id) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch universities'));
@@ -24,11 +25,11 @@ export function useUniversities() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authFetch]);
 
   const createUniversity = useCallback(async (name: string) => {
     try {
-      const data = await apiFetch<University>('/questions/universities', {
+      const data = await authFetch<University>('/questions/universities', {
         method: 'POST',
         body: { name },
       });
@@ -39,7 +40,7 @@ export function useUniversities() {
       console.error('Failed to create university:', err);
       return null;
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchUniversities();

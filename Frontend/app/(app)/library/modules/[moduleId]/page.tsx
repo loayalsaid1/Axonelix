@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getModuleHierarchy } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { HierarchyPageHeader } from "@/components/library/HierarchyPageHeader";
 import { EntityCard } from "@/components/library/EntityCard";
@@ -13,7 +14,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { moduleId } = await params;
   try {
-    const mod = await getModuleHierarchy(Number(moduleId));
+    const opts = await serverAuthOpts();
+    const mod = await getModuleHierarchy(Number(moduleId), opts);
     return { title: mod.name };
   } catch {
     return { title: "Module" };
@@ -23,10 +25,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ModulePage({ params }: Props) {
   const { moduleId } = await params;
   const id = Number(moduleId);
+  const opts = await serverAuthOpts();
 
   let mod;
   try {
-    mod = await getModuleHierarchy(id);
+    mod = await getModuleHierarchy(id, opts);
   } catch {
     notFound();
   }

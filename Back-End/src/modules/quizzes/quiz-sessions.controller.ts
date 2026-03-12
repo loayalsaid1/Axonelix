@@ -12,7 +12,6 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { UserRecord } from '../users/interfaces/user-record.interface';
 import type { QuizSessionStatus } from './quiz-sessions.service';
@@ -33,10 +32,9 @@ const SESSION_STATUSES = {
   completed: 'completed',
 } as const;
 
-@UseGuards(ClerkAuthGuard)
 @Controller('quiz-sessions')
 export class QuizSessionsController {
-  constructor(private readonly quizSessionsService: QuizSessionsService) {}
+  constructor(private readonly quizSessionsService: QuizSessionsService) { }
 
   /**
    * GET /quiz-sessions/user-stats

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface Lesson {
   id: string;
@@ -12,6 +12,7 @@ export interface Lesson {
 }
 
 export function useLessons(chapterId: string) {
+  const authFetch = useApiFetch();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +23,7 @@ export function useLessons(chapterId: string) {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<Lesson[]>(`/materials/chapters/${chapterId}/lessons`);
+      const data = await authFetch<Lesson[]>(`/materials/chapters/${chapterId}/lessons`);
       setLessons(data.map((l) => ({ ...l, id: String(l.id) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch lessons'));
@@ -30,18 +31,18 @@ export function useLessons(chapterId: string) {
     } finally {
       setLoading(false);
     }
-  }, [chapterId]);
+  }, [chapterId, authFetch]);
 
   const deleteLesson = useCallback(async (lessonId: string) => {
     try {
-      await apiFetch(`/materials/lessons/${lessonId}`, { method: 'DELETE' });
+      await authFetch(`/materials/lessons/${lessonId}`, { method: 'DELETE' });
       setLessons((prev) => prev.filter((l) => l.id !== lessonId));
       return true;
     } catch (err) {
       console.error('Failed to delete lesson:', err);
       return false;
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchLessons();

@@ -1,3 +1,37 @@
+export enum Role {
+  Student = 'student',
+  Admin = 'admin',
+}
+
+export interface UserRecord {
+  id: number;
+  clerkId: string;
+  email: string;
+  role: Role;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface AdminUserProfile {
+  id: number;
+  clerkId: string;
+  email: string;
+  role: Role;
+  createdAt: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
+  lastSignInAt: string | null;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export type SubjectType = 'theoretical' | 'practical';
 export type ExamType = 'final' | 'midterm' | 'tpl' | 'flipped';
 export type QuestionType = 'mcq' | 'written';
@@ -59,7 +93,7 @@ export interface OldExam {
   university_id: string;
   year: number;
   created_at?: string;
-  
+
   // Join properties
   module_name?: string;
   university_name?: string;
@@ -77,7 +111,7 @@ export interface Question {
   old_exam_id?: string;
   created_at?: string;
   updated_at?: string;
-  
+
   // Join properties or computed
   options?: QuestionOption[];
 }

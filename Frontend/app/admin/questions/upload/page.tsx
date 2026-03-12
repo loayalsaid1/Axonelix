@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import {
 export default function BulkUploadPage() {
 	const router = useRouter();
 	const { toast } = useToast();
+	const { getToken } = useAuth();
 	const [currentStep, setCurrentStep] = useState(1);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,7 +67,8 @@ export default function BulkUploadPage() {
 				options: q.options,
 			}));
 
-			const result = await bulkCreateQuestions(payload);
+			const token = await getToken();
+			const result = await bulkCreateQuestions(payload, token ?? undefined);
 
 			toast({
 				title: 'Upload successful!',

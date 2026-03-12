@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 export interface Chapter {
   id: string;
@@ -12,6 +12,7 @@ export interface Chapter {
 }
 
 export function useChapters(subjectId: string) {
+  const authFetch = useApiFetch();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +23,7 @@ export function useChapters(subjectId: string) {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiFetch<Chapter[]>(`/materials/subjects/${subjectId}/chapters`);
+      const data = await authFetch<Chapter[]>(`/materials/subjects/${subjectId}/chapters`);
       setChapters(data.map((c) => ({ ...c, id: String(c.id) })));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch chapters'));
@@ -30,18 +31,18 @@ export function useChapters(subjectId: string) {
     } finally {
       setLoading(false);
     }
-  }, [subjectId]);
+  }, [subjectId, authFetch]);
 
   const deleteChapter = useCallback(async (chapterId: string) => {
     try {
-      await apiFetch(`/materials/chapters/${chapterId}`, { method: 'DELETE' });
+      await authFetch(`/materials/chapters/${chapterId}`, { method: 'DELETE' });
       setChapters((prev) => prev.filter((c) => c.id !== chapterId));
       return true;
     } catch (err) {
       console.error('Failed to delete chapter:', err);
       return false;
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     fetchChapters();

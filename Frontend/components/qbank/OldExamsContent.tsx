@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useReducer } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { getModuleNames } from "@/lib/api/materials";
 import { getOldExams } from "@/lib/api/old-exams";
@@ -46,6 +47,7 @@ export function OldExamsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { getToken } = useAuth();
 
   // Parse filters from URL
   // Note: the URL param is still "subjectType" (semantic) but maps to "moduleType" on the API
@@ -65,22 +67,28 @@ export function OldExamsContent() {
 
   // Fetch module names once for filter dropdown
   useEffect(() => {
-    getModuleNames()
-      .then(setModules)
-      .catch(() => {
-        /* non-critical – filters still work without names */
-      });
-  }, []);
+    getToken().then((token) => {
+      const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      getModuleNames(opts)
+        .then(setModules)
+        .catch(() => {
+          /* non-critical – filters still work without names */
+        });
+    });
+  }, [getToken]);
 
   // Fetch exams whenever filters change
   useEffect(() => {
     let cancelled = false;
     dispatch({ type: "FETCH" });
-    getOldExams({ moduleId, subjectType, examType })
-      .then((exams) => { if (!cancelled) dispatch({ type: "SUCCESS", exams }); })
-      .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    getToken().then((token) => {
+      const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      getOldExams({ moduleId, subjectType, examType }, opts)
+        .then((exams) => { if (!cancelled) dispatch({ type: "SUCCESS", exams }); })
+        .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
+    });
     return () => { cancelled = true; };
-  }, [moduleId, subjectType, examType]);
+  }, [moduleId, subjectType, examType, getToken]);
 
   // ── URL-driven filter helpers ──────────────────────────────────────────────
 

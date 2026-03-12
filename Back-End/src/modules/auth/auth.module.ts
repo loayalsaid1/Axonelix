@@ -10,4 +10,4 @@ import { UsersModule } from '../users/users.module';
   providers: [AuthService, ClerkWebhookService],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

@@ -14,7 +14,8 @@ import {
 import { LessonsService } from './lessons.service';
 import { ChaptersService } from '../chapters/chapters.service';
 import { CreateLessonDto, UpdateLessonDto, LessonResponseDto, LessonWithHierarchyDto } from './dto';
-import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { paramIntId, Roles } from '../../../common/decorators';
+import { Role } from '../../../common/enums';
 
 @Controller('materials/lessons')
 export class LessonsController {
@@ -25,6 +26,7 @@ export class LessonsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   async create(@Body() createLessonDto: CreateLessonDto): Promise<LessonResponseDto> {
     if (!createLessonDto.chapterId) {
       // Misc lesson path: get or create the subject's misc chapter
@@ -72,6 +74,7 @@ export class LessonsController {
   }
 
   @Patch(':id')
+  @Roles([Role.Admin])
   update(
     @paramIntId() id: number,
     @Body() updateLessonDto: UpdateLessonDto,
@@ -81,6 +84,7 @@ export class LessonsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
   async remove(@paramIntId() id: number): Promise<void> {
     await this.lessonsService.remove(id);
   }

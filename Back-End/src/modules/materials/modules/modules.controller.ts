@@ -11,15 +11,17 @@ import {
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto, UpdateModuleDto, ModuleResponseDto } from './dto';
-import { paramIntId } from '../../../common/decorators/param-int-id.decorator';
+import { paramIntId, Roles } from '../../../common/decorators';
+import { Role } from '../../../common/enums';
 import { HierarchyResponseDto } from '../dto/hierarchy-response.dto';
 
 @Controller('materials/modules')
 export class ModulesController {
-  constructor(private readonly modulesService: ModulesService) {}
+  constructor(private readonly modulesService: ModulesService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles([Role.Admin])
   create(@Body() createModuleDto: CreateModuleDto): Promise<ModuleResponseDto> {
     return this.modulesService.create(createModuleDto);
   }
@@ -46,6 +48,7 @@ export class ModulesController {
   }
 
   @Patch(':id')
+  @Roles([Role.Admin])
   update(
     @paramIntId() id: number,
     @Body() updateModuleDto: UpdateModuleDto,
@@ -55,6 +58,7 @@ export class ModulesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
   async remove(@paramIntId() id: number): Promise<void> {
     await this.modulesService.remove(id);
   }

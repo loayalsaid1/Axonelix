@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface Props {
   moduleId: string;
@@ -32,6 +32,7 @@ export default function MaterialHierarchySelect({
   required = true,
 }: Props) {
   const [modules, setModules] = useState<any[]>([]);
+  const authFetch = useApiFetch();
   const [subjects, setSubjects] = useState<any[]>([]);
   const [chapters, setChapters] = useState<any[]>([]);
   const prevModuleRef = useRef<string | null>(null);
@@ -70,7 +71,7 @@ export default function MaterialHierarchySelect({
 
   const fetchModules = async () => {
     try {
-      const data = await apiFetch<any[]>('/materials/modules');
+      const data = await authFetch<any[]>('/materials/modules');
       setModules(data.map((m) => ({ ...m, id: String(m.id) })));
     } catch (error) {
       console.error('Failed to fetch modules:', error);
@@ -79,7 +80,7 @@ export default function MaterialHierarchySelect({
 
   const fetchSubjects = async (moduleId: string) => {
     try {
-      const data = await apiFetch<any[]>(`/materials/subjects?moduleId=${moduleId}`);
+      const data = await authFetch<any[]>(`/materials/subjects?moduleId=${moduleId}`);
       setSubjects(data.map((s) => ({ ...s, id: String(s.id) })));
     } catch (error) {
       console.error('Failed to fetch subjects:', error);
@@ -88,7 +89,7 @@ export default function MaterialHierarchySelect({
 
   const fetchChapters = async (subjectId: string) => {
     try {
-      const data = await apiFetch<any[]>(`/materials/subjects/${subjectId}/chapters`);
+      const data = await authFetch<any[]>(`/materials/subjects/${subjectId}/chapters`);
       setChapters(data.map((c) => ({ ...c, id: String(c.id) })));
     } catch (error) {
       console.error('Failed to fetch chapters:', error);

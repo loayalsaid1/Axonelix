@@ -10,7 +10,6 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ClerkAuthGuard } from '../../common/guards/clerk-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { paramIntId } from '../../common/decorators/param-int-id.decorator';
 import type { UserRecord } from '../users/interfaces/user-record.interface';
@@ -25,13 +24,12 @@ import {
   GenerateQuizResponseDto,
 } from './dto';
 
-@UseGuards(ClerkAuthGuard)
 @Controller('quizzes')
 export class QuizzesController {
   constructor(
     private readonly quizzesService: QuizzesService,
     private readonly questionCountService: QuestionCountService,
-  ) {}
+  ) { }
 
   /**
    * POST /quizzes/count

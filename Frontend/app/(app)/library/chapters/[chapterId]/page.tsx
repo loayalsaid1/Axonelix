@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getChapter } from "@/lib/api/materials";
+import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { HierarchyPageHeader } from "@/components/library/HierarchyPageHeader";
 import { LessonCard } from "@/components/library/LessonCard";
@@ -13,7 +14,8 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { chapterId } = await params;
   try {
-    const chapter = await getChapter(Number(chapterId));
+    const opts = await serverAuthOpts();
+    const chapter = await getChapter(Number(chapterId), opts);
     return { title: chapter.name };
   } catch {
     return { title: "Chapter" };
@@ -23,10 +25,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ChapterPage({ params }: Props) {
   const { chapterId } = await params;
   const id = Number(chapterId);
+  const opts = await serverAuthOpts();
 
   let chapter;
   try {
-    chapter = await getChapter(id);
+    chapter = await getChapter(id, opts);
   } catch {
     notFound();
   }

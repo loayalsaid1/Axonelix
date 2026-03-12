@@ -13,9 +13,10 @@ import {
 	quizQuestions,
 	quizSessions,
 	quizSessionAnswers,
+	studyStreaks,
 } from "./schema";
 
-export const subjectsRelations = relations(subjects, ({one, many}) => ({
+export const subjectsRelations = relations(subjects, ({ one, many }) => ({
 	module: one(modules, {
 		fields: [subjects.moduleId],
 		references: [modules.id]
@@ -23,12 +24,12 @@ export const subjectsRelations = relations(subjects, ({one, many}) => ({
 	chapters: many(chapters),
 }));
 
-export const modulesRelations = relations(modules, ({many}) => ({
+export const modulesRelations = relations(modules, ({ many }) => ({
 	subjects: many(subjects),
 	oldExams: many(oldExams),
 }));
 
-export const oldExamsRelations = relations(oldExams, ({one, many}) => ({
+export const oldExamsRelations = relations(oldExams, ({ one, many }) => ({
 	module: one(modules, {
 		fields: [oldExams.moduleId],
 		references: [modules.id]
@@ -41,11 +42,11 @@ export const oldExamsRelations = relations(oldExams, ({one, many}) => ({
 	quizzes: many(quizzes),
 }));
 
-export const universitiesRelations = relations(universities, ({many}) => ({
+export const universitiesRelations = relations(universities, ({ many }) => ({
 	oldExams: many(oldExams),
 }));
 
-export const chaptersRelations = relations(chapters, ({one, many}) => ({
+export const chaptersRelations = relations(chapters, ({ one, many }) => ({
 	subject: one(subjects, {
 		fields: [chapters.subjectId],
 		references: [subjects.id]
@@ -54,7 +55,7 @@ export const chaptersRelations = relations(chapters, ({one, many}) => ({
 	questions: many(questions),
 }));
 
-export const lessonsRelations = relations(lessons, ({one, many}) => ({
+export const lessonsRelations = relations(lessons, ({ one, many }) => ({
 	chapter: one(chapters, {
 		fields: [lessons.chapterId],
 		references: [chapters.id]
@@ -62,7 +63,7 @@ export const lessonsRelations = relations(lessons, ({one, many}) => ({
 	questions: many(questions),
 }));
 
-export const questionsRelations = relations(questions, ({one, many}) => ({
+export const questionsRelations = relations(questions, ({ one, many }) => ({
 	lesson: one(lessons, {
 		fields: [questions.lessonId],
 		references: [lessons.id]
@@ -80,7 +81,7 @@ export const questionsRelations = relations(questions, ({one, many}) => ({
 	quizSessionAnswers: many(quizSessionAnswers),
 }));
 
-export const questionOptionsRelations = relations(questionOptions, ({one, many}) => ({
+export const questionOptionsRelations = relations(questionOptions, ({ one, many }) => ({
 	question: one(questions, {
 		fields: [questionOptions.questionId],
 		references: [questions.id]
@@ -90,12 +91,16 @@ export const questionOptionsRelations = relations(questionOptions, ({one, many})
 
 // ─── Quiz Relations ───────────────────────────────────────────────────────────
 
-export const usersRelations = relations(users, ({many}) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
 	quizzes: many(quizzes),
 	quizSessions: many(quizSessions),
+	studyStreak: one(studyStreaks, {
+		fields: [users.id],
+		references: [studyStreaks.userId],
+	}),
 }));
 
-export const quizzesRelations = relations(quizzes, ({one, many}) => ({
+export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
 	createdBy: one(users, {
 		fields: [quizzes.createdBy],
 		references: [users.id],
@@ -108,7 +113,7 @@ export const quizzesRelations = relations(quizzes, ({one, many}) => ({
 	quizSessions: many(quizSessions),
 }));
 
-export const quizQuestionsRelations = relations(quizQuestions, ({one}) => ({
+export const quizQuestionsRelations = relations(quizQuestions, ({ one }) => ({
 	quiz: one(quizzes, {
 		fields: [quizQuestions.quizId],
 		references: [quizzes.id],
@@ -119,7 +124,7 @@ export const quizQuestionsRelations = relations(quizQuestions, ({one}) => ({
 	}),
 }));
 
-export const quizSessionsRelations = relations(quizSessions, ({one, many}) => ({
+export const quizSessionsRelations = relations(quizSessions, ({ one, many }) => ({
 	quiz: one(quizzes, {
 		fields: [quizSessions.quizId],
 		references: [quizzes.id],
@@ -131,7 +136,7 @@ export const quizSessionsRelations = relations(quizSessions, ({one, many}) => ({
 	quizSessionAnswers: many(quizSessionAnswers),
 }));
 
-export const quizSessionAnswersRelations = relations(quizSessionAnswers, ({one}) => ({
+export const quizSessionAnswersRelations = relations(quizSessionAnswers, ({ one }) => ({
 	session: one(quizSessions, {
 		fields: [quizSessionAnswers.sessionId],
 		references: [quizSessions.id],
@@ -143,5 +148,12 @@ export const quizSessionAnswersRelations = relations(quizSessionAnswers, ({one})
 	selectedOption: one(questionOptions, {
 		fields: [quizSessionAnswers.selectedOptionId],
 		references: [questionOptions.id],
+	}),
+}));
+
+export const studyStreaksRelations = relations(studyStreaks, ({ one }) => ({
+	user: one(users, {
+		fields: [studyStreaks.userId],
+		references: [users.id],
 	}),
 }));

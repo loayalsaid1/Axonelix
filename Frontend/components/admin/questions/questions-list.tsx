@@ -12,7 +12,7 @@ import { AdminQuestionCard } from '@/components/admin/questions/admin-question-c
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import CreateQuestionDialog from '@/components/admin/dialogs/create-question-dialog';
 import EditQuestionDialog from '@/components/admin/dialogs/edit-question-dialog';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +22,7 @@ import {
 import { ButtonGroup } from '@/components/ui/button-group';
 
 export function QuestionsList() {
+  const authFetch = useApiFetch();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const router = useRouter();
@@ -58,7 +59,7 @@ export function QuestionsList() {
 
   const handleDeleteQuestion = async (questionId: string) => {
     try {
-      const response = await apiFetch(`/questions/${questionId}`, { method: 'DELETE' });
+      const response = await authFetch(`/questions/${questionId}`, { method: 'DELETE' });
       if (filtersApplied) {
         fetchQuestions();
       }

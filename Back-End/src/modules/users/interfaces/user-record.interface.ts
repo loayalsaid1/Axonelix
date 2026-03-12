@@ -1,9 +1,4 @@
-/** Shape of a user row returned from the database. */
-export interface UserRecord {
-  id: number;
-  clerkId: string;
-  email: string;
-  role: string;
-  createdAt: string | null;
-  updatedAt: string | null;
-}
+import { users } from '../../../database/entities/users';
+
+/** Derived directly from the Drizzle schema — single source of truth. */
+export type UserRecord = typeof users.$inferSelect;

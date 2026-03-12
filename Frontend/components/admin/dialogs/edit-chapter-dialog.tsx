@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { apiFetch } from '@/lib/api/client';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface EditChapterDialogProps {
   chapterId: string | null;
@@ -28,6 +28,7 @@ export default function EditChapterDialog({
   onOpenChange,
   onChapterUpdated,
 }: EditChapterDialogProps) {
+  const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,7 +47,7 @@ export default function EditChapterDialog({
     if (!chapterId) return;
 
     try {
-      const data = await apiFetch<any>(`/materials/chapters/${chapterId}`);
+      const data = await authFetch<any>(`/materials/chapters/${chapterId}`);
       setFormData({
         name: data.name,
         description: data.description || '',
@@ -65,7 +66,7 @@ export default function EditChapterDialog({
     setLoading(true);
 
     try {
-      await apiFetch(`/materials/chapters/${chapterId}`, {
+      await authFetch(`/materials/chapters/${chapterId}`, {
         method: 'PATCH',
         body: { name: formData.name, description: formData.description, isMiscellaneous: formData.isMiscellaneous, orderIndex: formData.orderIndex },
       });

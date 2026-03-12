@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
@@ -9,6 +10,10 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { StreaksModule } from './modules/streaks/streaks.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { ClerkAuthGuard } from './common/guards/clerk-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [
@@ -25,8 +30,16 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
     MaterialsModule,
     QuestionsModule,
     QuizzesModule,
+    StreaksModule,
+    StatsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Global auth: runs on every route; respects @IsPublic() to opt out
+    { provide: APP_GUARD, useClass: ClerkAuthGuard },
+    // Global role enforcement: runs after ClerkAuthGuard (request.user is set)
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
-export class AppModule {}
+export class AppModule { }
