@@ -10,6 +10,7 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { StreaksModule } from './modules/streaks/streaks.module';
 import { ClerkAuthGuard } from './common/guards/clerk-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -28,6 +29,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     MaterialsModule,
     QuestionsModule,
     QuizzesModule,
+    StreaksModule,
   ],
   controllers: [AppController],
   providers: [

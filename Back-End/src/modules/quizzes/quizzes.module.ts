@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DrizzleModule } from '../../database/drizzle.module';
 import { AuthModule } from '../auth/auth.module';
 import { QuestionsModule } from '../questions/questions.module';
+import { StreaksModule } from '../streaks/streaks.module';
 
 import { QuizzesController } from './quizzes.controller';
 import { QuizSessionsController } from './quiz-sessions.controller';
@@ -16,6 +17,8 @@ import { QuestionCountService } from './question-count.service';
     AuthModule,
     // QuestionsModule exports QuestionsService used for filter-building helpers
     QuestionsModule,
+    // StreaksModule exports StreaksService used to update user streaks on session completion/suspension
+    StreaksModule,
   ],
   controllers: [QuizzesController, QuizSessionsController],
   providers: [
@@ -25,4 +28,4 @@ import { QuestionCountService } from './question-count.service';
   ],
   exports: [QuizzesService, QuizSessionsService, QuestionCountService],
 })
-export class QuizzesModule {}
+export class QuizzesModule { }
