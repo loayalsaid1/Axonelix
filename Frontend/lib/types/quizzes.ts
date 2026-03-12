@@ -184,6 +184,16 @@ export interface UserTestStats {
   averageScore: number | null;
 }
 
+// ─── Dashboard stats (from GET /users/me/stats) ──────────────────────────────
+
+export interface UserDashboardStats {
+  currentStreak: number;
+  longestStreak: number;
+  totalQuestionsAnswered: number;
+  /** null when no completed sessions yet */
+  averageScore: number | null;
+}
+
 // ─── API response types ───────────────────────────────────────────────────────
 
 export interface GenerateQuizResponse {
