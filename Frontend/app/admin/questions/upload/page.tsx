@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { useCsvParser } from '@/hooks/admin/use-csv-parser';
 import { bulkCreateQuestions } from '@/lib/api/questions';
-import type { BulkCreateQuestionInput } from '@/lib/api/questions';
+import type { BulkCreateQuestionInput, BulkCreatePayload } from '@/lib/api/questions';
 import { UploadProgressSteps } from '@/components/admin/questions/bulk-upload/upload-progress-steps';
 import { StepUploadFile } from '@/components/admin/questions/bulk-upload/step-upload-file';
 import { StepPreviewTable } from '@/components/admin/questions/bulk-upload/step-preview-table';
@@ -56,7 +56,7 @@ export default function BulkUploadPage() {
 		try {
 			const validQuestions = parsedQuestions.filter((q) => q.isValid);
 
-			const payload: BulkCreateQuestionInput[] = validQuestions.map((q) => ({
+			const questions: BulkCreateQuestionInput[] = validQuestions.map((q) => ({
 				questionType: 'mcq',
 				statement: q.statement,
 				statementFormat: 'text',
@@ -66,6 +66,11 @@ export default function BulkUploadPage() {
 				oldExamId: context.oldExamId,
 				options: q.options,
 			}));
+
+			const payload: BulkCreatePayload = {
+				questions,
+				reference: context.reference,
+			};
 
 			const token = await getToken();
 			const result = await bulkCreateQuestions(payload, token ?? undefined);
