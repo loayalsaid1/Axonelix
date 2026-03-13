@@ -6,6 +6,11 @@ export interface QuestionOptionInput {
   isCorrect: boolean;
 }
 
+export interface ReferenceInput {
+  id?: number;
+  text?: string;
+}
+
 export interface BulkCreateQuestionInput {
   questionType: 'mcq' | 'written';
   statement: string;
@@ -17,18 +22,24 @@ export interface BulkCreateQuestionInput {
   options?: QuestionOptionInput[];
 }
 
+export interface BulkCreatePayload {
+  questions: BulkCreateQuestionInput[];
+  /** Single reference shared by the entire batch */
+  reference?: ReferenceInput | null;
+}
+
 export interface BulkCreateResult {
   count: number;
   questionIds: number[];
 }
 
 export function bulkCreateQuestions(
-  questions: BulkCreateQuestionInput[],
+  payload: BulkCreatePayload,
   token?: string,
 ): Promise<BulkCreateResult> {
   return apiFetch<BulkCreateResult>('/questions/bulk', {
     method: 'POST',
-    body: { questions },
+    body: payload,
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 }
