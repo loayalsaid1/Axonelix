@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { questions } from '../../../../database/entities/questions';
+import { ReferenceDto } from '../../references/dto/reference.dto';
 
 type QuestionInsert = typeof questions.$inferInsert;
 
@@ -62,4 +63,10 @@ export class CreateQuestionDto {
   @ValidateIf((o: CreateQuestionDto) => o.questionType === 'mcq')
   @IsOptional()
   options?: QuestionOptionInputDto[];
+
+  /** Reference for the question (optional object with id or text) */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ReferenceDto)
+  reference?: ReferenceDto;
 }

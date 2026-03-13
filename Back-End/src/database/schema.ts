@@ -27,6 +27,7 @@ import {
 } from "./entities/question-hierarchy-views";
 import { userQuestionStatus } from "./entities/user-question-status";
 import { studyStreaks } from "./entities/study-streaks";
+import { questionReferences } from "./entities/question-references";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -54,6 +55,7 @@ export {
 	vwQuestionCounts,
 	userQuestionStatus,
 	studyStreaks,
+	questionReferences,
 };
 
 export const schema = {
@@ -80,6 +82,7 @@ export const schema = {
 	vwQuestionCounts,
 	userQuestionStatus,
 	studyStreaks,
+	questionReferences,
 	...relations,
 };
 

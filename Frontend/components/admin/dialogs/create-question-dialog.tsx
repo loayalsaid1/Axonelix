@@ -80,6 +80,7 @@ export default function CreateQuestionDialog({
     chapterId: parentType === 'chapter' ? parentId : '',
     oldExamId: parentType === 'old_exam' ? parentId : '',
     isMisc: false,
+    reference: { text: '' } as { id?: number; text: string },
     options: [
       { optionText: '', isCorrect: true },
       { optionText: '', isCorrect: false },
@@ -151,6 +152,7 @@ export default function CreateQuestionDialog({
         chapterId: formData.chapterId ? Number(formData.chapterId) : null,
         isMisc: formData.isMisc,
         oldExamId: oldExamId ? Number(oldExamId) : null,
+        reference: formData.reference?.text ? formData.reference : null,
         explanation: formData.explanation
           ? {
             type: 'doc',
@@ -170,6 +172,7 @@ export default function CreateQuestionDialog({
         statement: '',
         statementFormat: 'text',
         explanation: '',
+        reference: { text: '' },
         options: [
           { optionText: '', isCorrect: true },
           { optionText: '', isCorrect: false },
@@ -271,8 +274,9 @@ export default function CreateQuestionDialog({
               statement: formData.statement,
               explanation: formData.explanation,
               options: formData.options,
+              reference: formData.reference,
             }}
-            onChange={(data) => setFormData({ ...formData, ...data })}
+            onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           />
 
           {/* Action Buttons */}

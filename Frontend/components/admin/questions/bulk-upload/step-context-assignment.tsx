@@ -7,18 +7,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { MaterialSelector } from '@/components/admin/shared/material-selector';
 import { OldExamForm } from '@/components/admin/shared/old-exam-form';
+import { ReferenceSelector, ReferenceValue } from '@/components/admin/shared/reference-selector';
 import { useMaterialHierarchy } from '@/hooks/admin/use-material-hierarchy';
 import { useModules } from '@/hooks/admin/use-modules';
 import { useUniversities } from '@/hooks/admin/use-universities';
 import { useOldExams } from '@/hooks/admin/use-old-exams';
 import { useOldExamManager } from '@/hooks/admin/use-old-exam-manager';
+import { useQuestionReferences } from '@/hooks/admin/use-question-references';
 
 export interface ContextAssignment {
 	lessonId: number | null;
 	chapterId: number | null;
 	isMisc: boolean;
 	oldExamId: number | null;
+	reference: ReferenceValue | null;
 }
+
 
 interface StepContextAssignmentProps {
 	validCount: number;
@@ -37,6 +41,7 @@ export function StepContextAssignment({
 	const { universities, createUniversity } = useUniversities();
 	const { exams, refetch: refetchExams } = useOldExams();
 	const { findOrCreateOldExam } = useOldExamManager(exams);
+	const { references, loading: loadingRefs } = useQuestionReferences();
 
 	const {
 		selectedModule,
@@ -53,6 +58,7 @@ export function StepContextAssignment({
 	const [lessonId, setLessonId] = useState('');
 	const [chapterId, setChapterId] = useState('');
 	const [isMisc, setIsMisc] = useState(false);
+	const [reference, setReference] = useState<ReferenceValue>({ text: '' });
 
 	const [isOldExamBatch, setIsOldExamBatch] = useState(false);
 	const [oldExamData, setOldExamData] = useState({
@@ -132,6 +138,7 @@ export function StepContextAssignment({
 			chapterId: chapterId ? Number(chapterId) : null,
 			isMisc,
 			oldExamId: resolvedOldExamId,
+			reference: reference.text ? reference : null,
 		});
 	};
 
@@ -184,6 +191,16 @@ export function StepContextAssignment({
 				onLessonChange={(id) => setLessonId(id)}
 				onIsMiscChange={(val) => setIsMisc(val)}
 			/>
+
+			{/* Batch Reference Selector */}
+			<div className="pt-4 border-t">
+				<ReferenceSelector
+					references={references}
+					value={reference}
+					onChange={setReference}
+					loading={loadingRefs}
+				/>
+			</div>
 
 			{/* Old Exam Toggle */}
 			<div className="space-y-4 border-t pt-4">
