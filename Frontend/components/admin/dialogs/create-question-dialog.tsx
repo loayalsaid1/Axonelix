@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,12 @@ import { MaterialSelector } from '@/components/admin/shared/material-selector';
 import { OldExamForm } from '@/components/admin/shared/old-exam-form';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import type { JSONContent } from '@tiptap/react';
+
+interface SimpleEditorRefHandler {
+  getJSON: () => JSONContent | null;
+}
 
 interface CreateQuestionDialogProps {
   parentId?: string;
@@ -38,6 +44,8 @@ export default function CreateQuestionDialog({
 }: CreateQuestionDialogProps) {
   const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
+  const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
+  const [editorKey, setEditorKey] = useState(0);
 
   // Use custom hooks
   const { modules } = useModules();
@@ -144,6 +152,13 @@ export default function CreateQuestionDialog({
         refetchExams();
       }
 
+      const explanationContent = explanationEditorRef.current?.getJSON() || null;
+      // Check if it's empty
+      const isExplanationEmpty = !explanationContent ||
+        (explanationContent.content?.length === 1 &&
+          !explanationContent.content[0].content &&
+          explanationContent.content[0].type === 'paragraph');
+
       const payload = {
         questionType: formData.questionType,
         statement: formData.statement,
@@ -153,12 +168,7 @@ export default function CreateQuestionDialog({
         isMisc: formData.isMisc,
         oldExamId: oldExamId ? Number(oldExamId) : null,
         reference: formData.reference?.text ? formData.reference : null,
-        explanation: formData.explanation
-          ? {
-            type: 'doc',
-            content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
-          }
-          : null,
+        explanation: isExplanationEmpty ? null : explanationContent,
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
@@ -178,6 +188,8 @@ export default function CreateQuestionDialog({
           { optionText: '', isCorrect: false },
         ],
       }));
+
+      setEditorKey(prev => prev + 1);
 
       // Keep selectedModule / selectedSubject / selectedChapter and
       // old exam toggles as-is so the dialog remains in the same context.
@@ -278,6 +290,14 @@ export default function CreateQuestionDialog({
             }}
             onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           />
+
+          {/* Explanation Editor */}
+          <div className="space-y-2">
+            <Label>Explanation (Optional)</Label>
+            <div className="border rounded-lg overflow-hidden">
+              <SimpleEditor key={editorKey} ref={explanationEditorRef} />
+            </div>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4 border-t">
