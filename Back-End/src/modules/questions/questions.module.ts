@@ -8,6 +8,8 @@ import { OldExamsController } from './old-exams/old-exams.controller';
 import { OldExamsService } from './old-exams/old-exams.service';
 import { UniversitiesController } from './universities/universities.controller';
 import { UniversitiesService } from './universities/universities.service';
+import { ReferencesService } from './references/references.service';
+import { ReferencesController } from './references/references.controller';
 
 @Module({
   imports: [DrizzleModule],
@@ -16,6 +18,7 @@ import { UniversitiesService } from './universities/universities.service';
     // routes like GET /questions/old-exams are not swallowed by GET /questions/:id
     OldExamsController,
     UniversitiesController,
+    ReferencesController,
     QuestionsController,
   ],
   providers: [
@@ -23,6 +26,8 @@ import { UniversitiesService } from './universities/universities.service';
     QuestionOptionsService,
     OldExamsService,
     UniversitiesService,
+    ReferencesService,
+
   ],
   exports: [
     QuestionsService,
@@ -31,4 +36,4 @@ import { UniversitiesService } from './universities/universities.service';
     UniversitiesService,
   ],
 })
-export class QuestionsModule {}
+export class QuestionsModule { }
