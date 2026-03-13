@@ -68,4 +68,9 @@ export class QuestionFilterDto {
   @IsOptional()
   @Type(() => Number)
   oldExamId?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  referenceId?: number;
 }
