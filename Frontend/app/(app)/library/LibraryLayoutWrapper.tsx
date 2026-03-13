@@ -37,7 +37,7 @@ export function LibraryLayoutWrapper({
                 <span className="sr-only">Toggle Library Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-80">
+            <SheetContent side="bottom" className="p-0 ">
               <SheetTitle className="sr-only">Library Navigation</SheetTitle>
               {/* SERVER COMPONENT RENDERED HERE */}
               {sidebar}
