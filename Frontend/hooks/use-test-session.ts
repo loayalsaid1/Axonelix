@@ -22,6 +22,7 @@ export interface LocalAnswer {
   isMarked: boolean;
   /** Set<optionId> of options struck-through by the user */
   eliminatedOptions: Set<number>;
+  isSubmitted?: boolean;
 }
 
 // ─── State shape ─────────────────────────────────────────────────────────────
@@ -35,6 +36,8 @@ export interface TestSessionState {
   seen: Set<number>;
   /** Elapsed time in seconds (incremented by the timer) */
   elapsedSecs: number;
+  /** Toggle to show correct answers and explanations for all questions */
+  showAllAnswers: boolean;
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
@@ -45,6 +48,8 @@ export type TestSessionAction =
   | { type: 'SET_WRITTEN'; questionId: number; text: string }
   | { type: 'TOGGLE_MARK'; questionId: number }
   | { type: 'TOGGLE_ELIMINATE'; questionId: number; optionId: number }
+  | { type: 'SUBMIT_ANSWER'; questionId: number }
+  | { type: 'TOGGLE_SHOW_ALL_ANSWERS' }
   | { type: 'TICK' }
   | { type: 'HYDRATE'; answers: SessionAnswer[]; metadata: SessionMetadata | null; currentIndex: number; elapsedSecs?: number };
 
@@ -56,6 +61,7 @@ function makeInitialState(questions: QuizQuestion[]): TestSessionState {
     currentIndex: 0,
     seen: questions.length > 0 ? new Set([questions[0].id]) : new Set(),
     elapsedSecs: 0,
+    showAllAnswers: false,
   };
 }
 
@@ -135,6 +141,24 @@ function reducer(state: TestSessionState, action: TestSessionAction): TestSessio
       };
     }
 
+    case 'SUBMIT_ANSWER': {
+      const prev = state.answers[action.questionId] ?? {
+        questionId: action.questionId,
+        isMarked: false,
+        eliminatedOptions: new Set<number>(),
+      };
+      return {
+        ...state,
+        answers: {
+          ...state.answers,
+          [action.questionId]: { ...prev, isSubmitted: true },
+        },
+      };
+    }
+
+    case 'TOGGLE_SHOW_ALL_ANSWERS':
+      return { ...state, showAllAnswers: !state.showAllAnswers };
+
     case 'TICK':
       return { ...state, elapsedSecs: state.elapsedSecs + 1 };
 
@@ -147,6 +171,7 @@ function reducer(state: TestSessionState, action: TestSessionAction): TestSessio
           writtenAnswer: a.writtenAnswer ?? undefined,
           isMarked: a.isMarked,
           eliminatedOptions: new Set(),
+          isSubmitted: false,
         };
       }
       const seen = new Set<number>(action.metadata?.answered ?? []);
@@ -154,6 +179,7 @@ function reducer(state: TestSessionState, action: TestSessionAction): TestSessio
       (action.metadata?.unseen ?? []).forEach((id) => seen.delete(id));
 
       return {
+        ...state,
         answers,
         currentIndex: action.currentIndex,
         seen,
@@ -293,6 +319,16 @@ export function useTestSession({ sessionDetail, onSessionEnded }: UseTestSession
     [],
   );
 
+  const submitAnswer = useCallback(
+    (questionId: number) => dispatch({ type: 'SUBMIT_ANSWER', questionId }),
+    [],
+  );
+
+  const toggleShowAllAnswers = useCallback(
+    () => dispatch({ type: 'TOGGLE_SHOW_ALL_ANSWERS' }),
+    [],
+  );
+
   // ── Session lifecycle ──────────────────────────────────────────────────────
   const suspendSession = useCallback(async () => {
     try {
@@ -365,6 +401,8 @@ export function useTestSession({ sessionDetail, onSessionEnded }: UseTestSession
     setWritten,
     toggleMark,
     toggleEliminate,
+    submitAnswer,
+    toggleShowAllAnswers,
     suspendSession,
     endSession,
   };
