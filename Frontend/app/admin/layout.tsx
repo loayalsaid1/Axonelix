@@ -14,12 +14,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <SidebarProvider>
-      <TooltipProvider>
-        <AdminSidebar />
-        <SidebarInset className="min-w-0">
+      <AdminSidebar />
+      <SidebarInset className="min-w-0">
+        <TooltipProvider>
           {children}
-        </SidebarInset>
-      </TooltipProvider>
+        </TooltipProvider>
+      </SidebarInset>
     </SidebarProvider>
   )
 }
