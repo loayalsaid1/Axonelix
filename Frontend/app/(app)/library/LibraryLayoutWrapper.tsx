@@ -21,6 +21,15 @@ export function LibraryLayoutWrapper({
   children: React.ReactNode;
 }) {
   const isMobile = useIsMobile();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // Prevent mismatched LayoutRouter mounting during hydration
+  }
 
   // 📱 MOBILE VIEW: No Resizable Panels. Replaced natively with a clean column layout.
   if (isMobile) {

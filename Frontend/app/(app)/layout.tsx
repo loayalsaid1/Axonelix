@@ -9,12 +9,12 @@ export default function AppLayout({
 }) {
   return (
     <SidebarProvider>
-      <TooltipProvider>
-        <AppSidebar />
-        <SidebarInset className="min-w-0">
+      <AppSidebar />
+      <SidebarInset className="min-w-0">
+        <TooltipProvider>
           {children}
-        </SidebarInset>
-      </TooltipProvider>
+        </TooltipProvider>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
