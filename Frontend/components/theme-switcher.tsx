@@ -104,7 +104,7 @@ function InlineSwitcher() {
                     "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     mode === value &&
-                      "bg-sidebar-accent text-sidebar-accent-foreground"
+                    "bg-sidebar-accent text-sidebar-accent-foreground"
                   )}
                 >
                   <Icon className="size-3.5" />
@@ -198,6 +198,21 @@ function CollapsedSwitcher() {
 export function ThemeSwitcher() {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <>
+        <SidebarSeparator />
+        {/* Placeholder for stability during hydration */}
+        <SidebarGroup className="py-2 px-2 h-21" />
+      </>
+    )
+  }
 
   return (
     <>
