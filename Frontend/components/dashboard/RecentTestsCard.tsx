@@ -37,11 +37,11 @@ function resolveTitle(item: SessionListItem): string {
 
 export function RecentTestsCardSkeleton() {
   return (
-    <Card className="gap-4 md:col-span-2 py-4">
+    <Card className=" gap-4 md:col-span-2 min-w-0 py-4">
       <CardHeader className="flex-row justify-between items-center space-y-0 px-5 pt-0 pb-0">
         <CardTitle className="text-sm">Recent Tests</CardTitle>
       </CardHeader>
-      <CardContent className="p-0 pt-2">
+      <CardContent className="p-0 pt-2 overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -88,7 +88,7 @@ export async function RecentTestsCard() {
   }
 
   return (
-    <Card className="gap-2 md:col-span-2 py-4">
+    <Card className="gap-2 md:col-span-2 min-w-0 py-4">
       {/* <CardHeader className="flex-row justify-between items-center space-y-0 px-5 pt-0 pb-0"> */}
       <CardHeader>
         <CardTitle className="text-sm">Recent Tests</CardTitle>

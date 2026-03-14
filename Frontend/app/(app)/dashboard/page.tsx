@@ -35,8 +35,8 @@ const quickLinks = [
 ]
 
 const GenerateTestCard = () => (
-  <Link href="/qbank/generate-tests" className="group">
-    <Card className="gap-3 hover:shadow-md py-4 border-primary/20 hover:border-primary/50 h-full transition-all cursor-pointer">
+  <Link href="/qbank/generate-tests" className="group min-w-0">
+    <Card className="gap-3 border-primary/20 hover:border-primary/50 py-4 h-full min-w-0 transition-all cursor-pointer hover:shadow-md">
       <CardHeader className="flex-row justify-between items-center gap-2 space-y-0 px-4 pt-0 pb-0">
         <CardTitle className="font-medium text-muted-foreground text-xs">Custom Quiz</CardTitle>
         <div className="flex justify-center items-center bg-primary/10 group-hover:bg-primary/20 rounded-md w-7 h-7 transition-colors shrink-0">
@@ -79,7 +79,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats grid */}
-        <div className="gap-4 grid grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
           <Suspense fallback={<DashboardStatsSkeleton />}>
             <DashboardStats />
           </Suspense>
@@ -87,14 +87,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Main content area */}
-        <div className="gap-4 grid md:grid-cols-3">
+        <div className="grid md:grid-cols-3 gap-4 min-w-0">
           {/* Recent tests — streams in while the rest of the page renders */}
           <Suspense fallback={<RecentTestsCardSkeleton />}>
             <RecentTestsCard />
           </Suspense>
 
           {/* Quick links */}
-          <Card className="gap-4 py-4">
+          <Card className="col-span-1 gap-4 py-4 min-w-0">
             <CardHeader className="space-y-0 px-5 pt-0 pb-0">
               <CardTitle className="text-sm">Quick Access</CardTitle>
             </CardHeader>
