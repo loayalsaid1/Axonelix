@@ -53,7 +53,7 @@ export function LibrarySidebar() {
         <span className="font-semibold text-sm">Library</span>
         <Link
           href="/library"
-          className="ml-auto text-sidebar-foreground/40 hover:text-sidebar-foreground/70 text-xs transition-colors"
+          className="mr-6 md:mr-0 ml-auto text-sidebar-foreground/40 hover:text-sidebar-foreground/70 text-xs transition-colors"
         >
           All Modules
         </Link>

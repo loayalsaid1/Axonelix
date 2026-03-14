@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
 import { QuestionOptionsService } from '../question-options/question-options.service';
+import { ReferencesService } from '../references/references.service';
 import { questions } from '../../../database/entities/questions';
 import { questionOptions } from '../../../database/entities/question-options';
 import { lessons as lessonsTable } from '../../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
+import { questionReferences } from '../../../database/entities/question-references';
 import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
   CreateQuestionDto,
@@ -28,6 +30,7 @@ const QUESTION_COLUMNS = {
   chapterId: true,
   isMisc: true,
   oldExamId: true,
+  referenceId: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -43,6 +46,7 @@ export class QuestionsService {
   constructor(
     private readonly drizzleService: DrizzleService,
     private readonly questionOptionsService: QuestionOptionsService,
+    private readonly referencesService: ReferencesService,
   ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
@@ -54,7 +58,12 @@ export class QuestionsService {
    */
   async bulkCreate(dto: BulkCreateQuestionsDto): Promise<BulkCreateResultDto> {
     return this.drizzleService.db.transaction(async (tx) => {
-      // ── 1. Batch-insert all question rows ──────────────────────────────
+      // ── 1. Resolve the shared batch reference once ─────────────────────
+      // The reference belongs to the whole batch, not per-question, so we
+      // resolve it a single time and stamp the resulting ID on every row.
+      const referenceId = await this.referencesService.resolve(dto.reference, tx);
+
+      // ── 2. Batch-insert all question rows ──────────────────────────────
       const questionPayloads: (typeof questions.$inferInsert)[] = dto.questions.map((q) => ({
         questionType: q.questionType,
         statement: q.statement,
@@ -64,6 +73,7 @@ export class QuestionsService {
         chapterId: q.chapterId ?? null,
         isMisc: q.isMisc ?? false,
         oldExamId: q.oldExamId ?? null,
+        referenceId,
       }));
 
       const insertedQuestions = await tx
@@ -71,7 +81,7 @@ export class QuestionsService {
         .values(questionPayloads)
         .returning({ id: questions.id });
 
-      // ── 2. Batch-insert all options (single round-trip) ─────────────────
+      // ── 3. Batch-insert all options (single round-trip) ─────────────────
       const optionPayloads: (typeof questionOptions.$inferInsert)[] = [];
 
       insertedQuestions.forEach(({ id: questionId }, i) => {
@@ -99,27 +109,39 @@ export class QuestionsService {
   }
 
   async create(dto: CreateQuestionDto) {
-    const payload: typeof questions.$inferInsert = {
-      questionType: dto.questionType,
-      statement: dto.statement,
-      statementFormat: dto.statementFormat ?? 'text',
-      explanation: dto.explanation,
-      lessonId: dto.lessonId ?? null,
-      chapterId: dto.chapterId ?? null,
-      isMisc: dto.isMisc ?? false,
-      oldExamId: dto.oldExamId ?? null,
-    };
+    return this.drizzleService.db.transaction(async (tx) => {
+      // Resolve reference object to ID (create if needed)
+      const referenceId = await this.referencesService.resolve(dto.reference, tx);
 
-    const [question] = await this.drizzleService.db
-      .insert(questions)
-      .values(payload)
-      .returning();
+      const payload: typeof questions.$inferInsert = {
+        questionType: dto.questionType,
+        statement: dto.statement,
+        statementFormat: dto.statementFormat ?? 'text',
+        explanation: dto.explanation,
+        lessonId: dto.lessonId ?? null,
+        chapterId: dto.chapterId ?? null,
+        isMisc: dto.isMisc ?? false,
+        oldExamId: dto.oldExamId ?? null,
+        referenceId,
+      };
 
-    if (dto.questionType === 'mcq' && dto.options?.length) {
-      await this.questionOptionsService.createMany(question.id, dto.options);
-    }
+      const [question] = await tx
+        .insert(questions)
+        .values(payload)
+        .returning();
 
-    return this.findOne(question.id);
+      if (dto.questionType === 'mcq' && dto.options?.length) {
+        // Use the transaction-aware insert if possible, or just call service
+        const optionPayloads = dto.options.map((opt) => ({
+          questionId: question.id,
+          optionText: opt.optionText,
+          isCorrect: opt.isCorrect,
+        }));
+        await tx.insert(questionOptions).values(optionPayloads);
+      }
+
+      return this.findOne(question.id, tx);
+    });
   }
 
   /**
@@ -131,6 +153,7 @@ export class QuestionsService {
       lessonId?: number;
       chapterId?: number;
       oldExamId?: number;
+      referenceId?: number;
       questionType?: string;
       isMisc?: boolean;
     } = {},
@@ -142,6 +165,7 @@ export class QuestionsService {
     if (params.lessonId != null) conditions.push(eq(questions.lessonId, params.lessonId));
     if (params.chapterId != null) conditions.push(eq(questions.chapterId, params.chapterId));
     if (params.oldExamId != null) conditions.push(eq(questions.oldExamId, params.oldExamId));
+    if (params.referenceId != null) conditions.push(eq(questions.referenceId, params.referenceId));
     if (params.questionType != null) conditions.push(eq(questions.questionType, params.questionType));
     if (params.isMisc != null) conditions.push(eq(questions.isMisc, params.isMisc));
 
@@ -149,8 +173,9 @@ export class QuestionsService {
     return this._paginateQuery(where, page, limit);
   }
 
-  async findOne(id: number) {
-    const question = await this.drizzleService.db.query.questions.findFirst({
+  async findOne(id: number, tx?: any) {
+    const db = tx ? tx : this.drizzleService.db;
+    const question = await db.query.questions.findFirst({
       where: eq(questions.id, id),
       columns: QUESTION_COLUMNS,
       with: {
@@ -290,6 +315,7 @@ export class QuestionsService {
     if (filter.questionType) conditions.push(eq(questions.questionType, filter.questionType));
     if (filter.isMisc != null) conditions.push(eq(questions.isMisc, filter.isMisc));
     if (filter.oldExamId != null) conditions.push(eq(questions.oldExamId, filter.oldExamId));
+    if (filter.referenceId != null) conditions.push(eq(questions.referenceId, filter.referenceId));
     if (filter.lessonIds?.length) conditions.push(inArray(questions.lessonId, filter.lessonIds));
 
     // ── Chapter-level (needs lessons join) ───────────────────────────────

@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils';
 interface WrittenAnswerInputProps {
   questionId: number;
   value?: string;
+  disabled?: boolean;
   onChange: (text: string) => void;
 }
 
-export function WrittenAnswerInput({ questionId, value = '', onChange }: WrittenAnswerInputProps) {
+export function WrittenAnswerInput({ questionId, value = '', disabled, onChange }: WrittenAnswerInputProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize
@@ -29,11 +30,12 @@ export function WrittenAnswerInput({ questionId, value = '', onChange }: Written
         ref={ref}
         key={questionId} // remount on question change to reset
         value={value}
+        disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Type your answer here…"
+        placeholder={disabled ? "No answer provided" : "Type your answer here…"}
         className={cn(
           'min-h-30 overflow-hidden text-sm leading-relaxed resize-none',
-          'bg-card border-border focus-visible:border-primary',
+          'bg-card border-border focus-visible:border-primary disabled:opacity-50 disabled:cursor-not-allowed',
         )}
         rows={5}
       />

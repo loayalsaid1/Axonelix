@@ -15,6 +15,7 @@ interface QuestionDisplayProps {
   question: QuizQuestion;
   questionNumber: number;
   answer: LocalAnswer | undefined;
+  showAllAnswers?: boolean;
   onSelectOption: (questionId: number, optionId: number) => void;
   onSetWritten: (questionId: number, text: string) => void;
   onToggleMark: (questionId: number) => void;
@@ -25,12 +26,14 @@ export function QuestionDisplay({
   question,
   questionNumber,
   answer,
+  showAllAnswers,
   onSelectOption,
   onSetWritten,
   onToggleMark,
   onToggleEliminate,
 }: QuestionDisplayProps) {
   const isMarked = !!answer?.isMarked;
+  const showResult = showAllAnswers || answer?.isSubmitted;
 
   return (
     <Card className="gap-0 p-0 overflow-hidden">
@@ -93,6 +96,7 @@ export function QuestionDisplay({
             options={question.questionOptions}
             selectedOptionId={answer?.selectedOptionId}
             eliminatedOptions={answer?.eliminatedOptions ?? new Set()}
+            showResult={showResult}
             onSelect={(optionId) => onSelectOption(question.id, optionId)}
             onToggleEliminate={(optionId) => onToggleEliminate(question.id, optionId)}
           />
@@ -101,9 +105,20 @@ export function QuestionDisplay({
             questionId={question.id}
             value={answer?.writtenAnswer}
             onChange={(text) => onSetWritten(question.id, text)}
+            disabled={showResult}
           />
         )}
       </CardContent>
+
+      {/* Explanation Area */}
+      {showResult && question.explanation && (
+        <div className="bg-muted/30 px-5 py-4 border-border border-t">
+          <h4 className="mb-2 font-semibold text-sm">Explanation</h4>
+          <div className="text-muted-foreground text-sm prose dark:prose-invert max-w-none">
+            <EditorPreview content={question.explanation} />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

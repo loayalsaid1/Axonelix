@@ -14,6 +14,7 @@ import {
 	quizSessions,
 	quizSessionAnswers,
 	studyStreaks,
+	questionReferences,
 } from "./schema";
 
 export const subjectsRelations = relations(subjects, ({ one, many }) => ({
@@ -75,6 +76,10 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
 	oldExam: one(oldExams, {
 		fields: [questions.oldExamId],
 		references: [oldExams.id]
+	}),
+	reference: one(questionReferences, {
+		fields: [questions.referenceId],
+		references: [questionReferences.id]
 	}),
 	questionOptions: many(questionOptions),
 	quizQuestions: many(quizQuestions),

@@ -54,6 +54,7 @@ export class QuestionsController {
     @Query('lessonId', new ParseIntPipe({ optional: true })) lessonId?: number,
     @Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number,
     @Query('oldExamId', new ParseIntPipe({ optional: true })) oldExamId?: number,
+    @Query('referenceId', new ParseIntPipe({ optional: true })) referenceId?: number,
     @Query('questionType') questionType?: string,
     @Query('isMisc') isMiscRaw?: string,
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
@@ -61,7 +62,7 @@ export class QuestionsController {
   ) {
     const isMisc = isMiscRaw !== undefined ? isMiscRaw === 'true' : undefined;
     return this.questionsService.findAll(
-      { lessonId, chapterId, oldExamId, questionType, isMisc },
+      { lessonId, chapterId, oldExamId, referenceId, questionType, isMisc },
       page,
       limit,
     );

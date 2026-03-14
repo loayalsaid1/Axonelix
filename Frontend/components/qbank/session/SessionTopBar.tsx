@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PauseCircle, StopCircle, ChevronRight, BookOpen, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Toggle } from '@/components/ui/toggle';
 import { Progress } from '@/components/ui/progress';
 import {
   Dialog,
@@ -30,6 +31,8 @@ interface SessionTopBarProps {
   currentIndex: number;
   totalAnswered: number;
   elapsedSecs: number;
+  showAllAnswers?: boolean;
+  onToggleShowAllAnswers?: () => void;
   onSuspend: () => void;
   onEnd: () => void;
 }
@@ -40,6 +43,8 @@ export function SessionTopBar({
   currentIndex,
   totalAnswered,
   elapsedSecs,
+  showAllAnswers,
+  onToggleShowAllAnswers,
   onSuspend,
   onEnd,
 }: SessionTopBarProps) {
@@ -95,6 +100,23 @@ export function SessionTopBar({
 
         {/* Controls */}
         <div className="flex items-center gap-2">
+          {onToggleShowAllAnswers && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Toggle
+                  variant="outline"
+                  size="sm"
+                  pressed={showAllAnswers}
+                  onPressedChange={onToggleShowAllAnswers}
+                  className="gap-1.5 text-xs data-[state=on]:bg-primary/20 data-[state=on]:text-primary"
+                >
+                  <span className="hidden sm:inline">Show Answers</span>
+                </Toggle>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">Show answers for all questions</TooltipContent>
+            </Tooltip>
+          )}
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

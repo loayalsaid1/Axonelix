@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { QuestionFormFields } from '@/components/admin/shared/question-form-fields';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import type { JSONContent } from '@tiptap/react';
+
+interface SimpleEditorRefHandler {
+  getJSON: () => JSONContent | null;
+}
 
 interface QuestionOption {
   id?: string;
@@ -44,6 +51,9 @@ export default function EditQuestionDialog({
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
 
+  const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
+  const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
+
   // Question form data
   const [formData, setFormData] = useState({
     questionType: 'mcq' as 'mcq' | 'written',
@@ -59,6 +69,8 @@ export default function EditQuestionDialog({
   useEffect(() => {
     if (open && questionId) {
       fetchQuestion();
+    } else {
+      setInitialExplanationContent(undefined);
     }
   }, [open, questionId]);
 
@@ -69,28 +81,25 @@ export default function EditQuestionDialog({
     try {
       const question = await authFetch<QuestionData>(`/questions/${questionId}`);
 
-      let explanationText = '';
+      let explanationContent: JSONContent | undefined = undefined;
       if (question.explanation) {
         try {
-          const explanationJson = typeof question.explanation === 'string'
+          explanationContent = typeof question.explanation === 'string'
             ? JSON.parse(question.explanation)
             : question.explanation;
-          if (explanationJson?.content) {
-            explanationText = explanationJson.content
-              .flatMap((node: any) =>
-                node.content?.map((c: any) => c.text).join(' ') || ''
-              )
-              .join(' ');
-          }
         } catch (e) {
-          explanationText = String(question.explanation);
+          explanationContent = {
+            type: 'doc',
+            content: [{ type: 'paragraph', content: [{ type: 'text', text: String(question.explanation) }] }]
+          };
         }
       }
+      setInitialExplanationContent(explanationContent);
 
       setFormData({
         questionType: question.questionType,
         statement: question.statement,
-        explanation: explanationText,
+        explanation: '',
         options: question.questionOptions?.length > 0
           ? question.questionOptions
           : [
@@ -138,16 +147,18 @@ export default function EditQuestionDialog({
     setLoading(true);
 
     try {
+      const explanationContent = explanationEditorRef.current?.getJSON() || null;
+      // Check if it's empty
+      const isExplanationEmpty = !explanationContent ||
+        (explanationContent.content?.length === 1 &&
+          !explanationContent.content[0].content &&
+          explanationContent.content[0].type === 'paragraph');
+
       const payload = {
         questionType: formData.questionType,
         statement: formData.statement,
         statementFormat: 'text' as const,
-        explanation: formData.explanation.trim()
-          ? {
-            type: 'doc',
-            content: [{ type: 'paragraph', content: [{ type: 'text', text: formData.explanation }] }],
-          }
-          : null,
+        explanation: isExplanationEmpty ? null : explanationContent,
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
@@ -191,6 +202,18 @@ export default function EditQuestionDialog({
               }}
               onChange={(data) => setFormData({ ...formData, ...data })}
             />
+
+            {/* Explanation Editor */}
+            <div className="space-y-2">
+              <Label>Explanation (Optional)</Label>
+              <div className="border rounded-lg overflow-hidden">
+                <SimpleEditor
+                  ref={explanationEditorRef}
+                  initialContent={initialExplanationContent}
+                  key={questionId || 'new'}
+                />
+              </div>
+            </div>
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4 border-t">

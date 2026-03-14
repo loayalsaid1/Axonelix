@@ -13,6 +13,11 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, X } from 'lucide-react';
+import {
+  ReferenceSelector,
+  ReferenceValue,
+} from '@/components/admin/shared/reference-selector';
+import { useQuestionReferences } from '@/hooks/admin/use-question-references';
 
 interface QuestionOption {
   optionText: string;
@@ -24,19 +29,22 @@ interface QuestionFormData {
   statement: string;
   explanation: string;
   options: QuestionOption[];
+  reference?: ReferenceValue;
 }
 
 interface QuestionFormFieldsProps {
   data: QuestionFormData;
-  onChange: (data: QuestionFormData) => void;
+  onChange: (data: Partial<QuestionFormData>) => void;
 }
 
 export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) {
+  const { references, loading } = useQuestionReferences();
+
   const updateField = <K extends keyof QuestionFormData>(
     field: K,
     value: QuestionFormData[K]
   ) => {
-    onChange({ ...data, [field]: value });
+    onChange({ [field]: value });
   };
 
   const handleOptionChange = (index: number, value: string) => {
@@ -156,6 +164,15 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
           rows={3}
         />
       </div> */}
+
+      <div className="pt-4 border-t">
+        <ReferenceSelector
+          references={references}
+          value={data.reference || { text: '' }}
+          onChange={(val) => updateField('reference', val)}
+          loading={loading}
+        />
+      </div>
     </>
   );
 }
