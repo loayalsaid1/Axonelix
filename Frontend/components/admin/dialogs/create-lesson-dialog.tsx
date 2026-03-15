@@ -102,7 +102,6 @@ export default function CreateLessonDialog({
               placeholder="Brief description of the lesson..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2">

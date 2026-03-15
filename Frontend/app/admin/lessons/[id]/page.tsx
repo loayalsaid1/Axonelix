@@ -114,15 +114,6 @@ export default function LessonEditPage() {
         return;
       }
 
-      if (!description.trim()) {
-        toast({
-          title: 'Validation Error',
-          description: 'Lesson description is required',
-          variant: 'destructive',
-        });
-        return;
-      }
-
       const actualChapterId = isMisc ? null : Number(chapterId || lesson?.chapterId);
 
       const updated = await authFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`, {
@@ -252,7 +243,7 @@ export default function LessonEditPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={description}
