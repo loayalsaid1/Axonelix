@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { ReviewTopBar } from './ReviewTopBar';
 import { ReviewQuestionCard } from './ReviewQuestionCard';
 import { ReviewNavigatorPanel } from './ReviewNavigatorPanel';
+import { ReviewDrawer } from './ReviewDrawer';
 import { buildReviewEntries } from '@/lib/types/quizzes';
 import type { ReviewFilter, SessionDetail } from '@/lib/types/quizzes';
 
@@ -24,8 +25,9 @@ interface SessionReviewProps {
  * and explanation on every QuizQuestion at completion time).
  */
 export function SessionReview({ sessionDetail, onBack }: SessionReviewProps) {
-  const [filter, setFilter]         = useState<ReviewFilter>('all');
+  const [filter, setFilter] = useState<ReviewFilter>('all');
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Build full entry list once
   const allEntries = useMemo(
@@ -51,7 +53,8 @@ export function SessionReview({ sessionDetail, onBack }: SessionReviewProps) {
     setCurrentIndex(0);
   }, []);
 
-  const goTo   = useCallback((i: number) => setCurrentIndex(i), []);
+  const goTo = useCallback((i: number) => setCurrentIndex(i), []);
+
   const goPrev = useCallback(() => setCurrentIndex((i) => Math.max(0, i - 1)), []);
   const goNext = useCallback(
     () => setCurrentIndex((i) => Math.min(entries.length - 1, i + 1)),
@@ -70,6 +73,7 @@ export function SessionReview({ sessionDetail, onBack }: SessionReviewProps) {
         onPrev={goPrev}
         onNext={goNext}
         onBack={onBack}
+        onOpenMobileNav={() => setIsMobileNavOpen(true)}
       />
 
       {/* Content */}
@@ -92,12 +96,24 @@ export function SessionReview({ sessionDetail, onBack }: SessionReviewProps) {
         {/* Side navigator (hidden on small screens) */}
         <div className="hidden lg:block shrink-0">
           <ReviewNavigatorPanel
+            className="w-64 border-l"
             entries={entries}
             currentIndex={currentIndex}
             onNavigate={goTo}
           />
         </div>
       </div>
+
+      {/* Mobile Navigator Drawer */}
+      <ReviewDrawer
+        isOpen={isMobileNavOpen}
+        onOpenChange={setIsMobileNavOpen}
+        filter={filter}
+        onFilterChange={handleFilterChange}
+        entries={entries}
+        currentIndex={currentIndex}
+        onNavigate={goTo}
+      />
     </div>
   );
 }

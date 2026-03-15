@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, BookOpen, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ReviewFilter, Quiz } from '@/lib/types/quizzes';
@@ -16,6 +16,7 @@ interface ReviewTopBarProps {
   onPrev: () => void;
   onNext: () => void;
   onBack: () => void;
+  onOpenMobileNav: () => void;
 }
 
 export function ReviewTopBar({
@@ -27,9 +28,10 @@ export function ReviewTopBar({
   onPrev,
   onNext,
   onBack,
+  onOpenMobileNav,
 }: ReviewTopBarProps) {
   const isFirst = currentIndex === 0;
-  const isLast  = currentIndex >= totalEntries - 1;
+  const isLast = currentIndex >= totalEntries - 1;
 
   return (
     <header className="flex items-center gap-4 bg-card px-4 md:px-6 border-border border-b h-14 shrink-0">
@@ -48,20 +50,20 @@ export function ReviewTopBar({
       </div>
 
       {/* Filter tabs */}
-      <div className="hidden md:flex flex-1 justify-center">
+      <div className="hidden lg:flex flex-1 justify-center">
         <Tabs
           value={activeFilter}
           onValueChange={(v) => onFilterChange(v as ReviewFilter)}
         >
           <TabsList className="h-8">
-            <TabsTrigger value="all"       className="px-3 h-6 text-xs">All</TabsTrigger>
+            <TabsTrigger value="all" className="px-3 h-6 text-xs">All</TabsTrigger>
             <TabsTrigger value="incorrect" className="px-3 h-6 text-xs">Incorrect</TabsTrigger>
-            <TabsTrigger value="marked"    className="px-3 h-6 text-xs">Marked</TabsTrigger>
+            <TabsTrigger value="marked" className="px-3 h-6 text-xs">Marked</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="md:hidden flex-1" />
+      <div className="lg:hidden flex-1" />
 
       {/* Navigation */}
       <div className="flex items-center gap-1.5 shrink-0">
@@ -73,6 +75,17 @@ export function ReviewTopBar({
         </span>
         <Button variant="outline" size="icon" className="size-8" onClick={onNext} disabled={isLast}>
           <ChevronRight className="size-4" />
+        </Button>
+
+        <div className="w-px h-6 bg-border mx-1 hidden sm:block lg:hidden" />
+        <Button
+          variant="secondary"
+          size="icon"
+          className="size-8 lg:hidden"
+          onClick={onOpenMobileNav}
+          title="Open filters & map"
+        >
+          <Menu className="size-4" />
         </Button>
       </div>
     </header>
