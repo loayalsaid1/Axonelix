@@ -53,15 +53,14 @@ export const QuestionSection = Node.create({
         {
           'data-question-section-header': '',
           'class': 'question-section-header',
-          'contenteditable': 'true',
         },
         node.attrs.title,
       ],
       [
         'div',
-        { 
+        {
           'data-question-section-content': '',
-          'class': 'question-section-content' 
+          'class': 'question-section-content'
         },
         0,
       ],
@@ -133,7 +132,7 @@ export const QuestionTemplate = Node.create({
         ];
 
         // Create question sections with content
-        const sectionNodes = sections.map(section => 
+        const sectionNodes = sections.map(section =>
           schema.nodes.questionSection.create(
             { title: section.title },
             [section.content]
