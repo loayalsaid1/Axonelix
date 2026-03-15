@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronDown, Upload } from 'lucide-react';
 import { useQuestionFilters } from '@/hooks/admin/use-question-filters';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { AdminEmptyState } from '@/components/admin/shared/admin-empty-state';
 import { AdminLoadingGrid } from '@/components/admin/shared/admin-loading-grid';
 import { AdminQuestionCard } from '@/components/admin/questions/admin-question-card';
@@ -42,8 +42,6 @@ export function QuestionsList() {
     refetch,
   } = useQuestionFilters();
 
-  const { toast } = useToast();
-
   // Track if filters have been applied at least once
   const [filtersApplied, setFiltersApplied] = useState(false);
 
@@ -63,8 +61,10 @@ export function QuestionsList() {
       if (filtersApplied) {
         fetchQuestions();
       }
+      toast.success('Question deleted successfully');
     } catch (error) {
       console.error('Failed to delete question:', error);
+      toast.error('Failed to delete question');
     }
   };
 
@@ -73,7 +73,7 @@ export function QuestionsList() {
     if (filtersApplied) {
       refetch();
     }
-    toast({ title: 'Question created', description: 'The question was added successfully.' });
+    toast.success('Question created successfully');
   };
 
   const handleQuestionUpdated = () => {
@@ -81,6 +81,7 @@ export function QuestionsList() {
     if (filtersApplied) {
       refetch();
     }
+    toast.success('Question updated successfully');
   };
 
   const handleSubjectToggle = (subjectId: string) => {
