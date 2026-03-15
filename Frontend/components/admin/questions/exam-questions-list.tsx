@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useExamQuestions } from '@/hooks/admin/use-exam-questions';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { AdminEmptyState } from '@/components/admin/shared/admin-empty-state';
 import { AdminLoadingGrid } from '@/components/admin/shared/admin-loading-grid';
 import { ExamQuestionCard } from '@/components/admin/questions/exam-question-card';
@@ -17,16 +17,21 @@ interface ExamQuestionsListProps {
 export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
   const { questions, loading, removeQuestion, refetch } = useExamQuestions(examId);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const { toast } = useToast();
 
   const handleRemoveQuestion = async (questionId: string) => {
-    await removeQuestion(questionId);
+    try {
+      await removeQuestion(questionId);
+      toast.success('Question removed from exam');
+    } catch (error) {
+      console.error('Failed to remove question:', error);
+      toast.error('Failed to remove question');
+    }
   };
 
   const handleQuestionAdded = () => {
     // setShowAddDialog(false);
     refetch();
-    toast({ title: 'Question added', description: 'Question added to exam successfully.' });
+    toast.success('Question added to exam successfully');
   };
 
   return (
