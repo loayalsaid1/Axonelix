@@ -10,16 +10,16 @@ type DotVariant = 'correct' | 'incorrect' | 'ungraded' | 'current';
 
 function getDotVariant(entry: ReviewEntry, isCurrent: boolean): DotVariant {
   if (isCurrent) return 'current';
-  if (entry.isCorrect === true)  return 'correct';
+  if (entry.isCorrect === true) return 'correct';
   if (entry.isCorrect === false) return 'incorrect';
   return 'ungraded'; // written / null
 }
 
 const dotColorMap: Record<DotVariant, string> = {
-  correct:   'bg-emerald-500 text-white ring-emerald-500/30',
+  correct: 'bg-emerald-500 text-white ring-emerald-500/30',
   incorrect: 'bg-destructive text-white ring-destructive/30',
-  ungraded:  'bg-muted text-muted-foreground ring-muted-foreground/20',
-  current:   'bg-primary text-primary-foreground ring-primary/30',
+  ungraded: 'bg-muted text-muted-foreground ring-muted-foreground/20',
+  current: 'bg-primary text-primary-foreground ring-primary/30',
 };
 
 // ─── Summary counts ───────────────────────────────────────────────────────────
@@ -54,19 +54,21 @@ interface ReviewNavigatorPanelProps {
   /** Index into `entries` for the currently visible card. */
   currentIndex: number;
   onNavigate: (index: number) => void;
+  className?: string;
 }
 
 export function ReviewNavigatorPanel({
   entries,
   currentIndex,
   onNavigate,
+  className,
 }: ReviewNavigatorPanelProps) {
-  const correct  = entries.filter((e) => e.isCorrect === true).length;
+  const correct = entries.filter((e) => e.isCorrect === true).length;
   const incorrect = entries.filter((e) => e.isCorrect === false).length;
   const ungraded = entries.filter((e) => e.isCorrect === null).length;
 
   return (
-    <aside className="flex flex-col bg-card border-border border-l w-64 h-full">
+    <aside className={cn("flex flex-col bg-card border-border h-full", className)}>
       {/* Title */}
       <div className="px-4 py-3 border-border border-b shrink-0">
         <p className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
