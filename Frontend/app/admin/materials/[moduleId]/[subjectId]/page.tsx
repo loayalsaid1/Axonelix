@@ -14,7 +14,7 @@ export default function ChaptersPage() {
       <SubjectHeader
         subjectId={subjectId}
         backHref={`/admin/materials/${moduleId}`}
-        backLabel="Back to Subject"
+        backLabel="Back to Subjects"
       />
       <ChaptersList moduleId={moduleId} subjectId={subjectId} />
     </div>
