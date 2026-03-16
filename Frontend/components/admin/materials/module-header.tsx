@@ -39,21 +39,12 @@ export function ModuleHeader({ moduleId, backHref, backLabel = 'Back' }: ModuleH
   if (!module) return null;
 
   return (
-    <>
-      {backHref && (
-        <Link
-          href={backHref}
-          className="flex items-center gap-2 mb-6 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Link>
-      )}
-      <AdminPageHeader
-        title={module.name}
-        description={module.description}
-        className="mb-8"
-      />
-    </>
+    <AdminPageHeader
+      title={module.name}
+      description={module.description}
+      backHref={backHref}
+      backLabel={backLabel}
+      className="mb-8"
+    />
   );
 }

@@ -39,21 +39,12 @@ export function ChapterHeader({ chapterId, backHref, backLabel = 'Back' }: Chapt
   if (!chapter) return null;
 
   return (
-    <>
-      {backHref && (
-        <Link
-          href={backHref}
-          className="flex items-center gap-2 mb-6 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Link>
-      )}
-      <AdminPageHeader
-        title={chapter.name}
-        description={chapter.description}
-        className="mb-8"
-      />
-    </>
+    <AdminPageHeader
+      title={chapter.name}
+      description={chapter.description}
+      backHref={backHref}
+      backLabel={backLabel}
+      className="mb-8"
+    />
   );
 }

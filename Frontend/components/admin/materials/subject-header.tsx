@@ -39,21 +39,12 @@ export function SubjectHeader({ subjectId, backHref, backLabel = 'Back' }: Subje
   if (!subject) return null;
 
   return (
-    <>
-      {backHref && (
-        <Link
-          href={backHref}
-          className="flex items-center gap-2 mb-6 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Link>
-      )}
-      <AdminPageHeader
-        title={subject.name}
-        description={subject.description}
-        className="mb-8"
-      />
-    </>
+    <AdminPageHeader
+      title={subject.name}
+      description={subject.description}
+      backHref={backHref}
+      backLabel={backLabel}
+      className="mb-8"
+    />
   );
 }
