@@ -11,7 +11,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { JSONContent } from '@tiptap/core';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
 import { useApiFetch } from '@/hooks/use-api-fetch';
 
@@ -47,7 +47,6 @@ interface LessonWithHierarchy {
 export default function LessonEditPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const authFetch = useApiFetch();
   const editorRef = useRef<SimpleEditorRefHandler>(null);
 
@@ -79,24 +78,20 @@ export default function LessonEditPage() {
         setName(lessonData.name);
         setDescription(lessonData.description);
         setOrderIndex(String(lessonData.orderIndex || 0));
-        setModuleId(String(lessonData.chapter.subject.module.id));
-        setSubjectId(String(lessonData.chapter.subject.id));
-        setChapterId(String(lessonData.chapterId));
+        setModuleId(String(lessonData.chapter?.subject?.module?.id || ''));
+        setSubjectId(String(lessonData.chapter?.subject?.id || ''));
+        setChapterId(String(lessonData.chapterId || ''));
         setIsMisc(lessonData.isMisc || false);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching lesson:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load lesson',
-          variant: 'destructive',
-        });
+        toast.error('Failed to load lesson');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchLesson();
-  }, [lessonId, toast]);
+  }, [lessonId]);
 
   const handleSave = async () => {
     try {
@@ -106,20 +101,7 @@ export default function LessonEditPage() {
       const content = editorRef.current?.getJSON();
 
       if (!name.trim()) {
-        toast({
-          title: 'Validation Error',
-          description: 'Lesson name is required',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (!description.trim()) {
-        toast({
-          title: 'Validation Error',
-          description: 'Lesson description is required',
-          variant: 'destructive',
-        });
+        toast.error('Lesson name is required');
         return;
       }
 
@@ -142,22 +124,15 @@ export default function LessonEditPage() {
       setName(updated.name);
       setDescription(updated.description);
       setOrderIndex(String(updated.orderIndex || 0));
-      setModuleId(String(updated.chapter.subject.module.id));
-      setSubjectId(String(updated.chapter.subject.id));
-      setChapterId(String(updated.chapterId));
+      setModuleId(String(updated.chapter?.subject?.module?.id || ''));
+      setSubjectId(String(updated.chapter?.subject?.id || ''));
+      setChapterId(String(updated.chapterId || ''));
       setIsMisc(updated.isMisc || false);
 
-      toast({
-        title: 'Success',
-        description: 'Lesson saved successfully',
-      });
-    } catch (error) {
+      toast.success('Lesson saved successfully');
+    } catch (error: unknown) {
       console.error('Error saving lesson:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save lesson',
-        variant: 'destructive',
-      });
+      toast.error('Failed to save lesson');
     } finally {
       setIsSaving(false);
     }
@@ -252,7 +227,7 @@ export default function LessonEditPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={description}

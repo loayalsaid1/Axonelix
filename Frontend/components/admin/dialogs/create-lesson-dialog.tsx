@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { JSONContent } from '@tiptap/react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { toast } from 'sonner';
 
 interface CreateLessonDialogProps {
   chapterId?: string;
@@ -70,8 +71,10 @@ export default function CreateLessonDialog({
       resetForm();
       onOpenChange(false);
       onLessonCreated();
+      toast.success('Lesson created successfully');
     } catch (error) {
       console.error('Failed to create lesson:', error);
+      toast.error('Failed to create lesson');
     } finally {
       setLoading(false);
     }
@@ -102,7 +105,6 @@ export default function CreateLessonDialog({
               placeholder="Brief description of the lesson..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2">

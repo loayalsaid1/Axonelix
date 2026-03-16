@@ -3,12 +3,12 @@ import { Zap } from 'lucide-react';
 
 export function DashboardQuickTips() {
   return (
-    <Card className="h-full bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
+    <Card className="h-full bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-amber-200 dark:border-amber-900/50">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between mb-2">
           <CardTitle className="text-xl">Getting Started</CardTitle>
-          <div className="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
-            <Zap className="h-6 w-6 text-yellow-600" />
+          <div className="w-12 h-12 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+            <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
           </div>
         </div>
         <CardDescription className="text-base">Quick Tips</CardDescription>

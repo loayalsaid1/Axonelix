@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useCsvParser } from '@/hooks/admin/use-csv-parser';
 import { bulkCreateQuestions } from '@/lib/api/questions';
 import type { BulkCreateQuestionInput, BulkCreatePayload } from '@/lib/api/questions';
@@ -21,7 +21,6 @@ import {
 
 export default function BulkUploadPage() {
 	const router = useRouter();
-	const { toast } = useToast();
 	const { getToken } = useAuth();
 	const [currentStep, setCurrentStep] = useState(1);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,18 +74,15 @@ export default function BulkUploadPage() {
 			const token = await getToken();
 			const result = await bulkCreateQuestions(payload, token ?? undefined);
 
-			toast({
-				title: 'Upload successful!',
+			toast.success('Upload successful!', {
 				description: `${result.count} question${result.count !== 1 ? 's' : ''} were added to the database.`,
 			});
 
 			router.push('/admin/questions');
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'Upload failed. Please try again.';
-			toast({
-				title: 'Upload failed',
+			toast.error('Upload failed', {
 				description: message,
-				variant: 'destructive',
 			});
 		} finally {
 			setIsSubmitting(false);

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs'
 import { shadcn } from '@clerk/themes'
 import { AppThemeProvider, ColorThemeScript } from "@/components/theme-provider"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
         >
           <AppThemeProvider>
             {children}
+            <SonnerToaster />
           </AppThemeProvider>
         </body>
       </html>
