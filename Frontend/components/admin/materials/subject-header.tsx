@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/shared/admin-page-header';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface Subject {
   id: string;
@@ -19,13 +18,13 @@ interface SubjectHeaderProps {
 
 export function SubjectHeader({ subjectId, backHref, backLabel = 'Back' }: SubjectHeaderProps) {
   const [subject, setSubject] = useState<Subject | null>(null);
+  const authFetch = useApiFetch();
 
   useEffect(() => {
     const fetchSubject = async () => {
       try {
-        const response = await fetch(`/api/admin/subjects/${subjectId}`);
-        const data = await response.json();
-        setSubject(data.subject);
+        const data = await authFetch<Subject>(`/materials/subjects/${subjectId}`);
+        setSubject(data);
       } catch (error) {
         console.error('Failed to fetch subject:', error);
       }
@@ -34,7 +33,7 @@ export function SubjectHeader({ subjectId, backHref, backLabel = 'Back' }: Subje
     if (subjectId) {
       fetchSubject();
     }
-  }, [subjectId]);
+  }, [subjectId, authFetch]);
 
   if (!subject) return null;
 

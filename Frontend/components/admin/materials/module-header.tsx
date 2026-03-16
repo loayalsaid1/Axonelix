@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/shared/admin-page-header';
+import { API_BASE_URL } from '@/lib/constants';
+import { useApiFetch } from '@/hooks/use-api-fetch';
 
 interface Module {
   id: string;
@@ -19,13 +19,13 @@ interface ModuleHeaderProps {
 
 export function ModuleHeader({ moduleId, backHref, backLabel = 'Back' }: ModuleHeaderProps) {
   const [module, setModule] = useState<Module | null>(null);
+  const authFetch = useApiFetch();
 
   useEffect(() => {
     const fetchModule = async () => {
       try {
-        const response = await fetch(`/api/admin/modules/${moduleId}`);
-        const data = await response.json();
-        setModule(data.module);
+        const data = await authFetch<Module>(`/materials/modules/${moduleId}`);
+        setModule(data);
       } catch (error) {
         console.error('Failed to fetch module:', error);
       }
@@ -34,7 +34,7 @@ export function ModuleHeader({ moduleId, backHref, backLabel = 'Back' }: ModuleH
     if (moduleId) {
       fetchModule();
     }
-  }, [moduleId]);
+  }, [moduleId, authFetch]);
 
   if (!module) return null;
 
