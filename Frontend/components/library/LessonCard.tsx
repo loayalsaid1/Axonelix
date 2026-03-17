@@ -64,27 +64,29 @@ export function LessonCard({
         </p>
       )}
 
-      {/* Progress */}
-      <div className="mt-auto space-y-1">
-        <div className="flex justify-between items-center text-[11px] text-muted-foreground">
-          <span>Progress</span>
-          <span className="font-medium tabular-nums">{progress}%</span>
-        </div>
-        <Progress value={progress} className="h-1.5" />
-      </div>
-
-      {/* Stats footer */}
-      <div className="flex items-center justify-between pt-2 mt-2 text-xs text-muted-foreground">
-        <div className="flex items-center gap-3">
-          {questionCount > 0 && (
-            <span className="flex items-center gap-1">
-              <FileText className="size-3" />
-              {questionCount}Q
-            </span>
-          )}
-        </div>
-        <ArrowRight className="size-3.5 group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
-      </div>
+      {/* Progress and stats (temporarily commented out) */}
+      {false && (
+        <>
+          <div className="mt-auto space-y-1">
+            <div className="flex justify-between items-center text-[11px] text-muted-foreground">
+              <span>Progress</span>
+              <span className="font-medium tabular-nums">{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-1.5" />
+          </div>
+          <div className="flex items-center justify-between pt-2 mt-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-3">
+              {questionCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <FileText className="size-3" />
+                  {questionCount}Q
+                </span>
+              )}
+            </div>
+            <ArrowRight className="size-3.5 group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </>
+      )}
     </Link>
   );
 }

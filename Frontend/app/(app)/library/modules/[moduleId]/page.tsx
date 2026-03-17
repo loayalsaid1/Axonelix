@@ -50,8 +50,8 @@ export default async function ModulePage({ params }: Props) {
       <HierarchyPageHeader
         name={mod.name}
         description={mod.description}
-        questionCount={mockQuestionCount(mod.id)}
-        progress={mockProgress(mod.id)}
+      // questionCount={mockQuestionCount(mod.id)}
+      // progress={mockProgress(mod.id)}
       />
 
       {mod.subjects.length === 0 ? (
@@ -80,8 +80,8 @@ export default async function ModulePage({ params }: Props) {
                         ? `${subject.chapters.length} chapter${subject.chapters.length !== 1 ? "s" : ""}`
                         : undefined
                     }
-                    progress={mockProgress(subject.id)}
-                    footerLabel={`${mockQuestionCount(subject.id)} questions`}
+                  // progress={mockProgress(subject.id)}
+                  // footerLabel={`${mockQuestionCount(subject.id)} questions`}
                   />
                 ))}
               </div>
@@ -110,8 +110,8 @@ export default async function ModulePage({ params }: Props) {
                         ? `${subject.chapters.length} chapter${subject.chapters.length !== 1 ? "s" : ""}`
                         : undefined
                     }
-                    progress={mockProgress(subject.id)}
-                    footerLabel={`${mockQuestionCount(subject.id)} questions`}
+                  // progress={mockProgress(subject.id)}
+                  // footerLabel={`${mockQuestionCount(subject.id)} questions`}
                   />
                 ))}
               </div>
