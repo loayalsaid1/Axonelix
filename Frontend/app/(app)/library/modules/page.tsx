@@ -37,8 +37,8 @@ export default async function ModulesPage() {
                   ? `${module.subjects.length} subject${module.subjects.length !== 1 ? "s" : ""}`
                   : undefined
               }
-              progress={mockProgress(module.id)}
-              footerLabel={`${mockQuestionCount(module.id)} questions`}
+            // progress={mockProgress(module.id)}
+            // footerLabel={`${mockQuestionCount(module.id)} questions`}
             />
           ))}
         </div>

@@ -51,8 +51,8 @@ export default async function ChapterPage({ params }: Props) {
       <HierarchyPageHeader
         name={chapter.name}
         description={chapter.description}
-        questionCount={mockQuestionCount(chapter.id)}
-        progress={mockProgress(chapter.id)}
+      // questionCount={mockQuestionCount(chapter.id)}
+      // progress={mockProgress(chapter.id)}
       />
 
       {chapter.lessons.length === 0 ? (
@@ -64,8 +64,8 @@ export default async function ChapterPage({ params }: Props) {
               key={lesson.id}
               lesson={lesson}
               subjectType={subject.type as "theoretical" | "practical"}
-              progress={mockProgress(lesson.id)}
-              questionCount={mockQuestionCount(lesson.id)}
+            // progress={mockProgress(lesson.id)}
+            // questionCount={mockQuestionCount(lesson.id)}
             />
           ))}
         </div>

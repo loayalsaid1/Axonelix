@@ -61,8 +61,8 @@ export default async function LessonPage({ params }: Props) {
         description={lesson.description}
         badge={subject.type === "theoretical" ? "Theoretical" : "Practical"}
         badgeVariant={subject.type as "theoretical" | "practical"}
-        questionCount={mockQuestionCount(lesson.id)}
-        progress={mockProgress(lesson.id)}
+      // questionCount={mockQuestionCount(lesson.id)}
+      // progress={mockProgress(lesson.id)}
       />
 
       <LessonTabs content={lesson.content as JSONContent | null} />

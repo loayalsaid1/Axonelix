@@ -69,8 +69,8 @@ export function HierarchyPageHeader({
         </div>
       </div>
 
-      {/* Mocked stats row */}
-      {(progress !== undefined || questionCount !== undefined) && (
+      {/* Mocked stats row (temporarily commented out) */}
+      {false && (progress !== undefined || questionCount !== undefined) && (
         <div className="flex flex-wrap gap-4 text-muted-foreground text-sm">
           {questionCount !== undefined && (
             <span>

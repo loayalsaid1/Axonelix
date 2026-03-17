@@ -80,8 +80,8 @@ export function EntityCard({
         </p>
       )}
 
-      {/* Progress */}
-      {progress !== undefined && (
+      {/* Progress (temporarily commented out) */}
+      {false && progress !== undefined && (
         <div className="space-y-1 mt-3">
           <div className="flex justify-between items-center text-[11px] text-muted-foreground">
             <span>Progress</span>

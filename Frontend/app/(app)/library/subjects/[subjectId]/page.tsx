@@ -77,8 +77,8 @@ function ChapterSection({
               key={lesson.id}
               lesson={lesson}
               subjectType={subjectType}
-              progress={mockProgress(lesson.id)}
-              questionCount={mockQuestionCount(lesson.id)}
+            // progress={mockProgress(lesson.id)}
+            // questionCount={mockQuestionCount(lesson.id)}
             />
           ))}
         </div>
@@ -134,8 +134,8 @@ export default async function SubjectPage({ params }: Props) {
         description={subject.description}
         badge={subject.type === "theoretical" ? "Theoretical" : "Practical"}
         badgeVariant={subject.type as "theoretical" | "practical"}
-        questionCount={mockQuestionCount(subject.id)}
-        progress={mockProgress(subject.id)}
+      // questionCount={mockQuestionCount(subject.id)}
+      // progress={mockProgress(subject.id)}
       />
 
       {orderedChapters.length === 0 ? (
