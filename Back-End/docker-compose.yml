@@ -1,8 +1,6 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${IMAGE_NAME:-axonelix-backend-prod}:${IMAGE_TAG:-latest}
     container_name: axonelix-backend
     restart: always
     ports:

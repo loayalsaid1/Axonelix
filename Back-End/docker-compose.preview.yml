@@ -1,0 +1,17 @@
+services:
+  web:
+    image: ${IMAGE_NAME:-axonelix-backend-preview}:${IMAGE_TAG:-latest}
+    container_name: axonelix-backend-preview
+    restart: always
+    ports:
+      - '${APP_PORT:-3001}:3000'
+    env_file:
+      - .env.preview
+    networks:
+      - backend-network
+      - nginx-proxy
+
+networks:
+  backend-network:
+  nginx-proxy:
+    external: true
