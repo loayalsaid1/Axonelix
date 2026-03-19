@@ -1,3 +1,5 @@
+name: axonelix-preview
+
 services:
   web:
     image: ${IMAGE_NAME:-axonelix-backend-preview}:${IMAGE_TAG:-latest}
