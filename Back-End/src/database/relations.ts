@@ -15,6 +15,8 @@ import {
 	quizSessionAnswers,
 	studyStreaks,
 	questionReferences,
+	flashcardDecks,
+	flashcards,
 } from "./schema";
 
 export const subjectsRelations = relations(subjects, ({ one, many }) => ({
@@ -160,5 +162,24 @@ export const studyStreaksRelations = relations(studyStreaks, ({ one }) => ({
 	user: one(users, {
 		fields: [studyStreaks.userId],
 		references: [users.id],
+	}),
+}));
+
+export const flashcardDecksRelations = relations(flashcardDecks, ({ one, many }) => ({
+	lesson: one(lessons, {
+		fields: [flashcardDecks.lessonId],
+		references: [lessons.id],
+	}),
+	user: one(users, {
+		fields: [flashcardDecks.userId],
+		references: [users.id],
+	}),
+	flashcards: many(flashcards),
+}));
+
+export const flashcardsRelations = relations(flashcards, ({ one }) => ({
+	deck: one(flashcardDecks, {
+		fields: [flashcards.deckId],
+		references: [flashcardDecks.id],
 	}),
 }));

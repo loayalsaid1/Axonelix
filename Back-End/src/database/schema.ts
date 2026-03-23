@@ -28,6 +28,9 @@ import {
 import { userQuestionStatus } from "./entities/user-question-status";
 import { studyStreaks } from "./entities/study-streaks";
 import { questionReferences } from "./entities/question-references";
+import { flashcardDecks } from "./entities/flashcard-decks";
+import { flashcards } from "./entities/flashcards";
+import { deckTypeEnum } from "./entities/enums/flashcard-enums";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -56,6 +59,9 @@ export {
 	userQuestionStatus,
 	studyStreaks,
 	questionReferences,
+	flashcardDecks,
+	flashcards,
+	deckTypeEnum,
 };
 
 export const schema = {
@@ -83,6 +89,9 @@ export const schema = {
 	userQuestionStatus,
 	studyStreaks,
 	questionReferences,
+	flashcardDecks,
+	flashcards,
+	deckTypeEnum,
 	...relations,
 };
 

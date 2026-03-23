@@ -12,7 +12,7 @@
 ---
 
 ## Backend:
-### General Backend Architecture
+### General architecture
 Create and edit flashcards, organizing them into a personal and an admin deck linked to a lesson. 
 We will optimize the backend to be future-ready for multiple decks and maybe different types as well.. .(e.g. `COMMUNITY`, `SHARED`), but currently, the application's logic will enforce one `ADMIN` and one `PERSONAL` deck per lesson per user.
 
@@ -57,17 +57,19 @@ DELETE /api/flashcards/decks/:id
 // Cards
 GET    /api/flashcards/decks/:id/cards
 GET    /api/flashcards/cards/:id
-POST   /api/flashcards/cards
-POST   /api/flashcards/cards/bulk
+POST   /api/flashcards/decks/:id/cards
 PATCH  /api/flashcards/cards/:id
 DELETE /api/flashcards/cards/:id
 PUT    /api/flashcards/decks/:id/cards/order
 ```
 
-We can mke 2 controllers each having the prefix of flashcards only so that cards controller can have decks at the start .. 
 
-
-
+### Notes:
+- We can mke 2 controllers each having the prefix of flashcards only so that cards controller can have decks at the start .. 
+- DTOs better take from the table.insertType and SelectTYpe in teh schema for the DTO properties
+- For the cards endpoint of the deck..it's etter to include a field of the deck itself, and a filed with array of cards.. for better managements
+- Return types must not be forgotten of controllers and services must not be forgotten.. 
+- the create cards per deck takes an array by default
 ---
 
 ## Front-end: 
@@ -100,3 +102,4 @@ where you have teh form for front-end and back.. and you have list or recently a
 - further more, if we continue with that route.. we have to edit the save button on top inthe lesson page.. and also.. make the flashcards tab disabled if the content is not saved, that's if we keep the flashcards tab in the lesson page.. not in a seprate page. 
 - Given that the current implementation is just for one admin deck and one personal deck.. and that we made our api ready for more that that.. we can make the UI with a button to actually make a request to fetch the decks there with the count, and with a button to just create a new deck and get disabled when one is there to first create the deck instead of just creating cards right away and make them user and implicitly get or create the deck.. 
 so, later when we want to include more that one deck.. we remove the disability of the button and remove the unique constraint of the deck.. and modify UI to not be centeralized around one deck.. **How about that?**
+- Another alternative, I would prefer, for UX . instead of disabling or removing teh button.. show an like, empty card or a card saying no personal one.. so, it sends a request to create the deck.. and then open the deck page and let user create his cards after loading is done and deck created 
