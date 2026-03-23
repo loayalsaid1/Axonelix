@@ -1,13 +1,14 @@
-import { pgTable, text, uuid, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, uniqueIndex, serial } from "drizzle-orm/pg-core";
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { lessons } from "./lessons";
 import { users } from "./users";
 import { deckTypeEnum } from "./enums/flashcard-enums";
 import { eq, sql } from "drizzle-orm";
 
 export const flashcardDecks = pgTable("flashcard_decks", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    lessonId: uuid("lesson_id").notNull().references(() => lessons.id, { onDelete: "cascade" }),
-    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    id: serial("id").primaryKey().notNull(),
+    lessonId: integer("lesson_id").notNull().references(() => lessons.id, { onDelete: "cascade" }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
     deckType: deckTypeEnum("deck_type").notNull(),
     name: text("name").notNull(),
     description: text("description"),
@@ -22,3 +23,6 @@ export const flashcardDecks = pgTable("flashcard_decks", {
         .on(table.lessonId, table.userId)
         .where(eq(table.deckType, 'PERSONAL')),
 ]);
+
+export type FlashcardDeck = InferSelectModel<typeof flashcardDecks>;
+export type NewFlashcardDeck = InferInsertModel<typeof flashcardDecks>;
