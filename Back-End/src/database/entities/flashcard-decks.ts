@@ -18,10 +18,10 @@ export const flashcardDecks = pgTable("flashcard_decks", {
 }, (table) => [
     uniqueIndex("idx_flashcard_decks_admin_lesson")
         .on(table.lessonId)
-        .where(eq(table.deckType, 'ADMIN')),
+        .where(sql`${table.deckType} = 'ADMIN'`),
     uniqueIndex("idx_flashcard_decks_personal_lesson_user")
         .on(table.lessonId, table.userId)
-        .where(eq(table.deckType, 'PERSONAL')),
+        .where(sql`${table.deckType} = 'PERSONAL'`),
 ]);
 
 export type FlashcardDeck = InferSelectModel<typeof flashcardDecks>;

@@ -92,6 +92,13 @@
       "when": 1773354856270,
       "tag": "0012_slow_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1774372484177,
+      "tag": "0013_regular_quicksilver",
+      "breakpoints": true
     }
   ]
 }
