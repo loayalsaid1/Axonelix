@@ -20,18 +20,21 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { OldExam } from "@/hooks/admin/use-old-exams";
 
-interface CreateOldExamDialogProps {
+interface OldExamDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onExamCreated: () => void;
+  examToEdit?: OldExam | null;
 }
 
-export default function CreateOldExamDialog({
+export default function OldExamDialog({
   open,
   onOpenChange,
   onExamCreated,
-}: CreateOldExamDialogProps) {
+  examToEdit
+}: OldExamDialogProps) {
   const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [modules, setModules] = useState<{ id: string; name: string }[]>([]);
@@ -48,16 +51,33 @@ export default function CreateOldExamDialog({
     if (open) {
       fetchModules();
       fetchUniversities();
+      if (examToEdit) {
+        setFormData({
+          examType: examToEdit.examType || 'final',
+          moduleId: examToEdit.moduleId ? String(examToEdit.moduleId) : '',
+          moduleType: examToEdit.moduleType || 'theoretical',
+          universityId: examToEdit.universityId ? String(examToEdit.universityId) : '',
+          year: examToEdit.year || new Date().getFullYear(),
+        });
+      } else {
+        setFormData({
+          examType: 'final',
+          moduleId: '',
+          moduleType: 'theoretical',
+          universityId: '',
+          year: new Date().getFullYear(),
+        });
+      }
     }
-  }, [open]);
+  }, [open, examToEdit]);
 
   const fetchModules = async () => {
-    const data = await authFetch<any[]>('/materials/modules');
+    const data = await authFetch<{ id: number; name: string }[]>('/materials/modules');
     setModules(data.map((m) => ({ id: String(m.id), name: m.name })));
   };
 
   const fetchUniversities = async () => {
-    const data = await authFetch<any[]>('/questions/universities');
+    const data = await authFetch<{ id: number; name: string }[]>('/questions/universities');
     setUniversities(data.map((u) => ({ id: String(u.id), name: u.name })));
   };
 
@@ -70,14 +90,21 @@ export default function CreateOldExamDialog({
     setLoading(true);
 
     try {
-      await authFetch('/questions/old-exams', {
-        method: 'POST',
-        body: { examType: formData.examType, moduleId: Number(formData.moduleId), moduleType: formData.moduleType, universityId: Number(formData.universityId), year: formData.year },
-      });
+      if (examToEdit) {
+        await authFetch(`/questions/old-exams/${examToEdit.id}`, {
+          method: 'PATCH',
+          body: { examType: formData.examType, moduleId: Number(formData.moduleId), moduleType: formData.moduleType, universityId: Number(formData.universityId), year: formData.year },
+        });
+      } else {
+        await authFetch('/questions/old-exams', {
+          method: 'POST',
+          body: { examType: formData.examType, moduleId: Number(formData.moduleId), moduleType: formData.moduleType, universityId: Number(formData.universityId), year: formData.year },
+        });
+      }
       onOpenChange(false);
       onExamCreated();
     } catch (error) {
-      console.error('Failed to create old exam:', error);
+      console.error('Failed to save old exam:', error);
     } finally {
       setLoading(false);
     }
@@ -87,8 +114,10 @@ export default function CreateOldExamDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Old Exam</DialogTitle>
-          <DialogDescription>Create a collection for old exam questions</DialogDescription>
+          <DialogTitle>{examToEdit ? 'Edit Old Exam' : 'Create New Old Exam'}</DialogTitle>
+          <DialogDescription>
+            {examToEdit ? 'Update details of the old exam' : 'Create a collection for old exam questions'}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -176,7 +205,7 @@ export default function CreateOldExamDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Exam'}
+              {loading ? (examToEdit ? 'Saving...' : 'Creating...') : (examToEdit ? 'Save Changes' : 'Create Exam')}
             </Button>
           </div>
         </form>

@@ -86,6 +86,13 @@ export class QuestionsController {
     await this.questionsService.remove(id);
   }
 
+  @Delete(':id/old-exam')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles([Role.Admin])
+  async removeFromExam(@paramIntId() id: number): Promise<void> {
+    await this.questionsService.removeFromExam(id);
+  }
+
   // ── Advanced filter ────────────────────────────────────────────────────────
 
   /**
