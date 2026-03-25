@@ -31,8 +31,8 @@ export function FlashcardViewer({ cards, onAddCardClick }: FlashcardViewerProps)
 
   if (cards.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-100 border rounded-xl bg-card text-card-foreground shadow-sm">
-        <p className="text-muted-foreground mb-4">No cards in this deck yet.</p>
+      <div className="flex flex-col items-center justify-center border shadow-sm h-100 rounded-xl bg-card text-card-foreground">
+        <p className="mb-4 text-muted-foreground">No cards in this deck yet.</p>
         {onAddCardClick && (
           <Button onClick={onAddCardClick}>Create First Card</Button>
         )}
@@ -41,32 +41,39 @@ export function FlashcardViewer({ cards, onAddCardClick }: FlashcardViewerProps)
   }
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 w-full max-w-5xl mx-auto py-6">
-      {/* Mobile Sheet Trigger */}
-      <div className="xl:hidden flex justify-end w-full mb-[-1rem]">
+    <div className="flex flex-col w-full max-w-5xl gap-6 py-6 mx-auto xl:flex-row">
+      {/* Mobile/Tablet Action Bar */}
+      <div className="flex items-center justify-between w-full xl:hidden">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2 text-muted-foreground">
-              <Menu className="h-4 w-4" />
-              Cards Index
+              <Menu className="w-4 h-4" />
+              Cards List
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-[300px] sm:w-[400px]">
-            <SheetHeader>
-              <SheetTitle className="mb-4">Deck Cards</SheetTitle>
+          <SheetContent className="w-[85vw] sm:w-[400px] flex flex-col">
+            <SheetHeader className="mb-4 text-left">
+              <SheetTitle>Deck Cards</SheetTitle>
             </SheetHeader>
             <CardListSidebar
               cards={cards}
               currentIndex={currentIndex}
               onJumpToCard={jumpToCard}
-              className="h-[calc(100vh-8rem)] border-none"
+              className="flex-1"
+              isMobileSheet={true}
             />
           </SheetContent>
         </Sheet>
+
+        {onAddCardClick && (
+          <Button size="sm" onClick={onAddCardClick}>
+            + Add Card
+          </Button>
+        )}
       </div>
 
       {/* Center 3D Viewer & Controls */}
-      <div className="flex-1 min-w-0 flex flex-col items-center w-full max-w-2xl mx-auto">
+      <div className="flex flex-col items-center flex-1 w-full max-w-2xl min-w-0 mx-auto">
         <Flashcard
           front={currentCard?.front || ""}
           back={currentCard?.back || ""}
@@ -82,17 +89,15 @@ export function FlashcardViewer({ cards, onAddCardClick }: FlashcardViewerProps)
           onNext={nextCard}
           onPrev={prevCard}
         />
-        {onAddCardClick && (
-          <div className="mt-8 flex justify-center w-full">
-            <Button variant="secondary" onClick={onAddCardClick}>
-              + Add New Card
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Desktop Sidebar List */}
-      <div className="hidden xl:block w-75 shrink-0">
+      <div className="flex-col hidden gap-4 xl:flex w-75  h-120 min-h-0 shrink-0">
+        {onAddCardClick && (
+          <Button onClick={onAddCardClick} className="w-full">
+            + New Card
+          </Button>
+        )}
         <CardListSidebar
           cards={cards}
           currentIndex={currentIndex}
