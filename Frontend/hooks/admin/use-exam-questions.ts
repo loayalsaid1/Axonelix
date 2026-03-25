@@ -6,6 +6,8 @@ export interface ExamQuestion {
   questionType: string;
   statement: string;
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
+  lessonId?: string | null;
+  chapterId?: string | null;
   createdAt: string;
 }
 
@@ -31,10 +33,12 @@ export function useExamQuestions(examId: string) {
       setError(null);
       const data = await authFetch<PaginatedQuestions>(`/questions?oldExamId=${examId}&limit=100`);
       setQuestions(
-        (data.data || []).map((q) => ({
+        (data.data || []).map((q: any) => ({
           ...q,
           id: String(q.id),
-          questionOptions: (q.questionOptions || []).map((o) => ({ ...o, id: String(o.id) })),
+          lessonId: q.lessonId,
+          chapterId: q.chapterId,
+          questionOptions: (q.questionOptions || []).map((o: any) => ({ ...o, id: o.id })),
         }))
       );
     } catch (err) {
@@ -48,9 +52,8 @@ export function useExamQuestions(examId: string) {
   const removeQuestion = useCallback(
     async (questionId: string) => {
       try {
-        await authFetch(`/questions/${questionId}`, {
-          method: 'PATCH',
-          body: { oldExamId: null },
+        await authFetch(`/questions/${questionId}/old-exam`, {
+          method: 'DELETE',
         });
         setQuestions((prev) => prev.filter((q) => q.id !== questionId));
         return true;
