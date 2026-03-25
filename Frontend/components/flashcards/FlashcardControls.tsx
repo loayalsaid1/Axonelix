@@ -22,31 +22,29 @@ export function FlashcardControls({
   onPrev,
 }: FlashcardControlsProps) {
   return (
-    <div className="flex items-center justify-between w-full mt-6 space-x-4">
+    <div className="flex items-center justify-between w-full max-w-sm mt-6 p-2 rounded-xl bg-muted/30 border">
       <Button
         variant="outline"
-        size="icon"
         onClick={onPrev}
         disabled={isFirst}
-        className="w-12 h-12 rounded-full"
+        className="gap-2 px-4"
       >
-        <ChevronLeft className="h-6 w-6" />
-        <span className="sr-only">Previous Card</span>
+        <ChevronLeft className="h-4 w-4" />
+        Prev Card
       </Button>
 
-      <div className="flex items-center text-sm font-medium text-muted-foreground">
+      <div className="flex items-center text-sm font-medium text-muted-foreground select-none">
         {currentIndex + 1} / {totalCards}
       </div>
 
       <Button
         variant="outline"
-        size="icon"
         onClick={onNext}
         disabled={isLast}
-        className="w-12 h-12 rounded-full"
+        className="gap-2 px-4"
       >
-        <ChevronRight className="h-6 w-6" />
-        <span className="sr-only">Next Card</span>
+        Next Card
+        <ChevronRight className="h-4 w-4" />
       </Button>
     </div>
   );
