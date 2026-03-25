@@ -69,7 +69,7 @@ export function GeneratorHierarchyPanel({
   }, [hierarchy, search]);
 
   return (
-    <aside className="flex flex-col bg-card border-border border-r h-full">
+    <aside className="flex flex-col bg-card border-border border-r h-full overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-center px-4 py-3 shrink-0">
         <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function GeneratorHierarchyPanel({
       <Separator />
 
       {/* Scrollable tree */}
-      <ScrollArea className="flex-1 py-2">
+      <ScrollArea className="flex-1 min-h-0 py-2">
         <HierarchyCheckboxTree
           hierarchy={filtered}
           expandedModules={expandedModules}

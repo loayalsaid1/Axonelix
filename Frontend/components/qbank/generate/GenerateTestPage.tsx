@@ -79,21 +79,21 @@ export function GenerateTestPage({ hierarchy }: GenerateTestPageProps) {
 
   if (isMobile) {
     return (
-      <div className="flex flex-col h-full min-h-[calc(100vh-3rem)]">
-        <Tabs defaultValue="materials" className="flex-1 flex flex-col w-full data-[state=active]:flex-1">
-          <div className="px-4 py-2 border-b">
+      <div className="flex flex-col h-full overflow-hidden">
+        <Tabs defaultValue="materials" className="flex-1 flex flex-col w-full data-[state=active]:flex-1 min-h-0">
+          <div className="px-4 py-2 border-b shrink-0">
             <TabsList className="w-full grid grid-cols-2">
               <TabsTrigger value="materials">Materials</TabsTrigger>
               <TabsTrigger value="config">Configuration</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="materials" className="flex-1 p-0 m-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto">
+          <TabsContent value="materials" className="flex-1 p-0 m-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               {hierarchyPanel}
             </div>
           </TabsContent>
-          <TabsContent value="config" className="flex-1 p-0 m-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto">
+          <TabsContent value="config" className="flex-1 p-0 m-0 data-[state=active]:flex data-[state=active]:flex-col overflow-hidden min-h-0">
+            <div className="flex-1 min-h-0 overflow-auto">
               {configPanel}
             </div>
           </TabsContent>
@@ -103,9 +103,9 @@ export function GenerateTestPage({ hierarchy }: GenerateTestPageProps) {
   }
 
   return (
-    <ResizablePanelGroup orientation="horizontal" className="h-full min-h-[calc(100vh-3rem)]">
+    <ResizablePanelGroup orientation="horizontal" className="h-full">
       {/* Left: hierarchy selector */}
-      <ResizablePanel defaultSize="320px" minSize="240px" maxSize="480px">
+      <ResizablePanel defaultSize="320px" minSize="240px" maxSize="600px">
         {hierarchyPanel}
       </ResizablePanel>
 
