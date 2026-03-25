@@ -36,6 +36,8 @@
     top: 0;
     z-index: 10;
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-height: var(--tt-toolbar-height);
     background: var(--tt-toolbar-bg-color);
     border-bottom: 1px solid var(--tt-toolbar-border-color);
@@ -51,12 +53,12 @@
     }
 
     @media (max-width: 480px) {
-      position: absolute;
-      top: auto;
-      height: calc(var(--tt-toolbar-height) + var(--tt-safe-area-bottom));
-      border-top: 1px solid var(--tt-toolbar-border-color);
-      border-bottom: none;
-      padding: 0 0.5rem var(--tt-safe-area-bottom);
+      position: sticky;
+      top: 0;
+      min-height: calc(var(--tt-toolbar-height) + var(--tt-safe-area-bottom));
+      border-bottom: 1px solid var(--tt-toolbar-border-color);
+      border-top: none;
+      padding: 0.5rem;
       flex-wrap: nowrap;
       justify-content: flex-start;
 
