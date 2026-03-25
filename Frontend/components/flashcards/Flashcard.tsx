@@ -20,23 +20,23 @@ export function Flashcard({ front, back, isFlipped, onFlip, className }: Flashca
     >
       <div
         className={cn(
-          "w-full h-full absolute transition-transform duration-500 transform-3d cursor-pointer",
+          "w-full h-full absolute transition-transform duration-500 transform-3d cursor-pointer text-base md:text-lg",
           isFlipped ? "rotate-y-180" : ""
         )}
       >
         {/* Front Face */}
-        <Card className="absolute w-full h-full flex flex-col justify-center items-center p-8 bg-card text-card-foreground shadow-lg backface-hidden">
-          <div className="text-xl font-medium text-center leading-relaxed">
+        <Card className="absolute flex flex-col items-center justify-center w-full h-full overflow-y-auto shadow-lg p-7 bg-card text-card-foreground backface-hidden">
+          <div className="max-w-full max-h-full overflow-y-auto font-medium leading-relaxed text-center ">
             {front}
           </div>
-          <div className="absolute bottom-4 text-xs text-muted-foreground opacity-50">
+          <div className="absolute text-xs opacity-50 bottom-4 text-muted-foreground shrink-0">
             Click to reveal
           </div>
         </Card>
 
         {/* Back Face */}
-        <Card className="absolute w-full h-full flex flex-col justify-center items-center p-8 bg-card text-card-foreground shadow-lg backface-hidden rotate-y-180">
-          <div className="text-xl text-center leading-relaxed">
+        <Card className="absolute flex flex-col items-center justify-center w-full h-full overflow-y-auto shadow-lg p-7 bg-card text-card-foreground backface-hidden rotate-y-180 hidden-scrollbar">
+          <div className="max-w-full max-h-full overflow-y-auto leading-relaxed text-center hidden-scrollbar">
             {back}
           </div>
         </Card>
