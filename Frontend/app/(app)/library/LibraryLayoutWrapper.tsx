@@ -34,7 +34,7 @@ export function LibraryLayoutWrapper({
   // 📱 MOBILE VIEW: No Resizable Panels. Replaced natively with a clean column layout.
   if (isMobile) {
     return (
-      <div className="flex flex-col h-full min-h-screen overflow-hidden">
+      <div className="flex flex-col h-screen max-h-screen overflow-hidden">
         <header className="flex items-center gap-2 px-4 border-border border-b h-14 shrink-0">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
@@ -46,34 +46,36 @@ export function LibraryLayoutWrapper({
                 <span className="sr-only">Toggle Library Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="p-0 ">
+            <SheetContent side="bottom" className="p-0 h-[80vh]">
               <SheetTitle className="sr-only">Library Navigation</SheetTitle>
               {/* SERVER COMPONENT RENDERED HERE */}
-              {sidebar}
+              <div className="h-full overflow-hidden">
+                {sidebar}
+              </div>
             </SheetContent>
           </Sheet>
         </header>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 min-h-0 overflow-y-auto">{children}</main>
       </div>
     );
   }
 
   // 💻 DESKTOP VIEW: Uses Resizable Panels safely
   return (
-    <ResizablePanelGroup orientation="horizontal" className="h-full min-h-screen">
-      <ResizablePanel defaultSize={"300px"} minSize={250}>
+    <ResizablePanelGroup orientation="horizontal" className="h-screen max-h-screen">
+      <ResizablePanel defaultSize={"300px"} minSize={250} className="h-full">
         {/* SERVER COMPONENT RENDERED HERE */}
         {sidebar}
       </ResizablePanel>
 
       <ResizableHandle withHandle />
 
-      <ResizablePanel minSize={50}>
+      <ResizablePanel minSize={50} className="h-full">
         <div className="flex flex-col h-full overflow-hidden">
           <header className="flex items-center gap-2 px-4 border-border border-b h-14 shrink-0">
             <SidebarTrigger className="-ml-1" />
           </header>
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="flex-1 min-h-0 overflow-y-auto">{children}</main>
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
