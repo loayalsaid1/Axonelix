@@ -63,7 +63,7 @@ export function LibrarySidebar() {
       <LessonSearchBox />
 
       {/* Scrollable body */}
-      <div className="flex flex-col flex-1 gap-4 py-3 overflow-y-auto">
+      <div className="flex flex-col flex-1 min-h-0 gap-4 py-3 overflow-y-auto">
         {/* Recent lessons (client hydration) */}
         <RecentLessonsPanel />
 
