@@ -231,6 +231,19 @@ export class QuestionsService {
     return deleted;
   }
 
+  /**
+   * Remove a question from an old exam.
+   * If the question becomes an orphan (no lesson, chapter, or exam), it will be deleted.
+   */
+  async removeFromExam(id: number) {
+    // We just set oldExamId to null. The DB trigger trg_delete_orphaned_question
+    // will handle the deletion if it's now an orphan.
+    await this.drizzleService.db
+      .update(questions)
+      .set({ oldExamId: null })
+      .where(eq(questions.id, id));
+  }
+
   // ── Advanced filtering ─────────────────────────────────────────────────────
 
   /**
