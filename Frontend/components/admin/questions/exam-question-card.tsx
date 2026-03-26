@@ -75,9 +75,9 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
               {question.questionOptions.map((option, optIndex) => (
                 <div
                   key={optIndex}
-                  className={`p-2 rounded text-sm ${option.isCorrect
-                    ? 'bg-green-50 border border-green-200 text-green-700'
-                    : 'bg-gray-50 border border-gray-100'
+                  className={`p-2 flex items-center justify-between rounded text-sm border ${option.isCorrect
+                    ? 'bg-primary/10 border-primary shadow-sm text-primary font-medium'
+                    : 'bg-muted/50 border-border text-muted-foreground'
                     }`}
                 >
                   <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
