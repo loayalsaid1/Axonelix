@@ -85,23 +85,25 @@ export function AdminQuestionCard({
       {questionType === 'mcq' && options.length > 0 && (
         <CardContent>
           <div className="text-sm space-y-1">
-            {options.slice(0, 3).map((option, optIndex) => (
+            {options.map((option, optIndex) => (
               <div
                 key={optIndex}
                 className={`p-2 flex items-center justify-between rounded text-sm border ${option.isCorrect
-                    ? 'bg-primary/10 border-primary shadow-sm text-primary font-medium'
-                    : 'bg-muted/50 border-border text-muted-foreground'
+                  ? 'bg-primary/10 border-primary shadow-sm text-primary font-medium'
+                  : 'bg-muted/50 border-border text-muted-foreground'
                   }`}
               >
-                <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
-                {option.optionText}
+                <div>
+                  <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
+                  {option.optionText}
+                </div>
+                {option.isCorrect && (
+                  <Badge variant="default" className="h-5 px-2 text-[10px] uppercase tracking-wider">
+                    Correct
+                  </Badge>
+                )}
               </div>
             ))}
-            {options.length > 3 && (
-              <div className="text-xs text-muted-foreground mt-1">
-                +{options.length - 3} more option{options.length - 3 !== 1 ? 's' : ''}
-              </div>
-            )}
           </div>
         </CardContent>
       )}
