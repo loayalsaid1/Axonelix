@@ -15,6 +15,11 @@ import { useApiFetch } from '@/hooks/use-api-fetch';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
 
+// New Imports
+import { MaterialSelector } from '@/components/admin/shared/material-selector';
+import { useMaterialHierarchy } from '@/hooks/admin/use-material-hierarchy';
+import { useQuestionAncestors } from '@/hooks/admin/use-question-ancestors';
+
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null;
 }
@@ -38,6 +43,9 @@ interface QuestionData {
   statement: string;
   statementFormat: string;
   explanation: string | null;
+  lessonId: number | null;
+  chapterId: number | null;
+  isMisc: boolean | null;
   questionOptions: QuestionOption[];
 }
 
@@ -54,11 +62,31 @@ export default function EditQuestionDialog({
   const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
 
+  // Use custom hooks
+  const { fetchMaterialAncestors, loadingAncestors } = useQuestionAncestors();
+
+  // Material hierarchy
+  const {
+    modules,
+    selectedModule,
+    setSelectedModule,
+    selectedSubject,
+    setSelectedSubject,
+    selectedChapter,
+    setSelectedChapter,
+    subjects,
+    chapters,
+    lessons,
+  } = useMaterialHierarchy();
+
   // Question form data
   const [formData, setFormData] = useState({
     questionType: 'mcq' as 'mcq' | 'written',
     statement: '',
     explanation: '',
+    lessonId: '',
+    chapterId: '',
+    isMisc: false,
     options: [
       { optionText: '', isCorrect: true },
       { optionText: '', isCorrect: false },
@@ -96,10 +124,23 @@ export default function EditQuestionDialog({
       }
       setInitialExplanationContent(explanationContent);
 
+      // Fetch ancestors for materials
+      if (question.lessonId || question.chapterId) {
+        const ancestors = await fetchMaterialAncestors(question.lessonId, question.chapterId);
+        if (ancestors) {
+          setSelectedModule(ancestors.moduleId);
+          setSelectedSubject(ancestors.subjectId);
+          setSelectedChapter(ancestors.chapterId);
+        }
+      }
+
       setFormData({
         questionType: question.questionType,
         statement: question.statement,
         explanation: '',
+        lessonId: question.lessonId ? String(question.lessonId) : '',
+        chapterId: question.chapterId ? String(question.chapterId) : '',
+        isMisc: question.isMisc ?? false,
         options: question.questionOptions?.length > 0
           ? question.questionOptions
           : [
@@ -126,6 +167,11 @@ export default function EditQuestionDialog({
 
     if (!formData.statement.trim()) {
       alert('Please fill in statement');
+      return;
+    }
+
+    if (!formData.chapterId) {
+      alert('Please select a chapter for this material link');
       return;
     }
 
@@ -162,6 +208,9 @@ export default function EditQuestionDialog({
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
+        lessonId: formData.lessonId ? Number(formData.lessonId) : null,
+        chapterId: Number(formData.chapterId),
+        isMisc: formData.isMisc,
       };
 
       await authFetch(`/questions/${questionId}`, {
@@ -186,12 +235,46 @@ export default function EditQuestionDialog({
           <DialogDescription>Update the question content and options</DialogDescription>
         </DialogHeader>
 
-        {fetching ? (
+        {fetching || loadingAncestors ? (
           <div className="py-8 text-center text-muted-foreground">
             Loading question data...
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+
+            <MaterialSelector
+              modules={modules}
+              subjects={subjects}
+              chapters={chapters}
+              lessons={lessons}
+              selectedModule={selectedModule}
+              selectedSubject={selectedSubject}
+              selectedChapter={selectedChapter}
+              lessonId={formData.lessonId || ''}
+              isMisc={formData.isMisc}
+              onModuleChange={(moduleId) => {
+                setSelectedModule(moduleId);
+                setSelectedSubject('');
+                setSelectedChapter('');
+                setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
+              }}
+              onSubjectChange={(subjectId) => {
+                setSelectedSubject(subjectId);
+                setSelectedChapter('');
+                setFormData((prev) => ({ ...prev, lessonId: '', chapterId: '' }));
+              }}
+              onChapterChange={(chapterId) => {
+                setSelectedChapter(chapterId);
+                setFormData((prev) => ({ ...prev, chapterId: chapterId, lessonId: '' }));
+              }}
+              onLessonChange={(lessonId) =>
+                setFormData((prev) => ({ ...prev, lessonId }))
+              }
+              onIsMiscChange={(isMisc) => setFormData((prev) => ({ ...prev, isMisc }))}
+            />
+
+            <div className="pt-4 border-t"></div>
+
             {/* Question Form Fields */}
             <QuestionFormFields
               data={{

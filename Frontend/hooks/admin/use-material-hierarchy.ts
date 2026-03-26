@@ -1,20 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+
+export interface Module {
+	id: string;
+	name: string;
+}
 
 export interface Subject {
 	id: string;
 	name: string;
 	type: string;
+	chapters?: Chapter[];
 }
 
 export interface Chapter {
 	id: string;
 	name: string;
+	lessons?: Lesson[];
 }
 
 export interface Lesson {
 	id: string;
 	name: string;
+}
+
+export interface ModuleHierarchy {
+	id: number;
+	name: string;
+	level: number;
+	description: string | null;
+	orderIndex: number;
+	createdAt: string;
+	updatedAt: string;
+	subjects: {
+		id: number;
+		name: string;
+		type: string;
+		orderIndex: number;
+		createdAt: string;
+		updatedAt: string;
+		chapters: {
+			id: number;
+			name: string;
+			orderIndex: number;
+			createdAt: string;
+			updatedAt: string;
+			lessons: {
+				id: number;
+				name: string;
+				orderIndex: number;
+				createdAt: string;
+				updatedAt: string;
+			}[];
+		}[];
+	}[];
 }
 
 export function useMaterialHierarchy() {
@@ -23,48 +62,58 @@ export function useMaterialHierarchy() {
 	const [selectedSubject, setSelectedSubject] = useState('');
 	const [selectedChapter, setSelectedChapter] = useState('');
 
-	const [subjects, setSubjects] = useState<Subject[]>([]);
-	const [chapters, setChapters] = useState<Chapter[]>([]);
-	const [lessons, setLessons] = useState<Lesson[]>([]);
+	const [modules, setModules] = useState<Module[]>([]);
+	const [hierarchy, setHierarchy] = useState<ModuleHierarchy | null>(null);
 
+	// Fetch module names only once
+	useEffect(() => {
+		authFetch<{ id: number; name: string }[]>('/materials/modules/names')
+			.then((data) => setModules(data.map((m) => ({ id: String(m.id), name: m.name }))))
+			.catch((error) => console.error('Failed to fetch modules:', error));
+	}, [authFetch]);
+
+	// Fetch full hierarchy when a module is selected
 	useEffect(() => {
 		if (selectedModule) {
-			authFetch<any[]>(`/materials/subjects?moduleId=${selectedModule}`)
-				.then((data) =>
-					setSubjects(data.map((s) => ({ id: String(s.id), name: s.name, type: s.type })))
-				)
-				.catch((error) => console.error('Failed to fetch subjects:', error));
+			authFetch<ModuleHierarchy>(`/materials/modules/${selectedModule}/hierarchy`)
+				.then((data) => setHierarchy(data))
+				.catch((error) => console.error('Failed to fetch module hierarchy:', error));
 		} else {
-			setSubjects([]);
+			setHierarchy(null);
 		}
-		setSelectedSubject('');
-		setSelectedChapter('');
 	}, [selectedModule, authFetch]);
 
-	useEffect(() => {
-		if (selectedSubject) {
-			authFetch<any[]>(`/materials/subjects/${selectedSubject}/chapters`)
-				.then((data) =>
-					setChapters(data.map((c) => ({ id: String(c.id), name: c.name })))
-				)
-				.catch((error) => console.error('Failed to fetch chapters:', error));
-		} else {
-			setChapters([]);
-		}
-		setSelectedChapter('');
-	}, [selectedSubject, authFetch]);
+	// Derive subjects, chapters, and lessons from the full hierarchy tree
+	const subjects = useMemo(() => {
+		if (!hierarchy || !hierarchy.subjects) return [];
+		return hierarchy.subjects.map((s) => ({
+			id: String(s.id),
+			name: s.name,
+			type: s.type,
+		}));
+	}, [hierarchy]);
 
-	useEffect(() => {
-		if (selectedChapter) {
-			authFetch<any[]>(`/materials/chapters/${selectedChapter}/lessons`)
-				.then((data) =>
-					setLessons(data.map((l) => ({ id: String(l.id), name: l.name })))
-				)
-				.catch((error) => console.error('Failed to fetch lessons:', error));
-		} else {
-			setLessons([]);
-		}
-	}, [selectedChapter, authFetch]);
+	const chapters = useMemo(() => {
+		if (!hierarchy || !hierarchy.subjects || !selectedSubject) return [];
+		const subject = hierarchy.subjects.find((s) => String(s.id) === selectedSubject);
+		if (!subject || !subject.chapters) return [];
+		return subject.chapters.map((c) => ({
+			id: String(c.id),
+			name: c.name,
+		}));
+	}, [hierarchy, selectedSubject]);
+
+	const lessons = useMemo(() => {
+		if (!hierarchy || !hierarchy.subjects || !selectedSubject || !selectedChapter) return [];
+		const subject = hierarchy.subjects.find((s) => String(s.id) === selectedSubject);
+		if (!subject || !subject.chapters) return [];
+		const chapter = subject.chapters.find((c) => String(c.id) === selectedChapter);
+		if (!chapter || !chapter.lessons) return [];
+		return chapter.lessons.map((l) => ({
+			id: String(l.id),
+			name: l.name,
+		}));
+	}, [hierarchy, selectedSubject, selectedChapter]);
 
 	// Expose a way to reset downstream states when the form is submitted/reset
 	const resetHierarchy = () => {
@@ -74,6 +123,7 @@ export function useMaterialHierarchy() {
 	};
 
 	return {
+		modules,
 		selectedModule,
 		setSelectedModule,
 		selectedSubject,
