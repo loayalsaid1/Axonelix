@@ -80,8 +80,15 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
                     : 'bg-muted/50 border-border text-muted-foreground'
                     }`}
                 >
-                  <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
-                  {option.optionText}
+                  <div>
+                    <span className="font-semibold">{String.fromCharCode(65 + optIndex)}:</span>{' '}
+                    {option.optionText}
+                  </div>
+                  {option.isCorrect && (
+                    <Badge variant="default" className="h-5 px-2 text-[10px] uppercase tracking-wider">
+                      Correct
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
