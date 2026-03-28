@@ -123,6 +123,7 @@ On save/update — you just mark unreferenced images as `deleted`. That's it. Th
 ## Note... 
 -  sequence must be noted.. our server is more vaulndrable than imagekit.. so .. on updating or even the uploading if the DP query fail.. we just delete the image from the uplaod function.. 
 - the folder of images will be in /images folder and can be overwritten by an env var..
+- we need to have indexes matching the queries we will do
 
 
 ## For Organization.. :
