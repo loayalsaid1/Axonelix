@@ -381,6 +381,8 @@ export const handleImageUpload = async (
     if (!authRes.ok) throw new Error("Failed to retrieve image auth config");
     const { signature, expire, token } = await authRes.json();
 
+    const publishFolder = process.env.NEXT_PUBLIC_IMAGEKIT_UPLOAD_FOLDER || "/test/images";
+
     // 2. Upload file via FormData to ImageKit upload endpoint
     const formData = new FormData();
     formData.append("file", file);
