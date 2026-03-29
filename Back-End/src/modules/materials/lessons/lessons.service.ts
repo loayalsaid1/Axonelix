@@ -200,25 +200,37 @@ export class LessonsService {
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
-    await this.drizzleService.db
-      .update(lessons)
-      .set(updateLessonDto)
-      .where(eq(lessons.id, id))
-    const updatedLesson = await this.drizzleService.db.query.lessons.findFirst({
-      where: eq(lessons.id, id),
-      with: {
-        chapter: {
-          columns: { id: true, name: true, isMiscellaneous: true },
-          with: {
-            subject: {
-              columns: { id: true, name: true, type: true },
-              with: {
-                module: { columns: { id: true, name: true } },
+    const updatedLesson = await this.drizzleService.db.transaction(async (tx) => {
+      if (updateLessonDto.content !== undefined) {
+        // Process image diff even if content is intentionally cleared.
+        const newUrls = extractImageUrls(updateLessonDto.content);
+        await this.imagesService.markDeletedByDiff('lesson', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('lesson', id, newUrls, tx);
+        }
+      }
+
+      await tx
+        .update(lessons)
+        .set(updateLessonDto)
+        .where(eq(lessons.id, id));
+
+      return tx.query.lessons.findFirst({
+        where: eq(lessons.id, id),
+        with: {
+          chapter: {
+            columns: { id: true, name: true, isMiscellaneous: true },
+            with: {
+              subject: {
+                columns: { id: true, name: true, type: true },
+                with: {
+                  module: { columns: { id: true, name: true } },
+                },
               },
             },
           },
         },
-      },
+      });
     });
 
     if (!updatedLesson) {
@@ -229,15 +241,18 @@ export class LessonsService {
   }
 
   async remove(id: number) {
-    const [deletedLesson] = await this.drizzleService.db
-      .delete(lessons)
-      .where(eq(lessons.id, id))
-      .returning();
+    const [deletedLesson] = await this.drizzleService.db.transaction(async (tx) => {
+      await this.imagesService.deleteAllForEntity('lesson', id, tx);
+
+      return tx
+        .delete(lessons)
+        .where(eq(lessons.id, id))
+        .returning();
+    });
 
     if (!deletedLesson) {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
-
     return deletedLesson;
   }
 }
