@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DrizzleModule } from './database/drizzle.module';
@@ -12,6 +13,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { StreaksModule } from './modules/streaks/streaks.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { ImagesModule } from './modules/images/images.module';
 import { ClerkAuthGuard } from './common/guards/clerk-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -24,6 +26,7 @@ import { RolesGuard } from './common/guards/roles.guard';
       isGlobal: true,
       ttl: 5 * 60 * 1000, // 5 minutes in ms
     }),
+    ScheduleModule.forRoot(),
     DrizzleModule,
     UsersModule,
     AuthModule,
@@ -32,6 +35,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     QuizzesModule,
     StreaksModule,
     StatsModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [
