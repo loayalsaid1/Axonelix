@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
+import { ImagesService } from '../../images/images.service';
+import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
 import { lessons } from '../../../database/entities/lessons';
 import { chapters } from '../../../database/entities/chapters';
@@ -8,7 +10,10 @@ import { eq, ilike, count } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly drizzleService: DrizzleService) { }
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly imagesService: ImagesService
+  ) { }
 
   async create(createLessonDto: CreateLessonDto) {
     // Chapter must be provided by controller or caller
@@ -34,12 +39,22 @@ export class LessonsService {
       orderIndex: createLessonDto.orderIndex,
     };
 
-    const [newLesson] = await this.drizzleService.db
-      .insert(lessons)
-      .values(payload)
-      .returning();
+    return this.drizzleService.db.transaction(async (tx) => {
+      const [newLesson] = await tx
+        .insert(lessons)
+        .values(payload)
+        .returning();
 
-    return newLesson;
+      // Commit images from content
+      if (createLessonDto.content) {
+        const urls = extractImageUrls(createLessonDto.content);
+        if (urls.length > 0) {
+          await this.imagesService.commitImages('lesson', newLesson.id, urls, tx);
+        }
+      }
+
+      return newLesson;
+    });
   }
 
   async findAll(chapterId?: number) {
