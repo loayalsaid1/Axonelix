@@ -257,13 +257,17 @@ export class QuestionsService {
   }
 
   async remove(id: number) {
-    const [deleted] = await this.drizzleService.db
-      .delete(questions)
-      .where(eq(questions.id, id))
-      .returning();
+    const [deleted] = await this.drizzleService.db.transaction(async (tx) => {
+      await this.imagesService.deleteAllForEntity('question', id, tx);
+      await this.imagesService.deleteAllForEntity('explanation', id, tx);
+
+      return tx
+        .delete(questions)
+        .where(eq(questions.id, id))
+        .returning();
+    });
 
     if (!deleted) throw new NotFoundException(`Question with ID ${id} not found`);
-
     return deleted;
   }
 
