@@ -8,6 +8,8 @@ import { lessons as lessonsTable } from '../../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
 import { questionReferences } from '../../../database/entities/question-references';
+import { ImagesService } from '../../images/images.service';
+import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
   CreateQuestionDto,
@@ -47,6 +49,7 @@ export class QuestionsService {
     private readonly drizzleService: DrizzleService,
     private readonly questionOptionsService: QuestionOptionsService,
     private readonly referencesService: ReferencesService,
+    private readonly imagesService: ImagesService,
   ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
@@ -131,13 +134,24 @@ export class QuestionsService {
         .returning();
 
       if (dto.questionType === 'mcq' && dto.options?.length) {
-        // Use the transaction-aware insert if possible, or just call service
         const optionPayloads = dto.options.map((opt) => ({
           questionId: question.id,
           optionText: opt.optionText,
           isCorrect: opt.isCorrect,
         }));
         await tx.insert(questionOptions).values(optionPayloads);
+      }
+
+      // Collect images from both statement and explanation
+      const statementUrls = dto.statementFormat === 'tiptap_json' ? extractImageUrls(dto.statement) : [];
+      const explanationUrls = dto.explanation ? extractImageUrls(dto.explanation) : [];
+
+      if (statementUrls.length > 0) {
+        await this.imagesService.commitImages('question', question.id, statementUrls, tx);
+      }
+
+      if (explanationUrls.length > 0) {
+        await this.imagesService.commitImages('explanation', question.id, explanationUrls, tx);
       }
 
       return this.findOne(question.id, tx);
