@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, varchar, pgEnum, index } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, uuid, varchar, pgEnum, index, integer } from "drizzle-orm/pg-core"
 import { users } from "./users"
 import { sql } from "drizzle-orm"
 
@@ -10,9 +10,8 @@ export const images = pgTable("images", {
 	url: text("url").notNull(),
 	imagekitFileId: varchar("imagekit_file_id", { length: 255 }).notNull(),
 	entityType: imageEntityTypeEnum("entity_type"),
-	entityId: uuid("entity_id"),
-	uploadedBy: uuid("uploaded_by")
-		.notNull()
+	entityId: integer("entity_id"),
+	uploadedBy: integer("uploaded_by")
 		.references(() => users.id, { onDelete: "set null" }),
 	status: imageStatusEnum("status").default("pending").notNull(),
 	createdAt: timestamp("created_at", { mode: "string" }).defaultNow().$onUpdate(() => sql`CURRENT_TIMESTAMP`),
