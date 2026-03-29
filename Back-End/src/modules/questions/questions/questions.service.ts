@@ -204,7 +204,7 @@ export class QuestionsService {
 
   async update(id: number, dto: UpdateQuestionDto) {
     // Verify existence first
-    await this.findOne(id);
+    const existingQuestion = await this.findOne(id);
 
     const { options, ...questionFields } = dto;
 
@@ -219,17 +219,39 @@ export class QuestionsService {
     if (questionFields.isMisc !== undefined) updatePayload.isMisc = questionFields.isMisc;
     if (questionFields.oldExamId !== undefined) updatePayload.oldExamId = questionFields.oldExamId;
 
-    if (Object.keys(updatePayload).length) {
-      await this.drizzleService.db
-        .update(questions)
-        .set(updatePayload)
-        .where(eq(questions.id, id));
-    }
+    await this.drizzleService.db.transaction(async (tx) => {
+      if (Object.keys(updatePayload).length) {
+        await tx
+          .update(questions)
+          .set(updatePayload)
+          .where(eq(questions.id, id));
+      }
 
-    // Replace options if provided
-    if (options !== undefined) {
-      await this.questionOptionsService.replaceOptions(id, options ?? []);
-    }
+      const targetStatementFormat = questionFields.statementFormat ?? existingQuestion.statementFormat;
+
+      if (questionFields.statement !== undefined && targetStatementFormat === 'tiptap_json') {
+        const newUrls = extractImageUrls(questionFields.statement);
+        await this.imagesService.markDeletedByDiff('question', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('question', id, newUrls, tx);
+        }
+      } else if (questionFields.statementFormat !== undefined && questionFields.statementFormat !== 'tiptap_json') {
+        await this.imagesService.markDeletedByDiff('question', id, [], tx);
+      }
+
+      if (questionFields.explanation !== undefined) {
+        const newUrls = extractImageUrls(questionFields.explanation);
+        await this.imagesService.markDeletedByDiff('explanation', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('explanation', id, newUrls, tx);
+        }
+      }
+
+      // Replace options if provided
+      if (options !== undefined) {
+        await this.questionOptionsService.replaceOptions(id, options ?? []);
+      }
+    });
 
     return this.findOne(id);
   }
