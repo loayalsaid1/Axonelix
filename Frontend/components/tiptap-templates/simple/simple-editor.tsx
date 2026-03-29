@@ -115,7 +115,12 @@ const extensions = [
   TaskList,
   TaskItem.configure({ nested: true }),
   Highlight.configure({ multicolor: true }),
-  Image,
+  Image.configure({
+    resize: {
+      enabled: true,
+      alwaysPreserveAspectRatio: true,
+    }
+  }),
   Typography,
   Superscript,
   Subscript,
