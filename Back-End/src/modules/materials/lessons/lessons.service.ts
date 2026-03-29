@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
+import { ImagesService } from '../../images/images.service';
+import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { CreateLessonDto, UpdateLessonDto } from './dto';
 import { lessons } from '../../../database/entities/lessons';
 import { chapters } from '../../../database/entities/chapters';
@@ -8,7 +10,10 @@ import { eq, ilike, count } from 'drizzle-orm';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly drizzleService: DrizzleService) { }
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly imagesService: ImagesService
+  ) { }
 
   async create(createLessonDto: CreateLessonDto) {
     // Chapter must be provided by controller or caller
@@ -34,12 +39,22 @@ export class LessonsService {
       orderIndex: createLessonDto.orderIndex,
     };
 
-    const [newLesson] = await this.drizzleService.db
-      .insert(lessons)
-      .values(payload)
-      .returning();
+    return this.drizzleService.db.transaction(async (tx) => {
+      const [newLesson] = await tx
+        .insert(lessons)
+        .values(payload)
+        .returning();
 
-    return newLesson;
+      // Commit images from content
+      if (createLessonDto.content) {
+        const urls = extractImageUrls(createLessonDto.content);
+        if (urls.length > 0) {
+          await this.imagesService.commitImages('lesson', newLesson.id, urls, tx);
+        }
+      }
+
+      return newLesson;
+    });
   }
 
   async findAll(chapterId?: number) {
@@ -185,25 +200,37 @@ export class LessonsService {
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
-    await this.drizzleService.db
-      .update(lessons)
-      .set(updateLessonDto)
-      .where(eq(lessons.id, id))
-    const updatedLesson = await this.drizzleService.db.query.lessons.findFirst({
-      where: eq(lessons.id, id),
-      with: {
-        chapter: {
-          columns: { id: true, name: true, isMiscellaneous: true },
-          with: {
-            subject: {
-              columns: { id: true, name: true, type: true },
-              with: {
-                module: { columns: { id: true, name: true } },
+    const updatedLesson = await this.drizzleService.db.transaction(async (tx) => {
+      if (updateLessonDto.content !== undefined) {
+        // Process image diff even if content is intentionally cleared.
+        const newUrls = extractImageUrls(updateLessonDto.content);
+        await this.imagesService.markDeletedByDiff('lesson', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('lesson', id, newUrls, tx);
+        }
+      }
+
+      await tx
+        .update(lessons)
+        .set(updateLessonDto)
+        .where(eq(lessons.id, id));
+
+      return tx.query.lessons.findFirst({
+        where: eq(lessons.id, id),
+        with: {
+          chapter: {
+            columns: { id: true, name: true, isMiscellaneous: true },
+            with: {
+              subject: {
+                columns: { id: true, name: true, type: true },
+                with: {
+                  module: { columns: { id: true, name: true } },
+                },
               },
             },
           },
         },
-      },
+      });
     });
 
     if (!updatedLesson) {
@@ -214,15 +241,18 @@ export class LessonsService {
   }
 
   async remove(id: number) {
-    const [deletedLesson] = await this.drizzleService.db
-      .delete(lessons)
-      .where(eq(lessons.id, id))
-      .returning();
+    const [deletedLesson] = await this.drizzleService.db.transaction(async (tx) => {
+      await this.imagesService.deleteAllForEntity('lesson', id, tx);
+
+      return tx
+        .delete(lessons)
+        .where(eq(lessons.id, id))
+        .returning();
+    });
 
     if (!deletedLesson) {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
-
     return deletedLesson;
   }
 }

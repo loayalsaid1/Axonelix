@@ -374,17 +374,70 @@ export const handleImageUpload = async (
     )
   }
 
-  // For demo/testing: Simulate upload progress. In production, replace the following code
-  // with your own upload implementation.
-  for (let progress = 0; progress <= 100; progress += 10) {
-    if (abortSignal?.aborted) {
-      throw new Error("Upload cancelled")
-    }
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    onProgress?.({ progress })
-  }
+  // For real implementation: Fetch signature -> Upload to ImageKit -> Notify Backend
+  try {
+    // 1. Fetch auth off your back-end proxy
+    const authRes = await fetch('/api/admin/images/imagekit_auth');
+    if (!authRes.ok) throw new Error("Failed to retrieve image auth config");
+    const { signature, expire, token } = await authRes.json();
 
-  return "/images/tiptap-ui-placeholder-image.jpg"
+    const publishFolder = process.env.NEXT_PUBLIC_IMAGEKIT_UPLOAD_FOLDER || "/test/images";
+
+    // 2. Upload file via FormData to ImageKit upload endpoint
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name || `upload-${Date.now()}`);
+    formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || '');
+    formData.append("signature", signature);
+    formData.append("expire", expire);
+    formData.append("token", token);
+    formData.append("folder", "/test/images");
+
+    // XMLHttpRequest supports accurate progress tracking compared to standard fetch.
+    const uploadData = await new Promise<any>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://upload.imagekit.io/api/v1/files/upload');
+
+      if (onProgress) {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            onProgress({ progress: Math.round((e.loaded / e.total) * 100) });
+          }
+        };
+      }
+
+      if (abortSignal) {
+        abortSignal.addEventListener('abort', () => {
+          xhr.abort();
+          reject(new Error("Upload cancelled"));
+        });
+      }
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(JSON.parse(xhr.responseText));
+        } else {
+          reject(new Error(`ImageKit upload failed: ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("ImageKit network error"));
+      xhr.send(formData);
+    });
+
+    // 4. Record to our backend as PENDING so it tracks state
+    const recordRes = await fetch('/api/admin/images', {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: uploadData.url, imagekitFileId: uploadData.fileId })
+    });
+
+    if (!recordRes.ok) throw new Error("Failed to record image status in backend");
+
+    return uploadData.url;
+  } catch (error) {
+    throw new Error("Upload failed: " + (error as Error).message);
+  }
 }
 
 type ProtocolOptions = {

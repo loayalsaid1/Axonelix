@@ -8,6 +8,8 @@ import { lessons as lessonsTable } from '../../../database/entities/lessons';
 import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
 import { questionReferences } from '../../../database/entities/question-references';
+import { ImagesService } from '../../images/images.service';
+import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
   CreateQuestionDto,
@@ -47,6 +49,7 @@ export class QuestionsService {
     private readonly drizzleService: DrizzleService,
     private readonly questionOptionsService: QuestionOptionsService,
     private readonly referencesService: ReferencesService,
+    private readonly imagesService: ImagesService,
   ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
@@ -131,13 +134,24 @@ export class QuestionsService {
         .returning();
 
       if (dto.questionType === 'mcq' && dto.options?.length) {
-        // Use the transaction-aware insert if possible, or just call service
         const optionPayloads = dto.options.map((opt) => ({
           questionId: question.id,
           optionText: opt.optionText,
           isCorrect: opt.isCorrect,
         }));
         await tx.insert(questionOptions).values(optionPayloads);
+      }
+
+      // Collect images from both statement and explanation
+      const statementUrls = dto.statementFormat === 'tiptap_json' ? extractImageUrls(dto.statement) : [];
+      const explanationUrls = dto.explanation ? extractImageUrls(dto.explanation) : [];
+
+      if (statementUrls.length > 0) {
+        await this.imagesService.commitImages('question', question.id, statementUrls, tx);
+      }
+
+      if (explanationUrls.length > 0) {
+        await this.imagesService.commitImages('explanation', question.id, explanationUrls, tx);
       }
 
       return this.findOne(question.id, tx);
@@ -190,7 +204,7 @@ export class QuestionsService {
 
   async update(id: number, dto: UpdateQuestionDto) {
     // Verify existence first
-    await this.findOne(id);
+    const existingQuestion = await this.findOne(id);
 
     const { options, ...questionFields } = dto;
 
@@ -205,29 +219,55 @@ export class QuestionsService {
     if (questionFields.isMisc !== undefined) updatePayload.isMisc = questionFields.isMisc;
     if (questionFields.oldExamId !== undefined) updatePayload.oldExamId = questionFields.oldExamId;
 
-    if (Object.keys(updatePayload).length) {
-      await this.drizzleService.db
-        .update(questions)
-        .set(updatePayload)
-        .where(eq(questions.id, id));
-    }
+    await this.drizzleService.db.transaction(async (tx) => {
+      if (Object.keys(updatePayload).length) {
+        await tx
+          .update(questions)
+          .set(updatePayload)
+          .where(eq(questions.id, id));
+      }
 
-    // Replace options if provided
-    if (options !== undefined) {
-      await this.questionOptionsService.replaceOptions(id, options ?? []);
-    }
+      const targetStatementFormat = questionFields.statementFormat ?? existingQuestion.statementFormat;
+
+      if (questionFields.statement !== undefined && targetStatementFormat === 'tiptap_json') {
+        const newUrls = extractImageUrls(questionFields.statement);
+        await this.imagesService.markDeletedByDiff('question', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('question', id, newUrls, tx);
+        }
+      } else if (questionFields.statementFormat !== undefined && questionFields.statementFormat !== 'tiptap_json') {
+        await this.imagesService.markDeletedByDiff('question', id, [], tx);
+      }
+
+      if (questionFields.explanation !== undefined) {
+        const newUrls = extractImageUrls(questionFields.explanation);
+        await this.imagesService.markDeletedByDiff('explanation', id, newUrls, tx);
+        if (newUrls.length > 0) {
+          await this.imagesService.commitImages('explanation', id, newUrls, tx);
+        }
+      }
+
+      // Replace options if provided
+      if (options !== undefined) {
+        await this.questionOptionsService.replaceOptions(id, options ?? []);
+      }
+    });
 
     return this.findOne(id);
   }
 
   async remove(id: number) {
-    const [deleted] = await this.drizzleService.db
-      .delete(questions)
-      .where(eq(questions.id, id))
-      .returning();
+    const [deleted] = await this.drizzleService.db.transaction(async (tx) => {
+      await this.imagesService.deleteAllForEntity('question', id, tx);
+      await this.imagesService.deleteAllForEntity('explanation', id, tx);
+
+      return tx
+        .delete(questions)
+        .where(eq(questions.id, id))
+        .returning();
+    });
 
     if (!deleted) throw new NotFoundException(`Question with ID ${id} not found`);
-
     return deleted;
   }
 

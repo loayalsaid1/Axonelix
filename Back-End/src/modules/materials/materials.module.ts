@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DrizzleModule } from '../../database/drizzle.module';
+import { ImagesModule } from '../images/images.module';
 
 // Import controllers
 import { ModulesController } from './modules/modules.controller';
@@ -14,7 +15,7 @@ import { ChaptersService } from './chapters/chapters.service';
 import { LessonsService } from './lessons/lessons.service';
 
 @Module({
-  imports: [DrizzleModule],
+  imports: [DrizzleModule, ImagesModule],
   controllers: [
     ModulesController,
     SubjectsController,
@@ -34,4 +35,4 @@ import { LessonsService } from './lessons/lessons.service';
     LessonsService,
   ],
 })
-export class MaterialsModule {}
+export class MaterialsModule { }
