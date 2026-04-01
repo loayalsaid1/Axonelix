@@ -5,6 +5,7 @@ import type {
 	GlobalModuleAccessMutationResult,
 	ListAdminPaymentRequestsParams,
 	ListMyPaymentRequestsParams,
+	MyModuleAccessRecord,
 	PaymentInfo,
 	PaymentRequestPage,
 	PaymentRequestRecord,
@@ -84,6 +85,16 @@ export function cancelMyPaymentRequest(
 ): Promise<PaymentRequestRecord> {
 	return fetcher<PaymentRequestRecord>(`/subscriptions/payment-requests/me/${id}/cancel`, {
 		method: 'PATCH',
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getMyModules(
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<MyModuleAccessRecord[]> {
+	return fetcher<MyModuleAccessRecord[]>('/subscriptions/my-modules', {
 		cache: 'no-store',
 		...opts,
 	});
