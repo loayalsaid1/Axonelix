@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useDebounce } from '@/hooks/use-debounce';
 import {
 	Select,
 	SelectContent,
@@ -33,6 +35,20 @@ export function PaymentRequestFilters({
 	modules,
 	onChange,
 }: PaymentRequestFiltersProps) {
+	const [queryInput, setQueryInput] = useState(filters.query ?? '');
+	const debouncedQuery = useDebounce(queryInput, 350);
+
+	useEffect(() => {
+		setQueryInput(filters.query ?? '');
+	}, [filters.query]);
+
+	useEffect(() => {
+		const currentQuery = filters.query ?? '';
+		if (debouncedQuery === currentQuery) return;
+
+		onChange({ query: debouncedQuery, page: 1 });
+	}, [debouncedQuery, filters.query, onChange]);
+
 	return (
 		<div className="grid grid-cols-1 gap-4 rounded-xl border bg-card p-4 md:grid-cols-2 xl:grid-cols-5">
 			<div className="space-y-2 xl:col-span-2">
@@ -42,8 +58,8 @@ export function PaymentRequestFilters({
 					<Input
 						id="payment-search"
 						placeholder="Request ID, student email, module"
-						value={filters.query ?? ''}
-						onChange={(event) => onChange({ query: event.target.value, page: 1 })}
+						value={queryInput}
+						onChange={(event) => setQueryInput(event.target.value)}
 						className="pl-8"
 					/>
 				</div>
@@ -84,7 +100,7 @@ export function PaymentRequestFilters({
 						})
 					}
 				>
-					<SelectTrigger>
+					<SelectTrigger className="max-w-full">
 						<SelectValue placeholder="All modules" />
 					</SelectTrigger>
 					<SelectContent>
