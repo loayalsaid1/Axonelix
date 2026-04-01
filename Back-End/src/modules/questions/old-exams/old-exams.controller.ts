@@ -13,8 +13,9 @@ import {
 import { OldExamsService } from './old-exams.service';
 import type { ExamType, ModuleType } from './dto';
 import { CreateOldExamDto } from './dto';
-import { paramIntId, Roles } from '../../../common/decorators';
+import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Controller('questions/old-exams')
 export class OldExamsController {
@@ -29,18 +30,22 @@ export class OldExamsController {
 
   @Get()
   findAll(
+    @CurrentUser() user: UserRecord,
     @Query('moduleId', new ParseIntPipe({ optional: true })) moduleId?: number,
     @Query('universityId', new ParseIntPipe({ optional: true })) universityId?: number,
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
     @Query('examType') examType?: ExamType,
     @Query('moduleType') moduleType?: ModuleType,
   ) {
-    return this.oldExamsService.findAll({ moduleId, universityId, year, examType, moduleType });
+    return this.oldExamsService.findAll(
+      { moduleId, universityId, year, examType, moduleType },
+      user,
+    );
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number) {
-    return this.oldExamsService.findOne(id);
+  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord) {
+    return this.oldExamsService.findOne(id, user);
   }
 
   @Patch(':id')
