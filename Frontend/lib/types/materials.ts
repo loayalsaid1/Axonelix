@@ -4,6 +4,7 @@
 export interface ModuleName {
   id: number;
   name: string;
+  accessStatus?: 'owned' | 'locked';
 }
 
 export interface Module {
