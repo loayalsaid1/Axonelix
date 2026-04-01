@@ -4,10 +4,10 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto, UpdateModuleDto, ModuleResponseDto } from './dto';
@@ -31,26 +31,35 @@ export class ModulesController {
   @Get('names')
   findNames(
     @CurrentUser() user: UserRecord,
-  ): Promise<Array<{ id: number; name: string; accessStatus: 'owned' | 'locked' }>> {
-    return this.modulesService.findNames(user);
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<Array<{ id: number; name: string; accessStatus?: 'owned' | 'locked' }>> {
+    return this.modulesService.findNames(user, includeAccess === 'true');
   }
 
   @Get()
-  findAll(@CurrentUser() user: UserRecord): Promise<ModuleResponseDto[]> {
-    return this.modulesService.findAll(user);
+  findAll(
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<ModuleResponseDto[]> {
+    return this.modulesService.findAll(user, includeAccess === 'true');
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord): Promise<ModuleResponseDto> {
-    return this.modulesService.findOne(id, user);
+  findOne(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<ModuleResponseDto> {
+    return this.modulesService.findOne(id, user, includeAccess === 'true');
   }
 
   @Get(':id/hierarchy')
   findHierarchy(
     @paramIntId() id: number,
     @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
   ): Promise<HierarchyResponseDto> {
-    return this.modulesService.findHierarchy(id, user);
+    return this.modulesService.findHierarchy(id, user, includeAccess === 'true');
   }
 
   @Patch(':id')
