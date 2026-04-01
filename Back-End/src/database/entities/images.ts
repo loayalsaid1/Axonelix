@@ -3,7 +3,7 @@ import { users } from "./users"
 import { sql } from "drizzle-orm"
 
 export const imageStatusEnum = pgEnum("image_status", ["pending", "committed", "deleted"])
-export const imageEntityTypeEnum = pgEnum("image_entity_type", ["lesson", "question", "explanation"])
+export const imageEntityTypeEnum = pgEnum("image_entity_type", ["lesson", "question", "explanation", "payment_proof"])
 
 export const images = pgTable("images", {
 	id: uuid("id").primaryKey().defaultRandom(),
