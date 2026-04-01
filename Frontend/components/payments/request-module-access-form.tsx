@@ -76,10 +76,10 @@ export function RequestModuleAccessForm({
 	};
 
 	return (
-		<div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-5">
+		<div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
 			<Card className="lg:col-span-3">
 				<CardHeader>
-					<CardTitle>Request Module Access</CardTitle>
+					<CardTitle>Request Details</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-6">
 					<div className="space-y-2">
