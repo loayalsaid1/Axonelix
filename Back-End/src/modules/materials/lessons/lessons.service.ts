@@ -119,6 +119,14 @@ export class LessonsService {
     return lesson;
   }
 
+  async findPreview(id: number) {
+    const lesson = await this.findOne(id);
+    return {
+      ...lesson,
+      content: null,
+    };
+  }
+
   async findQuestions(id: number, page = 1, limit = 10, user?: UserRecord) {
     if (user) {
       await this.subscriptionsAccessService.assertCanViewLesson(user, id);
