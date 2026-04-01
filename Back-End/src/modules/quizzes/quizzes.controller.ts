@@ -49,7 +49,7 @@ export class QuizzesController {
     @Body() dto: CountQuestionsDto,
     @CurrentUser() user: UserRecord,
   ): Promise<{ count: number }> {
-    return this.questionCountService.count(dto, user.id);
+    return this.questionCountService.count(dto, user);
   }
 
   /**
@@ -62,7 +62,7 @@ export class QuizzesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   generate(@Body() dto: GenerateQuizDto, @CurrentUser() user: UserRecord): Promise<GenerateQuizResponseDto> {
-    return this.quizzesService.generate(dto, user.id);
+    return this.quizzesService.generate(dto, user);
   }
 
   /**
