@@ -68,6 +68,11 @@ export class LessonsController {
     return this.lessonsService.findOne(id, user);
   }
 
+  @Get(':id/preview')
+  findPreview(@paramIntId() id: number): Promise<Omit<LessonWithHierarchyDto, 'content'>> {
+    return this.lessonsService.findPreview(id);
+  }
+
   @Get(':id/questions')
   findQuestions(
     @paramIntId() id: number,
