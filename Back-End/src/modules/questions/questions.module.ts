@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DrizzleModule } from '../../database/drizzle.module';
 import { ImagesModule } from '../images/images.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 import { QuestionsController } from './questions/questions.controller';
 import { QuestionsService } from './questions/questions.service';
@@ -13,7 +14,7 @@ import { ReferencesService } from './references/references.service';
 import { ReferencesController } from './references/references.controller';
 
 @Module({
-  imports: [DrizzleModule, ImagesModule],
+  imports: [DrizzleModule, ImagesModule, SubscriptionsModule],
   controllers: [
     // Specific-prefix controllers MUST come before QuestionsController so that
     // routes like GET /questions/old-exams are not swallowed by GET /questions/:id
