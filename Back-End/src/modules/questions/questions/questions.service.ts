@@ -9,6 +9,7 @@ import { chapters as chaptersTable } from '../../../database/entities/chapters';
 import { subjects as subjectsTable } from '../../../database/entities/subjects';
 import { questionReferences } from '../../../database/entities/question-references';
 import { ImagesService } from '../../images/images.service';
+import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
 import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
@@ -20,6 +21,7 @@ import {
   BulkCreateQuestionsDto,
   BulkCreateResultDto,
 } from './dto';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 // Columns returned on a full question fetch
 const QUESTION_COLUMNS = {
@@ -50,6 +52,7 @@ export class QuestionsService {
     private readonly questionOptionsService: QuestionOptionsService,
     private readonly referencesService: ReferencesService,
     private readonly imagesService: ImagesService,
+    private readonly subscriptionsAccessService: SubscriptionsAccessService,
   ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
@@ -173,7 +176,23 @@ export class QuestionsService {
     } = {},
     page = 1,
     limit = 40,
+    user?: UserRecord,
   ): Promise<PaginatedQuestionsDto> {
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      const filterDto: QuestionFilterDto = {
+        ...(params.lessonId != null && { lessonIds: [params.lessonId] }),
+        ...(params.chapterId != null && { chapterIds: [params.chapterId] }),
+        ...(params.oldExamId != null && { oldExamId: params.oldExamId }),
+        ...(params.referenceId != null && { referenceId: params.referenceId }),
+        ...(params.questionType != null && {
+          questionType: params.questionType as 'mcq' | 'written',
+        }),
+        ...(params.isMisc != null && { isMisc: params.isMisc }),
+      };
+
+      return this.filter(filterDto, page, limit, user);
+    }
+
     const conditions: SQL[] = [];
 
     if (params.lessonId != null) conditions.push(eq(questions.lessonId, params.lessonId));
@@ -187,8 +206,13 @@ export class QuestionsService {
     return this._paginateQuery(where, page, limit);
   }
 
-  async findOne(id: number, tx?: any) {
+  async findOne(id: number, tx?: any, user?: UserRecord) {
     const db = tx ? tx : this.drizzleService.db;
+
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      await this.subscriptionsAccessService.assertCanViewQuestion(user, id);
+    }
+
     const question = await db.query.questions.findFirst({
       where: eq(questions.id, id),
       columns: QUESTION_COLUMNS,
@@ -297,14 +321,41 @@ export class QuestionsService {
    *  3. Fetch full question rows (with options) using the returned IDs so we
    *     never multiply rows via option joins.
    */
-  async filter(filterDto: QuestionFilterDto, page = 1, limit = 40): Promise<PaginatedQuestionsDto> {
+  async filter(
+    filterDto: QuestionFilterDto,
+    page = 1,
+    limit = 40,
+    user?: UserRecord,
+  ): Promise<PaginatedQuestionsDto> {
+    let scopedFilter = filterDto;
+
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      if (filterDto.oldExamId != null) {
+        await this.subscriptionsAccessService.assertCanViewOldExam(user, filterDto.oldExamId);
+      }
+
+      const effectiveModuleIds = await this.subscriptionsAccessService.resolveEffectiveModuleIds(
+        user,
+        filterDto.moduleIds,
+      );
+
+      if (effectiveModuleIds && effectiveModuleIds.length === 0) {
+        return { data: [], total: 0, page, limit, totalPages: 0 };
+      }
+
+      scopedFilter = {
+        ...filterDto,
+        ...(effectiveModuleIds ? { moduleIds: effectiveModuleIds } : {}),
+      };
+    }
+
     const offset = (page - 1) * limit;
 
     const [idRows, [{ value: total }]] = await Promise.all([
-      this.buildFilterQuery(filterDto).limit(limit).offset(offset),
+      this.buildFilterQuery(scopedFilter).limit(limit).offset(offset),
       this.drizzleService.db
         .select({ value: count() })
-        .from(this.buildFilterQuery(filterDto).as('cq')),
+        .from(this.buildFilterQuery(scopedFilter).as('cq')),
     ]);
 
     const ids = idRows.map((r) => r.id);
@@ -326,8 +377,30 @@ export class QuestionsService {
   /**
    * Complex filter returning only question IDs (lightweight, for quiz generation).
    */
-  async filterIds(filterDto: QuestionFilterDto): Promise<QuestionIdsDto> {
-    const rows = await this.buildFilterQuery(filterDto);
+  async filterIds(filterDto: QuestionFilterDto, user?: UserRecord): Promise<QuestionIdsDto> {
+    let scopedFilter = filterDto;
+
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      if (filterDto.oldExamId != null) {
+        await this.subscriptionsAccessService.assertCanViewOldExam(user, filterDto.oldExamId);
+      }
+
+      const effectiveModuleIds = await this.subscriptionsAccessService.resolveEffectiveModuleIds(
+        user,
+        filterDto.moduleIds,
+      );
+
+      if (effectiveModuleIds && effectiveModuleIds.length === 0) {
+        return { ids: [], total: 0 };
+      }
+
+      scopedFilter = {
+        ...filterDto,
+        ...(effectiveModuleIds ? { moduleIds: effectiveModuleIds } : {}),
+      };
+    }
+
+    const rows = await this.buildFilterQuery(scopedFilter);
     return { ids: rows.map((r) => r.id), total: rows.length };
   }
 
