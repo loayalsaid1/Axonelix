@@ -11,9 +11,10 @@ import {
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto, UpdateModuleDto, ModuleResponseDto } from './dto';
-import { paramIntId, Roles } from '../../../common/decorators';
+import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
 import { HierarchyResponseDto } from '../dto/hierarchy-response.dto';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Controller('materials/modules')
 export class ModulesController {
@@ -28,23 +29,28 @@ export class ModulesController {
 
   /** Lightweight list – only id + name, for filter dropdowns. */
   @Get('names')
-  findNames(): Promise<{ id: number; name: string }[]> {
-    return this.modulesService.findNames();
+  findNames(
+    @CurrentUser() user: UserRecord,
+  ): Promise<Array<{ id: number; name: string; accessStatus: 'owned' | 'locked' }>> {
+    return this.modulesService.findNames(user);
   }
 
   @Get()
-  findAll(): Promise<ModuleResponseDto[]> {
-    return this.modulesService.findAll();
+  findAll(@CurrentUser() user: UserRecord): Promise<ModuleResponseDto[]> {
+    return this.modulesService.findAll(user);
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number): Promise<ModuleResponseDto> {
-    return this.modulesService.findOne(id);
+  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord): Promise<ModuleResponseDto> {
+    return this.modulesService.findOne(id, user);
   }
 
   @Get(':id/hierarchy')
-  findHierarchy(@paramIntId() id: number): Promise<HierarchyResponseDto> {
-    return this.modulesService.findHierarchy(id);
+  findHierarchy(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+  ): Promise<HierarchyResponseDto> {
+    return this.modulesService.findHierarchy(id, user);
   }
 
   @Patch(':id')
