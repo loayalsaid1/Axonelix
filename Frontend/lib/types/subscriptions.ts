@@ -22,6 +22,19 @@ export interface PaymentRequestModuleSummary {
 	description?: string | null;
 }
 
+export interface MyModuleAccessRecord {
+	id: number;
+	userId: number;
+	moduleId: number;
+	source: string;
+	grantedBy: number | null;
+	grantedAt: string;
+	revokedAt: string | null;
+	module?: PaymentRequestModuleSummary & {
+		orderIndex?: number | null;
+	};
+}
+
 export interface PaymentProofImage {
 	id: string;
 	url: string;
