@@ -1,0 +1,165 @@
+import { apiFetch, type FetchOptions } from './client';
+import type {
+	CreatePaymentRequestDto,
+	GlobalModuleAccessDto,
+	GlobalModuleAccessMutationResult,
+	ListAdminPaymentRequestsParams,
+	ListMyPaymentRequestsParams,
+	PaymentInfo,
+	PaymentRequestPage,
+	PaymentRequestRecord,
+	PaymentRequestStats,
+	ReviewPaymentRequestDto,
+} from '@/lib/types/subscriptions';
+
+export type ApiFetcher = <T>(path: string, options?: FetchOptions) => Promise<T>;
+
+function buildQuery(params: object): string {
+	const qs = new URLSearchParams();
+
+	for (const [key, value] of Object.entries(params as Record<string, unknown>)) {
+		if (value == null || value === '') continue;
+		qs.set(key, String(value));
+	}
+
+	return qs.toString();
+}
+
+function withQuery(path: string, params: object): string {
+	const query = buildQuery(params);
+	if (!query) return path;
+	return `${path}?${query}`;
+}
+
+export function getPaymentInfo(
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentInfo> {
+	return fetcher<PaymentInfo>('/subscriptions/payment-info', {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function createPaymentRequest(
+	dto: CreatePaymentRequestDto,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestRecord> {
+	return fetcher<PaymentRequestRecord>('/subscriptions/payment-requests', {
+		method: 'POST',
+		body: dto,
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getMyPaymentRequests(
+	params: ListMyPaymentRequestsParams = {},
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestPage> {
+	const path = withQuery('/subscriptions/payment-requests/me', params);
+	return fetcher<PaymentRequestPage>(path, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getMyPaymentRequestById(
+	id: number,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestRecord> {
+	return fetcher<PaymentRequestRecord>(`/subscriptions/payment-requests/me/${id}`, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function cancelMyPaymentRequest(
+	id: number,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestRecord> {
+	return fetcher<PaymentRequestRecord>(`/subscriptions/payment-requests/me/${id}/cancel`, {
+		method: 'PATCH',
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getAdminPaymentRequests(
+	params: ListAdminPaymentRequestsParams = {},
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestPage> {
+	const path = withQuery('/admin/subscriptions/payment-requests', params);
+	return fetcher<PaymentRequestPage>(path, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getAdminPaymentRequestStats(
+	params: Omit<ListAdminPaymentRequestsParams, 'status' | 'page' | 'limit'> = {},
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestStats> {
+	const path = withQuery('/admin/subscriptions/payment-requests/stats', params);
+	return fetcher<PaymentRequestStats>(path, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function getAdminPaymentRequestById(
+	id: number,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestRecord> {
+	return fetcher<PaymentRequestRecord>(`/admin/subscriptions/payment-requests/${id}`, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function reviewAdminPaymentRequest(
+	id: number,
+	dto: ReviewPaymentRequestDto,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<PaymentRequestRecord> {
+	return fetcher<PaymentRequestRecord>(`/admin/subscriptions/payment-requests/${id}/review`, {
+		method: 'PATCH',
+		body: dto,
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function grantGlobalModuleAccess(
+	dto: GlobalModuleAccessDto,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<GlobalModuleAccessMutationResult> {
+	return fetcher<GlobalModuleAccessMutationResult>('/admin/subscriptions/user-access/grant-global', {
+		method: 'POST',
+		body: dto,
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function revokeGlobalModuleAccess(
+	dto: GlobalModuleAccessDto,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<GlobalModuleAccessMutationResult> {
+	return fetcher<GlobalModuleAccessMutationResult>('/admin/subscriptions/user-access/revoke-global', {
+		method: 'POST',
+		body: dto,
+		cache: 'no-store',
+		...opts,
+	});
+}
