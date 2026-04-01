@@ -39,12 +39,16 @@ import {
 	PaymentRequestStatsDto,
 	ReviewPaymentRequestDto,
 } from './dto';
+import { ConfigService } from '@nestjs/config';
 
 const MODULE_FEE_PIASTERS = 20000;
 
 @Injectable()
 export class SubscriptionsService {
-	constructor(private readonly drizzleService: DrizzleService) { }
+	constructor(
+		private readonly drizzleService: DrizzleService,
+		private readonly configService: ConfigService
+	) { }
 
 	// This is the furthest that could be from SOLID
 	// And this is the price you make when for the first time you don't write detailed
@@ -55,8 +59,8 @@ export class SubscriptionsService {
 			moduleFeePiasters: MODULE_FEE_PIASTERS,
 			currency: 'EGP',
 			paymentMethod: 'instapay',
-			instapayHandle: process.env.INSTAPAY_HANDLE ?? null,
-			instapayQrCodeUrl: process.env.INSTAPAY_QR_IMAGE_URL ?? null,
+			instapayHandle: this.configService.getOrThrow('INSTAPAY_HANDLE'),
+			instapayQrCodeUrl: this.configService.getOrThrow('INSTAPAY_QR_IMAGE_URL'),
 		};
 	}
 
