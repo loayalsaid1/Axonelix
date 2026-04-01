@@ -7,12 +7,15 @@ import { lessons } from '../../../database/entities/lessons';
 import { chapters } from '../../../database/entities/chapters';
 import { questions } from '../../../database/entities/questions';
 import { eq, ilike, count } from 'drizzle-orm';
+import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Injectable()
 export class LessonsService {
   constructor(
     private readonly drizzleService: DrizzleService,
-    private readonly imagesService: ImagesService
+    private readonly imagesService: ImagesService,
+    private readonly subscriptionsAccessService: SubscriptionsAccessService,
   ) { }
 
   async create(createLessonDto: CreateLessonDto) {
@@ -72,7 +75,7 @@ export class LessonsService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, user?: UserRecord) {
     const lesson = await this.drizzleService.db.query.lessons.findFirst({
       where: eq(lessons.id, id),
       with: {
@@ -106,18 +109,29 @@ export class LessonsService {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
 
+    if (user) {
+      await this.subscriptionsAccessService.assertUserHasModuleAccess(
+        user,
+        lesson.chapter.subject.module.id,
+      );
+    }
+
     return lesson;
   }
 
-  async findQuestions(id: number, page = 1, limit = 10) {
-    // Verify lesson exists
-    const lesson = await this.drizzleService.db.query.lessons.findFirst({
-      where: eq(lessons.id, id),
-      columns: { id: true },
-    });
+  async findQuestions(id: number, page = 1, limit = 10, user?: UserRecord) {
+    if (user) {
+      await this.subscriptionsAccessService.assertCanViewLesson(user, id);
+    } else {
+      // Keep explicit lesson existence semantics when called internally without user.
+      const lesson = await this.drizzleService.db.query.lessons.findFirst({
+        where: eq(lessons.id, id),
+        columns: { id: true },
+      });
 
-    if (!lesson) {
-      throw new NotFoundException(`Lesson with ID ${id} not found`);
+      if (!lesson) {
+        throw new NotFoundException(`Lesson with ID ${id} not found`);
+      }
     }
 
     const offset = (page - 1) * limit;
