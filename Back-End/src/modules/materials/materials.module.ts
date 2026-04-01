@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DrizzleModule } from '../../database/drizzle.module';
 import { ImagesModule } from '../images/images.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 // Import controllers
 import { ModulesController } from './modules/modules.controller';
@@ -15,7 +16,7 @@ import { ChaptersService } from './chapters/chapters.service';
 import { LessonsService } from './lessons/lessons.service';
 
 @Module({
-  imports: [DrizzleModule, ImagesModule],
+  imports: [DrizzleModule, ImagesModule, SubscriptionsModule],
   controllers: [
     ModulesController,
     SubjectsController,
