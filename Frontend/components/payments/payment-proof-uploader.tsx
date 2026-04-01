@@ -44,7 +44,7 @@ export function PaymentProofUploader({
 			const fileType = file.type || '';
 			setPreviewInfo({ url: uploaded.url, mimeType: fileType });
 			toast.success('Payment proof uploaded successfully.');
-			
+
 			onUploadComplete({
 				id: uploaded.imageId,
 				url: uploaded.url,
