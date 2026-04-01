@@ -145,7 +145,7 @@ function GlobalAccessActionCard({
 					<div className="space-y-2">
 						<Label>Module</Label>
 						<Select value={moduleId || undefined} onValueChange={setModuleId}>
-							<SelectTrigger>
+							<SelectTrigger className="max-w-full">
 								<SelectValue placeholder="Select module" />
 							</SelectTrigger>
 							<SelectContent>
