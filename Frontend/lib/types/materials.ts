@@ -11,6 +11,7 @@ export interface Module {
   id: number;
   name: string;
   description: string | null;
+  accessStatus?: 'owned' | 'locked';
   orderIndex: number | null;
   createdAt: string;
   updatedAt: string;
