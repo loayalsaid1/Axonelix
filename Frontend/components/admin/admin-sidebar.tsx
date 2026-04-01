@@ -6,6 +6,7 @@ import {
 	BookOpen,
 	FileQuestion,
 	TrendingUp,
+	HandCoins,
 	Users,
 } from "lucide-react"
 
@@ -55,6 +56,11 @@ const adminNavGroups = [
 	{
 		label: "Users",
 		items: [
+			{
+				title: "Payments",
+				url: "/admin/subscriptions",
+				icon: HandCoins,
+			},
 			{
 				title: "Users",
 				url: "/admin/users",
