@@ -14,6 +14,7 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { StreaksModule } from './modules/streaks/streaks.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { ImagesModule } from './modules/images/images.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ClerkAuthGuard } from './common/guards/clerk-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -36,6 +37,7 @@ import { RolesGuard } from './common/guards/roles.guard';
     StreaksModule,
     StatsModule,
     ImagesModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [
