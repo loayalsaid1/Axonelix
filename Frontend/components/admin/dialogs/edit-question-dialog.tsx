@@ -45,6 +45,7 @@ interface QuestionData {
   explanation: string | null;
   lessonId: number | null;
   chapterId: number | null;
+  oldExamId: number | null;
   isMisc: boolean | null;
   questionOptions: QuestionOption[];
 }
@@ -58,6 +59,7 @@ export default function EditQuestionDialog({
   const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [questionOldExamId, setQuestionOldExamId] = useState<number | null>(null);
 
   const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
@@ -99,6 +101,7 @@ export default function EditQuestionDialog({
       fetchQuestion();
     } else {
       setInitialExplanationContent(undefined);
+      setQuestionOldExamId(null);
     }
   }, [open, questionId]);
 
@@ -123,6 +126,7 @@ export default function EditQuestionDialog({
         }
       }
       setInitialExplanationContent(explanationContent);
+      setQuestionOldExamId(question.oldExamId ?? null);
 
       // Fetch ancestors for materials
       if (question.lessonId || question.chapterId) {
@@ -170,8 +174,9 @@ export default function EditQuestionDialog({
       return;
     }
 
-    if (!formData.chapterId) {
-      alert('Please select a chapter for this material link');
+    // A question can be linked by material chapter, old exam, or both.
+    if (!formData.chapterId && !questionOldExamId) {
+      alert('Please select a chapter, or keep this question linked to an old exam');
       return;
     }
 
@@ -209,7 +214,7 @@ export default function EditQuestionDialog({
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
         lessonId: formData.lessonId ? Number(formData.lessonId) : null,
-        chapterId: Number(formData.chapterId),
+        chapterId: formData.chapterId ? Number(formData.chapterId) : null,
         isMisc: formData.isMisc,
       };
 
