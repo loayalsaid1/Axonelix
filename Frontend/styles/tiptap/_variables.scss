@@ -133,12 +133,18 @@
        Radius variables 
     **************************************************/
 
-  --tt-radius-xxs: 0.125rem; /* 2px */
-  --tt-radius-xs: 0.25rem; /* 4px */
-  --tt-radius-sm: 0.375rem; /* 6px */
-  --tt-radius-md: 0.5rem; /* 8px */
-  --tt-radius-lg: 0.75rem; /* 12px */
-  --tt-radius-xl: 1rem; /* 16px */
+  --tt-radius-xxs: 0.125rem;
+  /* 2px */
+  --tt-radius-xs: 0.25rem;
+  /* 4px */
+  --tt-radius-sm: 0.375rem;
+  /* 6px */
+  --tt-radius-md: 0.5rem;
+  /* 8px */
+  --tt-radius-lg: 0.75rem;
+  /* 12px */
+  --tt-radius-xl: 1rem;
+  /* 16px */
 
   /************************************************** 
        Transition variables 
@@ -166,8 +172,7 @@
   ::before,
   ::after {
     box-sizing: border-box;
-    transition: none var(--tt-transition-duration-default)
-      var(--tt-transition-easing-default);
+    transition: none var(--tt-transition-duration-default) var(--tt-transition-easing-default);
   }
 }
 
@@ -178,6 +183,7 @@
 
   /* Global colors - Light mode */
   --tt-bg-color: var(--white);
+  --tt-bg-color-contrast: var(--tt-gray-light-a-300);
   --tt-border-color: var(--tt-gray-light-a-200);
   --tt-border-color-tint: var(--tt-gray-light-a-100);
   --tt-sidebar-bg-color: var(--tt-gray-light-100);
@@ -191,6 +197,7 @@
 /* Global colors - Dark mode */
 .dark {
   --tt-bg-color: var(--black);
+  --tt-bg-color-contrast: var(--tt-gray-dark-a-300);
   --tt-border-color: var(--tt-gray-dark-a-200);
   --tt-border-color-tint: var(--tt-gray-dark-a-100);
   --tt-sidebar-bg-color: var(--tt-gray-dark-100);
@@ -208,50 +215,50 @@
 /* Text colors - Tailwind palette */
 :root {
   /* Tailwind 600 shades for optimal readability */
-  --tt-color-text-gray: theme('colors.slate.600');
-  --tt-color-text-brown: theme('colors.amber.800');
-  --tt-color-text-orange: theme('colors.orange.600');
-  --tt-color-text-yellow: theme('colors.yellow.600');
-  --tt-color-text-green: theme('colors.emerald.600');
-  --tt-color-text-blue: theme('colors.sky.600');
-  --tt-color-text-purple: theme('colors.violet.600');
-  --tt-color-text-pink: theme('colors.pink.600');
-  --tt-color-text-red: theme('colors.red.600');
+  --tt-color-text-gray: #475569;
+  --tt-color-text-brown: #92400e;
+  --tt-color-text-orange: #ea580c;
+  --tt-color-text-yellow: #ca8a04;
+  --tt-color-text-green: #059669;
+  --tt-color-text-blue: #0284c7;
+  --tt-color-text-purple: #7c3aed;
+  --tt-color-text-pink: #db2777;
+  --tt-color-text-red: #dc2626;
 
   /* Tailwind 300 shades for button borders/contrast */
-  --tt-color-text-gray-contrast: theme('colors.slate.300');
-  --tt-color-text-brown-contrast: theme('colors.amber.300');
-  --tt-color-text-orange-contrast: theme('colors.orange.300');
-  --tt-color-text-yellow-contrast: theme('colors.yellow.300');
-  --tt-color-text-green-contrast: theme('colors.emerald.300');
-  --tt-color-text-blue-contrast: theme('colors.sky.300');
-  --tt-color-text-purple-contrast: theme('colors.violet.300');
-  --tt-color-text-pink-contrast: theme('colors.pink.300');
-  --tt-color-text-red-contrast: theme('colors.red.300');
+  --tt-color-text-gray-contrast: #cbd5e1;
+  --tt-color-text-brown-contrast: #fcd34d;
+  --tt-color-text-orange-contrast: #fdba74;
+  --tt-color-text-yellow-contrast: #fde047;
+  --tt-color-text-green-contrast: #6ee7b7;
+  --tt-color-text-blue-contrast: #7dd3fc;
+  --tt-color-text-purple-contrast: #c4b5fd;
+  --tt-color-text-pink-contrast: #f9a8d4;
+  --tt-color-text-red-contrast: #fca5a5;
 }
 
 .dark {
   /* Tailwind 400 shades for better contrast on dark backgrounds */
-  --tt-color-text-gray: theme('colors.slate.400');
-  --tt-color-text-brown: theme('colors.amber.400');
-  --tt-color-text-orange: theme('colors.orange.400');
-  --tt-color-text-yellow: theme('colors.yellow.400');
-  --tt-color-text-green: theme('colors.emerald.400');
-  --tt-color-text-blue: theme('colors.sky.400');
-  --tt-color-text-purple: theme('colors.violet.400');
-  --tt-color-text-pink: theme('colors.pink.400');
-  --tt-color-text-red: theme('colors.red.400');
+  --tt-color-text-gray: #94a3b8;
+  --tt-color-text-brown: #fbbf24;
+  --tt-color-text-orange: #fb923c;
+  --tt-color-text-yellow: #facc15;
+  --tt-color-text-green: #34d399;
+  --tt-color-text-blue: #38bdf8;
+  --tt-color-text-purple: #a78bfa;
+  --tt-color-text-pink: #f472b6;
+  --tt-color-text-red: #f87171;
 
   /* Tailwind 700 shades for button borders in dark mode */
-  --tt-color-text-gray-contrast: theme('colors.slate.700');
-  --tt-color-text-brown-contrast: theme('colors.amber.700');
-  --tt-color-text-orange-contrast: theme('colors.orange.700');
-  --tt-color-text-yellow-contrast: theme('colors.yellow.700');
-  --tt-color-text-green-contrast: theme('colors.emerald.700');
-  --tt-color-text-blue-contrast: theme('colors.sky.700');
-  --tt-color-text-purple-contrast: theme('colors.violet.700');
-  --tt-color-text-pink-contrast: theme('colors.pink.700');
-  --tt-color-text-red-contrast: theme('colors.red.700');
+  --tt-color-text-gray-contrast: #334155;
+  --tt-color-text-brown-contrast: #b45309;
+  --tt-color-text-orange-contrast: #c2410c;
+  --tt-color-text-yellow-contrast: #a16207;
+  --tt-color-text-green-contrast: #047857;
+  --tt-color-text-blue-contrast: #0369a1;
+  --tt-color-text-purple-contrast: #6d28d9;
+  --tt-color-text-pink-contrast: #be185d;
+  --tt-color-text-red-contrast: #b91c1c;
 }
 
 /* Highlight colors */
