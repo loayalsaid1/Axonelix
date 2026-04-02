@@ -1,13 +1,14 @@
 import { Suspense } from "react";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
-import { getModules } from "@/lib/api/materials";
+import { getModuleHierarchy, getModules } from "@/lib/api/materials";
+import { getMyModules } from "@/lib/api/subscriptions";
 import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyTreeClient } from "@/components/library/HierarchyTreeClient";
 import { RecentLessonsPanel } from "@/components/library/RecentLessonsPanel";
 import { LessonSearchBox } from "@/components/library/LessonSearchBox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { API_BASE_URL } from "@/lib/constants";
+import { buildOwnedModuleIdSet, withHierarchyAccess } from "@/lib/utils/module-access";
 
 
 // ─── Tree skeleton shown while the server fetches module data ────────────────
@@ -27,19 +28,20 @@ async function HierarchyTree() {
   // We fetch all module hierarchies to build the full nav tree.
   // Uses ISR (revalidate: 60) set in the API helper.
   const opts = await serverAuthOpts();
-  const modules = await getModules(opts);
+  const [modules, ownedRows] = await Promise.all([
+    getModules(opts),
+    getMyModules(undefined, opts),
+  ]);
 
   // For the sidebar tree we need chapters+lessons too; fetch hierarchies in parallel
   const hierarchies = await Promise.all(
-    modules.map((m) =>
-      fetch(
-        `${API_BASE_URL}/materials/modules/${m.id}/hierarchy`,
-        { next: { revalidate: 60 }, ...opts }
-      ).then((r) => r.json())
-    )
+    modules.map((m) => getModuleHierarchy(m.id, opts))
   );
 
-  return <HierarchyTreeClient modules={hierarchies} />;
+  const ownedModuleIds = buildOwnedModuleIdSet(ownedRows);
+  const hierarchyWithAccess = withHierarchyAccess(hierarchies, ownedModuleIds);
+
+  return <HierarchyTreeClient modules={hierarchyWithAccess} />;
 }
 
 // ─── Main exported sidebar ────────────────────────────────────────────────────
