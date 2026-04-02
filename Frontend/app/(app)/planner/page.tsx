@@ -6,8 +6,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ComingSoon } from "@/components/coming-soon"
-import { CalendarDays } from "lucide-react"
+import { PlannerWorkspace } from "@/components/planner/planner-workspace"
 
 export default function PlannerPage() {
   return (
@@ -25,13 +24,7 @@ export default function PlannerPage() {
           </Breadcrumb>
         </div>
       </header>
-      <div className="flex flex-col flex-1 p-4 pt-0">
-        <ComingSoon
-          title="Planner"
-          description="Organize your study schedule, set goals, and stay on top of your exam preparation with a personalised planner."
-          icon={CalendarDays}
-        />
-      </div>
+      <PlannerWorkspace />
     </>
   )
 }
