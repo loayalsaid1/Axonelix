@@ -17,8 +17,9 @@ import {
   QuestionFilterDto,
   BulkCreateQuestionsDto,
 } from './dto';
-import { paramIntId, Roles } from '../../../common/decorators';
+import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Controller('questions')
 export class QuestionsController {
@@ -51,6 +52,7 @@ export class QuestionsController {
    */
   @Get()
   findAll(
+    @CurrentUser() user: UserRecord,
     @Query('lessonId', new ParseIntPipe({ optional: true })) lessonId?: number,
     @Query('chapterId', new ParseIntPipe({ optional: true })) chapterId?: number,
     @Query('oldExamId', new ParseIntPipe({ optional: true })) oldExamId?: number,
@@ -65,12 +67,13 @@ export class QuestionsController {
       { lessonId, chapterId, oldExamId, referenceId, questionType, isMisc },
       page,
       limit,
+      user,
     );
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number) {
-    return this.questionsService.findOne(id);
+  findOne(@paramIntId() id: number, @CurrentUser() user: UserRecord) {
+    return this.questionsService.findOne(id, undefined, user);
   }
 
   @Patch(':id')
@@ -103,11 +106,12 @@ export class QuestionsController {
   @Post('filter')
   @HttpCode(HttpStatus.OK)
   filter(
+    @CurrentUser() user: UserRecord,
     @Body() filterDto: QuestionFilterDto,
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 40,
   ) {
-    return this.questionsService.filter(filterDto, page, limit);
+    return this.questionsService.filter(filterDto, page, limit, user);
   }
 
   /**
@@ -117,7 +121,7 @@ export class QuestionsController {
    */
   @Post('filter/ids')
   @HttpCode(HttpStatus.OK)
-  filterIds(@Body() filterDto: QuestionFilterDto) {
-    return this.questionsService.filterIds(filterDto);
+  filterIds(@CurrentUser() user: UserRecord, @Body() filterDto: QuestionFilterDto) {
+    return this.questionsService.filterIds(filterDto, user);
   }
 }

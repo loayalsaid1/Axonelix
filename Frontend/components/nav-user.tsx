@@ -110,15 +110,15 @@ export function NavUser({ isAdmin = false }: NavUserConfig = {}) {
                 Account
               </DropdownMenuItem>
               {!isAdmin && (
-                <DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push("/payments")}>
                   <CreditCard />
-                  Billing
+                  Payments
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <Bell />
                 Notifications
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem

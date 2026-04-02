@@ -15,6 +15,11 @@ import {
 	quizSessionAnswers,
 	studyStreaks,
 	questionReferences,
+	userModuleAccess,
+	modulePaymentRequests,
+	modulePaymentRequestEvents,
+	images,
+	plannerTasks,
 } from "./schema";
 
 export const subjectsRelations = relations(subjects, ({ one, many }) => ({
@@ -28,6 +33,8 @@ export const subjectsRelations = relations(subjects, ({ one, many }) => ({
 export const modulesRelations = relations(modules, ({ many }) => ({
 	subjects: many(subjects),
 	oldExams: many(oldExams),
+	userModuleAccess: many(userModuleAccess),
+	paymentRequests: many(modulePaymentRequests),
 }));
 
 export const oldExamsRelations = relations(oldExams, ({ one, many }) => ({
@@ -99,10 +106,85 @@ export const questionOptionsRelations = relations(questionOptions, ({ one, many 
 export const usersRelations = relations(users, ({ one, many }) => ({
 	quizzes: many(quizzes),
 	quizSessions: many(quizSessions),
+	moduleAccess: many(userModuleAccess, {
+		relationName: 'userAccessOwner',
+	}),
+	grantedModuleAccess: many(userModuleAccess, {
+		relationName: 'userAccessGranter',
+	}),
+	paymentRequests: many(modulePaymentRequests, {
+		relationName: 'paymentRequestOwner',
+	}),
+	reviewedPaymentRequests: many(modulePaymentRequests, {
+		relationName: 'paymentRequestReviewer',
+	}),
+	paymentRequestEvents: many(modulePaymentRequestEvents),
+	plannerTasks: many(plannerTasks),
 	studyStreak: one(studyStreaks, {
 		fields: [users.id],
 		references: [studyStreaks.userId],
 	}),
+}));
+
+export const userModuleAccessRelations = relations(userModuleAccess, ({ one }) => ({
+	user: one(users, {
+		fields: [userModuleAccess.userId],
+		references: [users.id],
+		relationName: 'userAccessOwner',
+	}),
+	module: one(modules, {
+		fields: [userModuleAccess.moduleId],
+		references: [modules.id],
+	}),
+	grantedByUser: one(users, {
+		fields: [userModuleAccess.grantedBy],
+		references: [users.id],
+		relationName: 'userAccessGranter',
+	}),
+}));
+
+export const modulePaymentRequestsRelations = relations(modulePaymentRequests, ({ one, many }) => ({
+	user: one(users, {
+		fields: [modulePaymentRequests.userId],
+		references: [users.id],
+		relationName: 'paymentRequestOwner',
+	}),
+	module: one(modules, {
+		fields: [modulePaymentRequests.moduleId],
+		references: [modules.id],
+	}),
+	proofImage: one(images, {
+		fields: [modulePaymentRequests.proofImageId],
+		references: [images.id],
+	}),
+	reviewedByUser: one(users, {
+		fields: [modulePaymentRequests.reviewedBy],
+		references: [users.id],
+		relationName: 'paymentRequestReviewer',
+	}),
+	events: many(modulePaymentRequestEvents),
+}));
+
+export const modulePaymentRequestEventsRelations = relations(modulePaymentRequestEvents, ({ one }) => ({
+	paymentRequest: one(modulePaymentRequests, {
+		fields: [modulePaymentRequestEvents.paymentRequestId],
+		references: [modulePaymentRequests.id],
+	}),
+	actorUser: one(users, {
+		fields: [modulePaymentRequestEvents.actorUserId],
+		references: [users.id],
+	}),
+}));
+
+export const plannerTasksRelations = relations(plannerTasks, ({ one }) => ({
+	user: one(users, {
+		fields: [plannerTasks.userId],
+		references: [users.id],
+	}),
+}));
+
+export const imagesRelations = relations(images, ({ many }) => ({
+	paymentProofRequests: many(modulePaymentRequests),
 }));
 
 export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
