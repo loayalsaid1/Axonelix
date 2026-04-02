@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { PlannerEmptyTasks } from "./planner-empty-tasks";
+import { PlannerTaskItem } from "./planner-task-item";
 import type { PlannerTask } from "@/lib/types/planner";
 
 interface PlannerDayTasksPanelProps {
@@ -65,86 +65,22 @@ export function PlannerDayTasksPanel({
 			</CardHeader>
 			<CardContent className="flex flex-col gap-3">
 				{orderedTasks.length === 0 ? (
-					<Empty className="min-h-52 border border-dashed">
-						<EmptyHeader>
-							<EmptyMedia variant="icon">
-								<CheckCircle2 />
-							</EmptyMedia>
-							<EmptyTitle>No tasks planned</EmptyTitle>
-							<EmptyDescription>
-								Start by adding a focused study task for this day.
-							</EmptyDescription>
-						</EmptyHeader>
-						<EmptyContent>
-							<Button
-								type="button"
-								variant="outline"
-								className="gap-2"
-								onClick={onCreateTask}
-								disabled={isCreating}
-							>
-								<Plus />
-								Create First Task
-							</Button>
-						</EmptyContent>
-					</Empty>
+					<PlannerEmptyTasks onCreateTask={onCreateTask} disabled={isCreating} />
 				) : (
-					orderedTasks.map((task) => {
-						const isTaskMutating =
-							updatingTaskId === task.id || togglingTaskId === task.id || deletingTaskId === task.id;
-
-						return (
-							<div
-								key={task.id}
-								className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/40"
-							>
-								<Checkbox
-									checked={task.isCompleted}
-									onCheckedChange={(checked) => {
-										void onToggleComplete(task, checked === true);
-									}}
-									disabled={isTaskMutating}
-								/>
-								<div className="flex min-w-0 flex-1 flex-col gap-1">
-									<div className="flex items-center gap-2">
-										<p className={`text-sm font-medium ${task.isCompleted ? "line-through text-muted-foreground" : ""}`}>
-											{task.title}
-										</p>
-										{/* {task.isCompleted && (
-											<Badge variant="outline" className="h-5 px-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-												Completed
-											</Badge>
-										)} */}
-									</div>
-									{task.notes ? (
-										<p className="text-sm text-muted-foreground whitespace-pre-wrap">{task.notes}</p>
-									) : null}
-								</div>
-								<div className="flex items-center gap-1">
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										onClick={() => onEditTask(task)}
-										disabled={isTaskMutating}
-										aria-label="Edit task"
-									>
-										<Pencil />
-									</Button>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon-sm"
-										onClick={() => onDeleteTask(task)}
-										disabled={isTaskMutating}
-										aria-label="Delete task"
-									>
-										<Trash2 className="text-destructive" />
-									</Button>
-								</div>
-							</div>
-						);
-					})
+					orderedTasks.map((task) => (
+						<PlannerTaskItem
+							key={task.id}
+							task={task}
+							isMutating={
+								updatingTaskId === task.id ||
+								togglingTaskId === task.id ||
+								deletingTaskId === task.id
+							}
+							onToggle={onToggleComplete}
+							onEdit={onEditTask}
+							onDelete={onDeleteTask}
+						/>
+					))
 				)}
 			</CardContent>
 		</Card>
