@@ -24,7 +24,11 @@ export default function PlannerPage() {
           </Breadcrumb>
         </div>
       </header>
-      <PlannerWorkspace />
+      <div className="flex flex-col flex-1 p-4 lg:p-6 overflow-auto bg-gradient-to-br from-background via-muted/10 to-muted/20">
+        <div className="mx-auto w-full max-w-8xl">
+          <PlannerWorkspace />
+        </div>
+      </div>
     </>
   )
 }
