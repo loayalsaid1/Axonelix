@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, BookOpen, Layers, BookMarked, File } from "lucide-react";
+import { ChevronRight, BookOpen, Layers, BookMarked, File, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { ModuleHierarchy, Subject, Chapter, Lesson } from "@/lib/types/materials";
@@ -169,6 +169,35 @@ function ModuleItem({ module, defaultOpen }: { module: ModuleHierarchy; defaultO
   const isActive = useIsActive();
   const href = `/library/modules/${module.id}`;
   const active = isActive(href);
+  const isLocked = module.accessStatus === "locked";
+
+  if (isLocked) {
+    return (
+      <div className="space-y-0.5">
+        <div className="flex items-center">
+          <button
+            className="flex justify-center items-center rounded-sm w-6 h-6 text-sidebar-foreground/30 shrink-0"
+            aria-label="Module locked"
+            disabled
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
+          <div
+            className={cn(
+              "flex flex-1 items-center gap-2 px-2 py-1.5 rounded-md font-medium text-sm",
+              "border border-sidebar-border/70 bg-sidebar-accent/50 text-sidebar-foreground/75"
+            )}
+          >
+            <Lock className="size-3.5 text-sidebar-foreground/60 shrink-0" />
+            <span className="truncate">{module.name}</span>
+            <Badge variant="secondary" className="ml-auto text-[10px] uppercase">
+              Locked
+            </Badge>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-0.5">
@@ -214,6 +243,12 @@ function ModuleItem({ module, defaultOpen }: { module: ModuleHierarchy; defaultO
 export function HierarchyTreeClient({ modules }: HierarchyTreeClientProps) {
   const pathname = usePathname();
 
+  const unlockedModules = modules.filter((m) => m.accessStatus !== "locked");
+  const lockedModules = modules.filter((m) => m.accessStatus === "locked");
+  const [lockedOpen, setLockedOpen] = useState(
+    () => lockedModules.some((module) => isModuleActive(module))
+  );
+
   // Auto-open the module whose path is currently active
   function isModuleActive(module: ModuleHierarchy): boolean {
     if (pathname.includes(`/modules/${module.id}`)) return true;
@@ -237,14 +272,42 @@ export function HierarchyTreeClient({ modules }: HierarchyTreeClientProps) {
   }
 
   return (
-    <div className="space-y-1">
-      {modules.map((module) => (
-        <ModuleItem
-          key={module.id}
-          module={module}
-          defaultOpen={isModuleActive(module)}
-        />
-      ))}
+    <div className="space-y-2">
+      <div className="space-y-1">
+        {unlockedModules.map((module) => (
+          <ModuleItem
+            key={module.id}
+            module={module}
+            defaultOpen={isModuleActive(module)}
+          />
+        ))}
+      </div>
+
+      {lockedModules.length > 0 && (
+        <div className="pt-1 border-sidebar-border/70 border-t">
+          <button
+            type="button"
+            onClick={() => setLockedOpen((open) => !open)}
+            className="flex items-center gap-1.5 px-2 py-1.5 w-full font-medium text-[11px] text-sidebar-foreground/60 uppercase tracking-wider"
+          >
+            <ChevronRight className={cn("size-3 transition-transform", lockedOpen && "rotate-90")} />
+            <span>Locked Modules</span>
+            <Badge variant="secondary" className="ml-auto text-[10px]">{lockedModules.length}</Badge>
+          </button>
+
+          {lockedOpen && (
+            <div className="space-y-1 mt-1">
+              {lockedModules.map((module) => (
+                <ModuleItem
+                  key={module.id}
+                  module={module}
+                  defaultOpen={false}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
