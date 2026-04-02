@@ -19,6 +19,7 @@ import {
 	modulePaymentRequests,
 	modulePaymentRequestEvents,
 	images,
+	plannerTasks,
 } from "./schema";
 
 export const subjectsRelations = relations(subjects, ({ one, many }) => ({
@@ -118,6 +119,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		relationName: 'paymentRequestReviewer',
 	}),
 	paymentRequestEvents: many(modulePaymentRequestEvents),
+	plannerTasks: many(plannerTasks),
 	studyStreak: one(studyStreaks, {
 		fields: [users.id],
 		references: [studyStreaks.userId],
@@ -170,6 +172,13 @@ export const modulePaymentRequestEventsRelations = relations(modulePaymentReques
 	}),
 	actorUser: one(users, {
 		fields: [modulePaymentRequestEvents.actorUserId],
+		references: [users.id],
+	}),
+}));
+
+export const plannerTasksRelations = relations(plannerTasks, ({ one }) => ({
+	user: one(users, {
+		fields: [plannerTasks.userId],
 		references: [users.id],
 	}),
 }));
