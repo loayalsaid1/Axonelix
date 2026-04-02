@@ -391,7 +391,7 @@ export const handleImageUpload = async (
     formData.append("signature", signature);
     formData.append("expire", expire);
     formData.append("token", token);
-    formData.append("folder", "/test/images");
+    formData.append("folder", publishFolder);
 
     // XMLHttpRequest supports accurate progress tracking compared to standard fetch.
     const uploadData = await new Promise<any>((resolve, reject) => {

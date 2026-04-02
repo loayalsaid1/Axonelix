@@ -598,7 +598,9 @@ export function useQuizGenerator(hierarchy: ModuleHierarchy[]) {
   }, []);
 
   const selectAll = useCallback(() => {
-    const allSubjectIds = hierarchy.flatMap((m) => m.subjects.map((s) => s.id));
+    const allSubjectIds = hierarchy
+      .filter((m) => m.accessStatus !== 'locked')
+      .flatMap((m) => m.subjects.map((s) => s.id));
     dispatch({ type: 'SELECT_ALL', allSubjectIds });
   }, [hierarchy]);
 

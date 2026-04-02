@@ -3,6 +3,8 @@ import { API_BASE_URL } from '@/lib/constants';
 import type { ModuleHierarchy, ModuleWithSubjects } from '@/lib/types/materials';
 import { GenerateTestPage } from '@/components/qbank/generate/GenerateTestPage';
 import { serverAuthOpts } from '@/lib/api/server-auth-opts';
+import { getMyModules } from '@/lib/api/subscriptions';
+import { buildOwnedModuleIdSet, withHierarchyAccess } from '@/lib/utils/module-access';
 
 export const metadata: Metadata = { title: 'Generate Test' };
 
@@ -17,9 +19,11 @@ export const metadata: Metadata = { title: 'Generate Test' };
  * Uses ISR with a 60 s window — hierarchy is slow-changing.
  */
 async function fetchHierarchy(): Promise<ModuleHierarchy[]> {
+  const opts = await serverAuthOpts();
+
   // 1. Fetch module list (includes subjects for ordering/display)
   const modulesRes = await fetch(`${API_BASE_URL}/materials/modules`, {
-    ...await serverAuthOpts(),
+    ...opts,
     next: { revalidate: 60 },
   });
   if (!modulesRes.ok) return [];
@@ -27,11 +31,14 @@ async function fetchHierarchy(): Promise<ModuleHierarchy[]> {
 
   if (!modules.length) return [];
 
+  const ownedRows = await getMyModules(undefined, opts);
+  const ownedModuleIds = buildOwnedModuleIdSet(ownedRows);
+
   // 2. Fetch full hierarchy (subjects → chapters → lessons) for each module in parallel
   const hierarchies = await Promise.all(
     modules.map(async (m) => {
       const res = await fetch(`${API_BASE_URL}/materials/modules/${m.id}/hierarchy`, {
-        ...(await serverAuthOpts()),
+        ...opts,
         next: { revalidate: 60 },
       });
       if (!res.ok) {
@@ -42,7 +49,7 @@ async function fetchHierarchy(): Promise<ModuleHierarchy[]> {
     }),
   );
 
-  return hierarchies;
+  return withHierarchyAccess(hierarchies, ownedModuleIds);
 }
 
 export default async function GenerateTestsPage() {

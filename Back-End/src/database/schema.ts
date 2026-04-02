@@ -29,6 +29,9 @@ import { userQuestionStatus } from "./entities/user-question-status";
 import { studyStreaks } from "./entities/study-streaks";
 import { questionReferences } from "./entities/question-references";
 import { images, imageStatusEnum, imageEntityTypeEnum } from "./entities/images";
+import { userModuleAccess } from "./entities/user-module-access";
+import { modulePaymentRequests, paymentRequestStatusEnum } from "./entities/module-payment-requests";
+import { modulePaymentRequestEvents } from "./entities/module-payment-request-events";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -60,6 +63,10 @@ export {
 	images,
 	imageStatusEnum,
 	imageEntityTypeEnum,
+	userModuleAccess,
+	modulePaymentRequests,
+	modulePaymentRequestEvents,
+	paymentRequestStatusEnum,
 };
 
 export const schema = {
@@ -90,6 +97,10 @@ export const schema = {
 	images,
 	imageStatusEnum,
 	imageEntityTypeEnum,
+	userModuleAccess,
+	modulePaymentRequests,
+	modulePaymentRequestEvents,
+	paymentRequestStatusEnum,
 	...relations,
 };
 

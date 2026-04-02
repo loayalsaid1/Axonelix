@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
 import { oldExams } from '../../../database/entities/old-exams';
-import { and, eq, SQL } from 'drizzle-orm';
+import { and, eq, inArray, SQL } from 'drizzle-orm';
 import { CreateOldExamDto, ExamType, ModuleType } from './dto';
+import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 export interface OldExamFilters {
   moduleId?: number;
@@ -14,7 +16,10 @@ export interface OldExamFilters {
 
 @Injectable()
 export class OldExamsService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly subscriptionsAccessService: SubscriptionsAccessService,
+  ) { }
 
   async create(dto: CreateOldExamDto) {
     // Guard uniqueness constraint (DB will also enforce, but gives a nicer error)
@@ -43,37 +48,65 @@ export class OldExamsService {
     return exam;
   }
 
-  async findAll(filters: OldExamFilters = {}) {
+  async findAll(filters: OldExamFilters = {}, user?: UserRecord) {
     const conditions: SQL[] = [];
 
-    if (filters.moduleId != null)     conditions.push(eq(oldExams.moduleId, filters.moduleId));
+    if (filters.moduleId != null) {
+      conditions.push(eq(oldExams.moduleId, filters.moduleId));
+    }
     if (filters.universityId != null) conditions.push(eq(oldExams.universityId, filters.universityId));
-    if (filters.year != null)         conditions.push(eq(oldExams.year, filters.year));
-    if (filters.examType != null)     conditions.push(eq(oldExams.examType, filters.examType));
-    if (filters.moduleType != null)   conditions.push(eq(oldExams.moduleType, filters.moduleType));
+    if (filters.year != null) conditions.push(eq(oldExams.year, filters.year));
+    if (filters.examType != null) conditions.push(eq(oldExams.examType, filters.examType));
+    if (filters.moduleType != null) conditions.push(eq(oldExams.moduleType, filters.moduleType));
+
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      if (filters.moduleId != null) {
+        await this.subscriptionsAccessService.assertUserHasModuleAccess(
+          user,
+          filters.moduleId,
+        );
+      } else {
+        const ownedModuleIds = await this.subscriptionsAccessService.getOwnedModuleIds(
+          user.id,
+        );
+
+        if (!ownedModuleIds.length) {
+          return [];
+        }
+
+        conditions.push(inArray(oldExams.moduleId, ownedModuleIds));
+      }
+    }
 
     const where = conditions.length ? and(...conditions) : undefined;
 
     return this.drizzleService.db.query.oldExams.findMany({
       where,
       with: {
-        module:     { columns: { id: true, name: true } },
+        module: { columns: { id: true, name: true } },
         university: { columns: { id: true, name: true } },
       },
       orderBy: (e, { desc, asc }) => [desc(e.year), asc(e.examType)],
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, user?: UserRecord) {
     const exam = await this.drizzleService.db.query.oldExams.findFirst({
       where: eq(oldExams.id, id),
       with: {
-        module:     { columns: { id: true, name: true } },
+        module: { columns: { id: true, name: true } },
         university: { columns: { id: true, name: true } },
       },
     });
 
     if (!exam) throw new NotFoundException(`Old exam with ID ${id} not found`);
+
+    if (user) {
+      await this.subscriptionsAccessService.assertUserHasModuleAccess(
+        user,
+        exam.moduleId,
+      );
+    }
 
     return exam;
   }

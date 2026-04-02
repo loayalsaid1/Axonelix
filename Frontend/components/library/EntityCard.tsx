@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ interface EntityCardProps {
   progress?: number;
   /** Mocked count string in footer */
   footerLabel?: string;
+  locked?: boolean;
   className?: string;
 }
 
@@ -33,14 +34,16 @@ export function EntityCard({
   badgeVariant = "default",
   progress,
   footerLabel,
+  locked = false,
   className,
 }: EntityCardProps) {
   return (
     <Link
-      href={href}
+      href={locked ? "/payments/request" : href}
       className={cn(
         "group flex flex-col bg-card p-4 border border-border rounded-xl transition-all",
         "hover:border-primary/40 hover:shadow-md",
+        locked && "border-border bg-muted/35 hover:border-border hover:bg-muted/55",
         className
       )}
     >
@@ -65,6 +68,12 @@ export function EntityCard({
           <span className="ml-auto text-muted-foreground text-xs shrink-0">
             {meta}
           </span>
+        )}
+        {locked && (
+          <Badge variant="secondary" className="ml-auto">
+            <Lock className="mr-1 size-3" />
+            Locked
+          </Badge>
         )}
       </div>
 
@@ -96,9 +105,13 @@ export function EntityCard({
         {footerLabel ? (
           <span className="text-muted-foreground text-xs">{footerLabel}</span>
         ) : (
-          <span />
+          <span className="text-muted-foreground text-xs">{locked ? "Purchase required" : ""}</span>
         )}
-        <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
+        {locked ? (
+          <Lock className="size-3.5 text-muted-foreground" />
+        ) : (
+          <ArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
+        )}
       </div>
     </Link>
   );

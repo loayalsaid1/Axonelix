@@ -4,12 +4,17 @@ import { DrizzleService } from '../../database/drizzle.service';
 import { vwQuestionAncestry } from '../../database/entities/question-hierarchy-views';
 import { userQuestionStatus } from '../../database/entities/user-question-status';
 import { CountQuestionsDto } from './dto';
+import { SubscriptionsAccessService } from '../subscriptions/subscriptions-access.service';
+import type { UserRecord } from '../users/interfaces/user-record.interface';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable()
 export class QuestionCountService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly subscriptionsAccessService: SubscriptionsAccessService,
+  ) { }
 
   // ── Public API ────────────────────────────────────────────────────────────
 
@@ -22,15 +27,37 @@ export class QuestionCountService {
    * Returns { count } — the number of questions the user can generate a quiz
    * from with the current filter configuration.
    */
-  async count(dto: CountQuestionsDto, userId: number): Promise<{ count: number }> {
-    const scopeConditions = this._buildScopeConditions(dto);
+  async count(dto: CountQuestionsDto, user: UserRecord): Promise<{ count: number }> {
+    const effectiveModuleIds = await this.subscriptionsAccessService.resolveEffectiveModuleIds(
+      user,
+      dto.moduleIds,
+    );
+
+    if (dto.oldExamId != null) {
+      await this.subscriptionsAccessService.assertCanViewOldExam(user, dto.oldExamId);
+    }
+
+    if (
+      !this.subscriptionsAccessService.isAdmin(user) &&
+      effectiveModuleIds &&
+      effectiveModuleIds.length === 0
+    ) {
+      return { count: 0 };
+    }
+
+    const scopedDto: CountQuestionsDto = {
+      ...dto,
+      ...(effectiveModuleIds ? { moduleIds: effectiveModuleIds } : {}),
+    };
+
+    const scopeConditions = this._buildScopeConditions(scopedDto);
 
     let query = this.drizzleService.db
       .select({ count: count() })
       .from(vwQuestionAncestry)
       .$dynamic();
 
-    query = this._applyStatusJoin(query, scopeConditions, dto.questionStatus, userId);
+    query = this._applyStatusJoin(query, scopeConditions, dto.questionStatus, user.id);
 
     if (scopeConditions.length) {
       query = query.where(and(...scopeConditions));

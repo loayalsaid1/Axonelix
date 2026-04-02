@@ -6,6 +6,7 @@ import {
 import { sql, eq, and, isNull, or, count } from 'drizzle-orm';
 import { DrizzleService } from '../../database/drizzle.service';
 import { QuestionsService } from '../questions/questions/questions.service';
+import { SubscriptionsAccessService } from '../subscriptions/subscriptions-access.service';
 import { quizzes } from '../../database/entities/quizzes';
 import { quizSessions } from '../../database/entities/quiz-sessions';
 import { quizQuestions } from '../../database/entities/quiz-questions';
@@ -22,6 +23,7 @@ import {
   PaginatedQuizzesDto,
   GenerateQuizResponseDto,
 } from './dto';
+import type { UserRecord } from '../users/interfaces/user-record.interface';
 
 // ─── column projections ───────────────────────────────────────────────────────
 
@@ -67,7 +69,8 @@ export class QuizzesService {
   constructor(
     private readonly drizzleService: DrizzleService,
     private readonly questionsService: QuestionsService,
-  ) {}
+    private readonly subscriptionsAccessService: SubscriptionsAccessService,
+  ) { }
 
   // ── Quiz Generation ───────────────────────────────────────────────────────
 
@@ -84,14 +87,36 @@ export class QuizzesService {
    *
    * Returns { quiz, session } to allow an immediate frontend redirect.
    */
-  async generate(dto: GenerateQuizDto, userId: number): Promise<GenerateQuizResponseDto> {
+  async generate(dto: GenerateQuizDto, user: UserRecord): Promise<GenerateQuizResponseDto> {
+    if (dto.oldExamId != null) {
+      await this.subscriptionsAccessService.assertCanViewOldExam(user, dto.oldExamId);
+    }
+
+    const effectiveModuleIds = await this.subscriptionsAccessService.resolveEffectiveModuleIds(
+      user,
+      dto.moduleIds,
+    );
+
+    if (
+      !this.subscriptionsAccessService.isAdmin(user) &&
+      effectiveModuleIds &&
+      effectiveModuleIds.length === 0
+    ) {
+      throw new BadRequestException('You need module access before generating quizzes.');
+    }
+
+    const scopedDto: GenerateQuizDto = {
+      ...dto,
+      ...(effectiveModuleIds ? { moduleIds: effectiveModuleIds } : {}),
+    };
+
     // 1. Resolve final question IDs — single DB query
-    const selectedIds = await this._resolveQuestionIds(dto, userId);
+    const selectedIds = await this._resolveQuestionIds(scopedDto, user.id);
 
     if (!selectedIds.length) {
       const reason =
-        dto.questionStatus && dto.questionStatus !== 'all'
-          ? `No questions match the '${dto.questionStatus}' filter for this user.`
+        scopedDto.questionStatus && scopedDto.questionStatus !== 'all'
+          ? `No questions match the '${scopedDto.questionStatus}' filter for this user.`
           : 'No questions found matching the selected filters.';
       throw new BadRequestException(reason);
     }
@@ -103,12 +128,12 @@ export class QuizzesService {
         const [quiz] = await tx
           .insert(quizzes)
           .values({
-            title: dto.title ?? null,
-            createdBy: userId,
+            title: scopedDto.title ?? null,
+            createdBy: user.id,
             // Snapshot the full DTO as an audit trail of what was requested
-            scopeFilter: dto as unknown as Record<string, unknown>,
-            questionType: dto.questionType ?? null,
-            questionStatus: dto.questionStatus ?? null,
+            scopeFilter: scopedDto as unknown as Record<string, unknown>,
+            questionType: scopedDto.questionType ?? null,
+            questionStatus: scopedDto.questionStatus ?? null,
           })
           .returning();
 
@@ -124,7 +149,7 @@ export class QuizzesService {
           .insert(quizSessions)
           .values({
             quizId: quiz.id,
-            userId,
+            userId: user.id,
             status: 'not_started',
             totalQuestions: selectedIds.length,
           })
@@ -135,7 +160,7 @@ export class QuizzesService {
     );
 
     // 3. Re-fetch quiz with fully populated questions (trigger has run by now)
-    const freshQuiz = await this.findOne(quiz.id, userId);
+    const freshQuiz = await this.findOne(quiz.id, user.id);
     return { quiz: freshQuiz, session };
   }
 
@@ -243,14 +268,14 @@ export class QuizzesService {
    */
   private _mapToFilterDto(dto: GenerateQuizDto): QuestionFilterDto {
     return {
-      ...(dto.moduleIds?.length   && { moduleIds:   dto.moduleIds   }),
-      ...(dto.moduleType          && { moduleType:  dto.moduleType  }),
-      ...(dto.subjectIds?.length  && { subjectIds:  dto.subjectIds  }),
-      ...(dto.chapterIds?.length  && { chapterIds:  dto.chapterIds  }),
-      ...(dto.lessonIds?.length   && { lessonIds:   dto.lessonIds   }),
-      ...(dto.isMisc != null      && { isMisc:      dto.isMisc      }),
-      ...(dto.questionType        && { questionType: dto.questionType }),
-      ...(dto.oldExamId != null   && { oldExamId:   dto.oldExamId   }),
+      ...(dto.moduleIds?.length && { moduleIds: dto.moduleIds }),
+      ...(dto.moduleType && { moduleType: dto.moduleType }),
+      ...(dto.subjectIds?.length && { subjectIds: dto.subjectIds }),
+      ...(dto.chapterIds?.length && { chapterIds: dto.chapterIds }),
+      ...(dto.lessonIds?.length && { lessonIds: dto.lessonIds }),
+      ...(dto.isMisc != null && { isMisc: dto.isMisc }),
+      ...(dto.questionType && { questionType: dto.questionType }),
+      ...(dto.oldExamId != null && { oldExamId: dto.oldExamId }),
     };
   }
 

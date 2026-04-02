@@ -1,6 +1,16 @@
 import { API_BASE_URL } from "../constants";
 export type FetchOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 /**
  * Typed fetch wrapper.
  * - Throws on non-2xx responses with the server's error message.
@@ -28,7 +38,7 @@ export async function apiFetch<T>(
     } catch {
       // ignore parse failure
     }
-    throw new Error(message);
+    throw new ApiError(message, res.status);
   }
 
   // 204 No-Content — return undefined cast

@@ -6,7 +6,7 @@ import { type DRIZZLE_PROVIDER, DrizzleService } from '../../database/drizzle.se
 import ImageKit from '@imagekit/nodejs';
 import { ConfigService } from '@nestjs/config';
 
-type ImageEntityType = 'lesson' | 'question' | 'explanation';
+type ImageEntityType = 'lesson' | 'question' | 'explanation' | 'payment_proof';
 type DrizzleTx = Parameters<Parameters<DRIZZLE_PROVIDER['transaction']>[0]>[0];
 type DbOrTx = DRIZZLE_PROVIDER | DrizzleTx;
 

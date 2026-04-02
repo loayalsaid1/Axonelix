@@ -14,8 +14,9 @@ import {
 import { LessonsService } from './lessons.service';
 import { ChaptersService } from '../chapters/chapters.service';
 import { CreateLessonDto, UpdateLessonDto, LessonResponseDto, LessonWithHierarchyDto } from './dto';
-import { paramIntId, Roles } from '../../../common/decorators';
+import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Controller('materials/lessons')
 export class LessonsController {
@@ -60,17 +61,26 @@ export class LessonsController {
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number): Promise<LessonWithHierarchyDto> {
-    return this.lessonsService.findOne(id);
+  findOne(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+  ): Promise<LessonWithHierarchyDto> {
+    return this.lessonsService.findOne(id, user);
+  }
+
+  @Get(':id/preview')
+  findPreview(@paramIntId() id: number): Promise<Omit<LessonWithHierarchyDto, 'content'>> {
+    return this.lessonsService.findPreview(id);
   }
 
   @Get(':id/questions')
   findQuestions(
     @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
     @Query('page', new ParseIntPipe({ optional: true })) page = 1,
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
   ) {
-    return this.lessonsService.findQuestions(id, page, limit);
+    return this.lessonsService.findQuestions(id, page, limit, user);
   }
 
   @Patch(':id')

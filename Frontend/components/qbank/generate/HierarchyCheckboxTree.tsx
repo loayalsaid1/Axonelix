@@ -1,6 +1,7 @@
 'use client';
 
-import { ChevronRight, Layers, BookOpen, BookMarked, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, Layers, BookOpen, BookMarked, FileText, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -308,6 +309,34 @@ function ModuleRow({
   getLessonCheckState: (lessonId: number, chapterId: number, subjectId: number, moduleId: number) => NodeCheckState;
 }) {
   const totalSubjects = module.subjects.length;
+  const isLocked = module.accessStatus === 'locked';
+
+  if (isLocked) {
+    return (
+      <div className="group flex items-center gap-1 bg-muted/40 py-1.5 pr-2 pl-1 border border-border rounded-md">
+        <button
+          type="button"
+          disabled
+          className="flex justify-center items-center rounded w-5 h-5 text-muted-foreground/30 shrink-0"
+          aria-label="Locked module"
+        >
+          <ChevronRight className="size-3.5" />
+        </button>
+
+        <Checkbox checked={false} disabled aria-label={`Select ${module.name}`} className="shadow-none" />
+
+        <div className="flex flex-1 items-center gap-1.5 ml-1 min-w-0">
+          <Lock className="size-3.5 text-muted-foreground shrink-0" />
+          <span className="flex-1 font-medium text-sm text-muted-foreground truncate">
+            {module.name}
+          </span>
+          <Badge variant="secondary" className="px-1.5 h-4 font-semibold text-[9px] uppercase shrink-0">
+            Locked
+          </Badge>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Collapsible open={expanded} onOpenChange={() => onToggleExpand(module.id)}>
@@ -439,6 +468,8 @@ export function HierarchyCheckboxTree({
   getChapterCheckState,
   getLessonCheckState,
 }: HierarchyCheckboxTreeProps) {
+  const [lockedOpen, setLockedOpen] = useState(false);
+
   if (!hierarchy.length) {
     return (
       <div className="px-3 py-6 text-muted-foreground text-sm text-center">
@@ -447,9 +478,12 @@ export function HierarchyCheckboxTree({
     );
   }
 
+  const unlockedHierarchy = hierarchy.filter((mod) => mod.accessStatus !== 'locked');
+  const lockedHierarchy = hierarchy.filter((mod) => mod.accessStatus === 'locked');
+
   return (
-    <div className="space-y-0.5 px-1">
-      {hierarchy.map((mod) => {
+    <div className="space-y-1 px-1">
+      {unlockedHierarchy.map((mod) => {
         const allSubjectIds = mod.subjects.map((s) => s.id);
         return (
           <ModuleRow
@@ -472,6 +506,50 @@ export function HierarchyCheckboxTree({
           />
         );
       })}
+
+      {lockedHierarchy.length > 0 && (
+        <div className="pt-1 border-border/70 border-t">
+          <button
+            type="button"
+            onClick={() => setLockedOpen((open) => !open)}
+            className="flex items-center gap-1.5 px-2 py-1 w-full font-semibold text-[10px] text-muted-foreground uppercase tracking-wider"
+          >
+            <ChevronRight className={cn('size-3 transition-transform', lockedOpen && 'rotate-90')} />
+            <span>Locked Modules</span>
+            <Badge variant="secondary" className="ml-auto text-[10px]">
+              {lockedHierarchy.length}
+            </Badge>
+          </button>
+
+          {lockedOpen && (
+            <div className="space-y-0.5 mt-1">
+              {lockedHierarchy.map((mod) => {
+                const allSubjectIds = mod.subjects.map((s) => s.id);
+                return (
+                  <ModuleRow
+                    key={mod.id}
+                    module={mod}
+                    checkState={getModuleCheckState(mod.id, allSubjectIds)}
+                    expanded={expandedModules.has(mod.id)}
+                    expandedSubjects={expandedSubjects}
+                    expandedChapters={expandedChapters}
+                    onToggleCheck={onToggleModule}
+                    onToggleExpand={onToggleModuleExpand}
+                    onToggleSubject={onToggleSubject}
+                    onToggleSubjectExpand={onToggleSubjectExpand}
+                    onToggleChapter={onToggleChapter}
+                    onToggleChapterExpand={onToggleChapterExpand}
+                    onToggleLesson={onToggleLesson}
+                    getSubjectCheckState={getSubjectCheckState}
+                    getChapterCheckState={getChapterCheckState}
+                    getLessonCheckState={getLessonCheckState}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

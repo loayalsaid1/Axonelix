@@ -22,6 +22,13 @@ export function getModuleNames(opts?: RequestInit): Promise<ModuleName[]> {
   });
 }
 
+/** Access-aware variant for user-personalized UIs (must be uncached per user). */
+export function getModuleNamesWithAccess(opts?: RequestInit): Promise<ModuleName[]> {
+  return apiFetch<ModuleName[]>("/materials/modules/names?includeAccess=true", {
+    ...opts,
+  });
+}
+
 export function getModules(opts?: RequestInit): Promise<ModuleWithSubjects[]> {
   return apiFetch<ModuleWithSubjects[]>("/materials/modules", {
     next: { revalidate: 60 },
@@ -111,6 +118,16 @@ export function getLesson(
   opts?: RequestInit
 ): Promise<LessonWithHierarchy> {
   return apiFetch<LessonWithHierarchy>(`/materials/lessons/${id}`, {
+    next: { revalidate: 60 },
+    ...opts,
+  });
+}
+
+export function getLessonPreview(
+  id: number,
+  opts?: RequestInit
+): Promise<LessonWithHierarchy> {
+  return apiFetch<LessonWithHierarchy>(`/materials/lessons/${id}/preview`, {
     next: { revalidate: 60 },
     ...opts,
   });

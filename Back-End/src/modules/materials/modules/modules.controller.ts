@@ -4,16 +4,17 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ModulesService } from './modules.service';
 import { CreateModuleDto, UpdateModuleDto, ModuleResponseDto } from './dto';
-import { paramIntId, Roles } from '../../../common/decorators';
+import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
 import { HierarchyResponseDto } from '../dto/hierarchy-response.dto';
+import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 @Controller('materials/modules')
 export class ModulesController {
@@ -28,23 +29,37 @@ export class ModulesController {
 
   /** Lightweight list – only id + name, for filter dropdowns. */
   @Get('names')
-  findNames(): Promise<{ id: number; name: string }[]> {
-    return this.modulesService.findNames();
+  findNames(
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<Array<{ id: number; name: string; accessStatus?: 'owned' | 'locked' }>> {
+    return this.modulesService.findNames(user, includeAccess === 'true');
   }
 
   @Get()
-  findAll(): Promise<ModuleResponseDto[]> {
-    return this.modulesService.findAll();
+  findAll(
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<ModuleResponseDto[]> {
+    return this.modulesService.findAll(user, includeAccess === 'true');
   }
 
   @Get(':id')
-  findOne(@paramIntId() id: number): Promise<ModuleResponseDto> {
-    return this.modulesService.findOne(id);
+  findOne(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<ModuleResponseDto> {
+    return this.modulesService.findOne(id, user, includeAccess === 'true');
   }
 
   @Get(':id/hierarchy')
-  findHierarchy(@paramIntId() id: number): Promise<HierarchyResponseDto> {
-    return this.modulesService.findHierarchy(id);
+  findHierarchy(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+    @Query('includeAccess') includeAccess?: string,
+  ): Promise<HierarchyResponseDto> {
+    return this.modulesService.findHierarchy(id, user, includeAccess === 'true');
   }
 
   @Patch(':id')
