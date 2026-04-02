@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
-import { ISO_DATE_PATTERN } from './shared';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIsoDateOnly } from './shared';
 
 export class CreatePlannerTaskDto {
 	@IsString()
@@ -13,6 +13,6 @@ export class CreatePlannerTaskDto {
 	notes?: string;
 
 	@IsString()
-	@Matches(ISO_DATE_PATTERN, { message: 'dueDate must be in YYYY-MM-DD format.' })
+	@IsIsoDateOnly({ message: 'dueDate must be a valid date in YYYY-MM-DD format.' })
 	dueDate!: string;
 }
