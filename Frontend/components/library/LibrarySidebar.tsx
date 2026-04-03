@@ -7,6 +7,7 @@ import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyTreeClient } from "@/components/library/HierarchyTreeClient";
 import { RecentLessonsPanel } from "@/components/library/RecentLessonsPanel";
 import { LessonSearchBox } from "@/components/library/LessonSearchBox";
+import { NoOwnedModulesCta } from "@/components/subscriptions/NoOwnedModulesCta";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildOwnedModuleIdSet, withHierarchyAccess } from "@/lib/utils/module-access";
 
@@ -41,7 +42,16 @@ async function HierarchyTree() {
   const ownedModuleIds = buildOwnedModuleIdSet(ownedRows);
   const hierarchyWithAccess = withHierarchyAccess(hierarchies, ownedModuleIds);
 
-  return <HierarchyTreeClient modules={hierarchyWithAccess} />;
+  return (
+    <>
+      {modules.length > 0 && ownedModuleIds.size === 0 && (
+        <div className="px-2 pb-2">
+          <NoOwnedModulesCta compact />
+        </div>
+      )}
+      <HierarchyTreeClient modules={hierarchyWithAccess} />
+    </>
+  );
 }
 
 // ─── Main exported sidebar ────────────────────────────────────────────────────
