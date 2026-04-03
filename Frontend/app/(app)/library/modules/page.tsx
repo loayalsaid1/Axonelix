@@ -4,13 +4,13 @@ import { getMyModules } from "@/lib/api/subscriptions";
 import { serverAuthOpts } from "@/lib/api/server-auth-opts";
 import { HierarchyBreadcrumb } from "@/components/library/HierarchyBreadcrumb";
 import { EntityCard } from "@/components/library/EntityCard";
+import { NoOwnedModulesCta } from "@/components/subscriptions/NoOwnedModulesCta";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { buildOwnedModuleIdSet, withModuleAccess } from "@/lib/utils/module-access";
-import { mockProgress, mockQuestionCount } from "@/lib/utils/mock-stats";
 
 export const metadata: Metadata = { title: "Modules" };
 
@@ -35,6 +35,10 @@ export default async function ModulesPage() {
           Browse all academic modules
         </p>
       </div>
+
+      {ownedModules.length === 0 && lockedModules.length > 0 && (
+        <NoOwnedModulesCta className="max-w-xl" />
+      )}
 
       {modulesWithAccess.length === 0 ? (
         <p className="text-sm text-muted-foreground">No modules yet.</p>

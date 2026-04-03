@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ChevronRight, Layers, BookOpen, BookMarked, FileText, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Collapsible,
@@ -483,6 +485,18 @@ export function HierarchyCheckboxTree({
 
   return (
     <div className="space-y-1 px-1">
+      {unlockedHierarchy.length === 0 && lockedHierarchy.length > 0 && (
+        <div className="mx-1 mb-2 rounded-md border border-border bg-muted/35 p-3">
+          <p className="font-medium text-sm">No modules unlocked yet</p>
+          <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
+            Request module access to start generating custom tests.
+          </p>
+          <Button asChild size="sm" className="mt-2 h-8 text-xs">
+            <Link href="/payments/request">Request Access</Link>
+          </Button>
+        </div>
+      )}
+
       {unlockedHierarchy.map((mod) => {
         const allSubjectIds = mod.subjects.map((s) => s.id);
         return (
