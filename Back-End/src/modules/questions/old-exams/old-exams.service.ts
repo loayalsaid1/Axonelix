@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, forwardRef, Inject } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
 import { oldExams } from '../../../database/entities/old-exams';
 import { and, eq, inArray, SQL } from 'drizzle-orm';
 import { CreateOldExamDto, ExamType, ModuleType } from './dto';
 import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
+import { QuestionsService } from '../questions/questions.service';
 import type { UserRecord } from '../../users/interfaces/user-record.interface';
 
 export interface OldExamFilters {
@@ -19,6 +20,8 @@ export class OldExamsService {
   constructor(
     private readonly drizzleService: DrizzleService,
     private readonly subscriptionsAccessService: SubscriptionsAccessService,
+    @Inject(forwardRef(() => QuestionsService))
+    private readonly questionsService: QuestionsService,
   ) { }
 
   async create(dto: CreateOldExamDto) {
@@ -111,6 +114,26 @@ export class OldExamsService {
     return exam;
   }
 
+  /**
+   * Fast existence and access check without expensive SQL joins.
+   * Optimizes performance when only checking access (e.g., fetching questions).
+   */
+  async verifyAccess(id: number, user?: UserRecord): Promise<void> {
+    const exam = await this.drizzleService.db.query.oldExams.findFirst({
+      where: eq(oldExams.id, id),
+      columns: { id: true, moduleId: true },
+    });
+
+    if (!exam) throw new NotFoundException(`Old exam with ID ${id} not found`);
+
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      await this.subscriptionsAccessService.assertUserHasModuleAccess(
+        user,
+        exam.moduleId,
+      );
+    }
+  }
+
   async update(id: number, dto: Partial<CreateOldExamDto>) {
     const [updated] = await this.drizzleService.db
       .update(oldExams)
@@ -132,5 +155,22 @@ export class OldExamsService {
     if (!deleted) throw new NotFoundException(`Old exam with ID ${id} not found`);
 
     return deleted;
+  }
+
+  /**
+   * Orchestrate fetching questions for a specific old exam.
+   * Leverages QuestionsService for the actual data fetching.
+   */
+  async findQuestions(
+    id: number,
+    page = 1,
+    limit = 40,
+    user?: UserRecord,
+  ) {
+    // 1. Fast existence and user access check
+    await this.verifyAccess(id, user);
+
+    // 2. Delegate to QuestionsService to get the questions
+    return this.questionsService.findByOldExamId(id, page, limit);
   }
 }

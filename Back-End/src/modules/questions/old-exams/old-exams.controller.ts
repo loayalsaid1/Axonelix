@@ -48,6 +48,16 @@ export class OldExamsController {
     return this.oldExamsService.findOne(id, user);
   }
 
+  @Get(':id/questions')
+  findQuestions(
+    @paramIntId() id: number,
+    @CurrentUser() user: UserRecord,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ) {
+    return this.oldExamsService.findQuestions(id, page, limit, user);
+  }
+
   @Patch(':id')
   @Roles([Role.Admin])
   update(@paramIntId() id: number, @Body() dto: Partial<CreateOldExamDto>) {

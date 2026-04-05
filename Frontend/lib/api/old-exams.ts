@@ -11,8 +11,8 @@ export function getOldExams(
   const qs = new URLSearchParams();
   if (filters.moduleId != null) qs.set("moduleId", String(filters.moduleId));
   // `subjectType` on the filter maps to `moduleType` on the backend query param
-  if (filters.subjectType)      qs.set("moduleType", filters.subjectType);
-  if (filters.examType)         qs.set("examType", filters.examType);
+  if (filters.subjectType) qs.set("moduleType", filters.subjectType);
+  if (filters.examType) qs.set("examType", filters.examType);
   const query = qs.toString();
   return apiFetch<OldExam[]>(
     `/questions/old-exams${query ? `?${query}` : ""}`,
@@ -36,12 +36,14 @@ export function getOldExamQuestions(
   opts?: RequestInit,
 ): Promise<PaginatedQuestionsResponse> {
   const qs = new URLSearchParams({
-    oldExamId: String(oldExamId),
     page: String(page),
     limit: String(limit),
   });
-  return apiFetch<PaginatedQuestionsResponse>(`/questions?${qs}`, {
-    cache: "no-store",
-    ...opts,
-  });
+  return apiFetch<PaginatedQuestionsResponse>(
+    `/questions/old-exams/${oldExamId}/questions?${qs}`,
+    {
+      cache: "no-store",
+      ...opts,
+    },
+  );
 }

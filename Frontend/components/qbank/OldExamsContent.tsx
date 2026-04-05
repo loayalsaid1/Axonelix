@@ -35,9 +35,9 @@ type ExamsAction =
 
 function examsReducer(_: ExamsState, action: ExamsAction): ExamsState {
   switch (action.type) {
-    case "FETCH":   return { status: "loading" };
+    case "FETCH": return { status: "loading" };
     case "SUCCESS": return { status: "success", exams: action.exams };
-    case "ERROR":   return { status: "error" };
+    case "ERROR": return { status: "error" };
   }
 }
 
@@ -134,7 +134,7 @@ export function OldExamsContent() {
         onReset={handleReset}
       />
 
-			<Separator decorative/>
+      <Separator decorative />
       {/* Results */}
       {state.status === "loading" && (
         <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
