@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, forwardRef, Inject } from '@nestjs/common';
 import { DrizzleService } from '../../../database/drizzle.service';
 import { QuestionOptionsService } from '../question-options/question-options.service';
 import { ReferencesService } from '../references/references.service';
@@ -10,6 +10,7 @@ import { subjects as subjectsTable } from '../../../database/entities/subjects';
 import { questionReferences } from '../../../database/entities/question-references';
 import { ImagesService } from '../../images/images.service';
 import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
+import { OldExamsService } from '../old-exams/old-exams.service';
 import { extractImageUrls } from '../../../common/utils/tiptap-utils';
 import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
 import {
@@ -53,6 +54,8 @@ export class QuestionsService {
     private readonly referencesService: ReferencesService,
     private readonly imagesService: ImagesService,
     private readonly subscriptionsAccessService: SubscriptionsAccessService,
+    @Inject(forwardRef(() => OldExamsService))
+    private readonly oldExamsService: OldExamsService,
   ) { }
 
   // ── Public CRUD ────────────────────────────────────────────────────────────
@@ -203,6 +206,24 @@ export class QuestionsService {
     if (params.isMisc != null) conditions.push(eq(questions.isMisc, params.isMisc));
 
     const where = conditions.length ? and(...conditions) : undefined;
+    return this._paginateQuery(where, page, limit);
+  }
+
+  /**
+   * Fetch all questions belonging to a specific old exam.
+   * This is typically used for practice exams.
+   */
+  async findByOldExamId(
+    oldExamId: number,
+    page = 1,
+    limit = 40,
+    user?: UserRecord,
+  ) {
+    if (user && !this.subscriptionsAccessService.isAdmin(user)) {
+      await this.oldExamsService.verifyAccess(oldExamId, user);
+    }
+
+    const where = eq(questions.oldExamId, oldExamId);
     return this._paginateQuery(where, page, limit);
   }
 
