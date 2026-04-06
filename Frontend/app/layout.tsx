@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { shadcn } from '@clerk/themes'
 import { AppThemeProvider, ColorThemeScript } from "@/components/theme-provider"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +27,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <ClerkProvider appearance={{
       theme: shadcn
@@ -41,6 +43,19 @@ export default function RootLayout({
             {children}
             <SonnerToaster />
           </AppThemeProvider>
+          <Script
+            id="register-sw"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                 if ('serviceWorker' in navigator) {
+                   window.addEventListener('load', function() {
+                     navigator.serviceWorker.register('/sw.js');
+                   });
+                 }
+               `,
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
