@@ -27,8 +27,10 @@ export function LibraryLayoutWrapper({
     setMounted(true);
   }, []);
 
+  // Always render children to prevent React/Next hooks errors
+  // but hide content until mounted to avoid hydration mismatch
   if (!mounted) {
-    return null; // Prevent mismatched LayoutRouter mounting during hydration
+    return <div className="hidden">{children}</div>;
   }
 
   // 📱 MOBILE VIEW: No Resizable Panels. Replaced natively with a clean column layout.
