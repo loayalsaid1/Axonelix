@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit2 } from 'lucide-react';
+import { Trash2, Edit2, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -15,6 +15,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
 
 interface ExamQuestionCardProps {
   question: {
@@ -22,6 +31,7 @@ interface ExamQuestionCardProps {
     questionType: string;
     statement: string;
     questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
+    explanation?: any;
     lessonId?: string | null;
     chapterId?: string | null;
   };
@@ -50,6 +60,26 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
               </CardTitle>
             </div>
             <div className="flex gap-2">
+              {question.explanation && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" title="View Explanation">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      View Explanation
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Question Explanation</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse rounded-md" />}>
+                        <EditorPreview content={question.explanation} />
+                      </Suspense>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
               {onEdit && (
                 <Button
                   variant="ghost"
