@@ -67,11 +67,11 @@ const data = {
             },
           ],
         },
-        {
-          title: "Flashcards",
-          url: "/flashcards",
-          icon: CreditCard,
-        },
+        // {
+        //   title: "Flashcards",
+        //   url: "/flashcards",
+        //   icon: CreditCard,
+        // },
       ],
     },
     {
