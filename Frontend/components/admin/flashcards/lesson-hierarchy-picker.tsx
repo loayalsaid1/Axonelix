@@ -21,6 +21,19 @@ import {
 
 export type { ModuleOption, SubjectOption, ChapterOption, LessonOption };
 
+interface PathBadgeProps {
+	children: string;
+	isSecondary?: boolean;
+}
+
+function PathBadge({ children, isSecondary = false }: PathBadgeProps) {
+	return (
+		<Badge variant={isSecondary ? "secondary" : undefined} className="max-w-full min-w-0 truncate justify-start">
+			{children}
+		</Badge>
+	);
+}
+
 interface LessonHierarchyPickerProps {
 	modules: ModuleOption[];
 	subjects: SubjectOption[];
@@ -77,7 +90,7 @@ export function LessonHierarchyPicker({
 						onValueChange={(value) => onModuleChange(Number(value))}
 						disabled={loading || disabled}
 					>
-						<SelectTrigger>
+						<SelectTrigger className="max-w-full">
 							<SelectValue placeholder="Choose module" />
 						</SelectTrigger>
 						<SelectContent>
@@ -97,7 +110,7 @@ export function LessonHierarchyPicker({
 						onValueChange={(value) => onSubjectChange(Number(value))}
 						disabled={loading || disabled || !selectedModuleId}
 					>
-						<SelectTrigger>
+						<SelectTrigger className="max-w-full">
 							<SelectValue placeholder="Choose subject" />
 						</SelectTrigger>
 						<SelectContent>
@@ -117,7 +130,7 @@ export function LessonHierarchyPicker({
 						onValueChange={(value) => onChapterChange(Number(value))}
 						disabled={loading || disabled || !selectedSubjectId}
 					>
-						<SelectTrigger>
+						<SelectTrigger className="max-w-full">
 							<SelectValue placeholder="Choose chapter" />
 						</SelectTrigger>
 						<SelectContent>
@@ -137,7 +150,7 @@ export function LessonHierarchyPicker({
 						onValueChange={(value) => onLessonChange(Number(value))}
 						disabled={loading || disabled || !selectedChapterId}
 					>
-						<SelectTrigger>
+						<SelectTrigger className="max-w-full">
 							<SelectValue placeholder="Choose lesson" />
 						</SelectTrigger>
 						<SelectContent>
@@ -153,10 +166,10 @@ export function LessonHierarchyPicker({
 				<div className="rounded-lg border bg-muted/30 p-3">
 					<p className="text-xs font-medium text-muted-foreground">Current Path</p>
 					<div className="mt-2 flex flex-wrap items-center gap-2">
-						{selectedModule ? <Badge variant="secondary">{selectedModule.name}</Badge> : null}
-						{selectedSubject ? <Badge variant="secondary">{selectedSubject.name}</Badge> : null}
-						{selectedChapter ? <Badge variant="secondary">{selectedChapter.name}</Badge> : null}
-						{selectedLesson ? <Badge>{selectedLesson.name}</Badge> : null}
+						{selectedModule ? <PathBadge isSecondary>{selectedModule.name}</PathBadge> : null}
+						{selectedSubject ? <PathBadge isSecondary>{selectedSubject.name}</PathBadge> : null}
+						{selectedChapter ? <PathBadge isSecondary>{selectedChapter.name}</PathBadge> : null}
+						{selectedLesson ? <PathBadge>{selectedLesson.name}</PathBadge> : null}
 						{!selectedLesson ? <span className="text-sm text-muted-foreground">No lesson selected</span> : null}
 					</div>
 				</div>
