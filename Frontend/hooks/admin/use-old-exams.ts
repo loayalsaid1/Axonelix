@@ -1,20 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import type { ExamType, SubjectType } from '@/lib/types/old-exams';
+import { OLD_EXAMS_API_QUERY_KEYS } from '@/lib/old-exams/query-params';
+import {
+  mapOldExamRecordToAdminOldExam,
+  type OldExamRecord,
+} from './old-exams.mapper';
 
 export interface OldExam {
   id: string;
-  examType: 'final' | 'midterm' | 'tpl' | 'flipped';
+  examType: ExamType;
   year: number;
   universityId: string;
   moduleId: string;
-  moduleType: 'theoretical' | 'practical';
+  moduleType: SubjectType;
   createdAt: string;
   // joined relations
   module?: { id: string; name: string };
   university?: { id: string; name: string };
 }
 
-export function useOldExams() {
+export interface OldExamFilters {
+  moduleId?: number;
+  subjectType?: SubjectType;
+  examType?: ExamType;
+}
+
+export function useOldExams(filters: OldExamFilters = {}) {
   const authFetch = useApiFetch();
   const [exams, setExams] = useState<OldExam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,24 +36,29 @@ export function useOldExams() {
     try {
       setLoading(true);
       setError(null);
-      const data = await authFetch<OldExam[]>('/questions/old-exams');
-      setExams(
-        data.map((e) => ({
-          ...e,
-          id: String(e.id),
-          universityId: String((e as any).universityId),
-          moduleId: String((e as any).moduleId),
-          module: e.module ? { id: String(e.module.id), name: e.module.name } : undefined,
-          university: e.university ? { id: String(e.university.id), name: e.university.name } : undefined,
-        }))
+      const qs = new URLSearchParams();
+      if (filters.moduleId != null) {
+        qs.set(OLD_EXAMS_API_QUERY_KEYS.moduleId, String(filters.moduleId));
+      }
+      if (filters.subjectType) {
+        qs.set(OLD_EXAMS_API_QUERY_KEYS.moduleType, filters.subjectType);
+      }
+      if (filters.examType) {
+        qs.set(OLD_EXAMS_API_QUERY_KEYS.examType, filters.examType);
+      }
+      const query = qs.toString();
+
+      const data = await authFetch<OldExamRecord[]>(
+        `/questions/old-exams${query ? `?${query}` : ''}`
       );
+      setExams(data.map(mapOldExamRecordToAdminOldExam));
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch old exams'));
       console.error('Failed to fetch old exams:', err);
     } finally {
       setLoading(false);
     }
-  }, [authFetch]);
+  }, [authFetch, filters.examType, filters.moduleId, filters.subjectType]);
 
   const deleteExam = useCallback(async (examId: string) => {
     try {
