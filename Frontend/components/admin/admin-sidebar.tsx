@@ -5,6 +5,7 @@ import {
 	LayoutDashboard,
 	BookOpen,
 	FileQuestion,
+	Layers,
 	TrendingUp,
 	Users,
 } from "lucide-react"
@@ -49,6 +50,11 @@ const adminNavGroups = [
 				title: "Questions",
 				url: "/admin/questions",
 				icon: FileQuestion,
+			},
+			{
+				title: "Flashcards",
+				url: "/admin/flashcards",
+				icon: Layers,
 			},
 		],
 	},
