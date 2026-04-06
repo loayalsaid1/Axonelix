@@ -6,6 +6,7 @@ export interface ExamQuestion {
   questionType: string;
   statement: string;
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
+  explanation?: any;
   lessonId?: string | null;
   chapterId?: string | null;
   createdAt: string;

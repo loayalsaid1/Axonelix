@@ -1,10 +1,21 @@
 'use client';
 
+import { useState, lazy, Suspense } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, ExternalLink, Pencil } from 'lucide-react';
+import { Trash2, ExternalLink, Pencil, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
 
 interface AdminQuestionCardProps {
   id: string;
@@ -12,6 +23,7 @@ interface AdminQuestionCardProps {
   questionType: 'mcq' | 'written';
   options: { id: string; optionText: string; isCorrect: boolean }[];
   isMisc: boolean;
+  explanation?: any;
   href: string;
   onDelete: () => void;
   onEdit: () => void;
@@ -23,6 +35,7 @@ export function AdminQuestionCard({
   questionType,
   options,
   isMisc,
+  explanation,
   href,
   onDelete,
   onEdit,
@@ -52,11 +65,25 @@ export function AdminQuestionCard({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* <Button variant="ghost" size="icon" asChild>
-              <Link href={href}>
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button> */}
+            {explanation && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" title="View Explanation">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Question Explanation</DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse rounded-md" />}>
+                      <EditorPreview content={explanation} />
+                    </Suspense>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
             <Button
               variant="ghost"
               size="icon"

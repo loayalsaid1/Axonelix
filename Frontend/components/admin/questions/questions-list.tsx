@@ -202,6 +202,7 @@ export function QuestionsList() {
               questionType={question.questionType}
               options={question.questionOptions}
               isMisc={question.isMisc}
+              explanation={question.explanation}
               href={'/admin/questions/' + question.id}
               onDelete={() => handleDeleteQuestion(question.id)}
               onEdit={() => setEditingQuestionId(question.id)}
