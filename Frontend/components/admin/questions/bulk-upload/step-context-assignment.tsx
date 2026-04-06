@@ -92,7 +92,8 @@ export function StepContextAssignment({
 		if (!isOldExamBatch) return '';
 		const mod = modules.find((m) => m.id === oldExamData.moduleId);
 		if (!mod) return '(old exam — no module selected)';
-		return `Old Exam · ${mod.name} (${oldExamData.moduleType}) · ${oldExamData.examType} ${oldExamData.year}`;
+		const displayType = oldExamData.examType === 'tpl' ? 'TBL' : oldExamData.examType;
+		return `Old Exam · ${mod.name} (${oldExamData.moduleType}) · ${displayType} ${oldExamData.year}`;
 	};
 
 	const getContextLabel = (): string => {
