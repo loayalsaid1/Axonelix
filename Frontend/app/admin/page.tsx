@@ -1,6 +1,6 @@
 // 'use client';
 
-import { BookOpen, FileText } from 'lucide-react';
+import { BookOpen, FileText, Layers } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/shared/admin-page-header';
 import { DashboardNavCard } from '@/components/admin/dashboard/dashboard-nav-card';
 import { DashboardQuickTips } from '@/components/admin/dashboard/dashboard-quick-tips';
@@ -33,6 +33,15 @@ export default function AdminDashboard() {
           footer="Questions & Old Exams"
           icon={FileText}
           variant="green"
+        />
+
+        <DashboardNavCard
+          href="/admin/flashcards"
+          title="Flashcards"
+          description="Manage Active Recall Decks"
+          content="Create and maintain official lesson flashcards, then edit and reorder cards for the best review flow."
+          footer="Official Lesson Decks"
+          icon={Layers}
         />
 
         <div>
