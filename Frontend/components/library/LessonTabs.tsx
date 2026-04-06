@@ -7,6 +7,7 @@ import { Suspense, lazy } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { LessonQuestionsContent } from "@/components/library/LessonQuestionsContent";
+import { LessonFlashcardsTab } from "@/components/flashcards/LessonFlashcardsTab";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 
 // Lazy-load the heavy TipTap renderer to avoid its SCSS & styles on initial parse
@@ -93,17 +94,21 @@ export function LessonTabs({ content }: LessonTabsProps) {
         )}
       </TabsContent>
 
-      {/* Flashcards stub */}
+      {/* Flashcards tab */}
       <TabsContent value="flashcards">
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Zap className="text-muted-foreground" />
-            </EmptyMedia>
-            <EmptyTitle>Flashcards coming soon</EmptyTitle>
-            <EmptyDescription>This feature is under development.</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        {Number.isFinite(lessonId) ? (
+          <LessonFlashcardsTab lessonId={lessonId} />
+        ) : (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <AlertCircle className="text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>Missing lesson ID</EmptyTitle>
+              <EmptyDescription>Unable to load flashcards without a valid lesson ID.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
       </TabsContent>
     </Tabs>
   );

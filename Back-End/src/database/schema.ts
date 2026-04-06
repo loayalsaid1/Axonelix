@@ -33,6 +33,9 @@ import { userModuleAccess } from "./entities/user-module-access";
 import { modulePaymentRequests, paymentRequestStatusEnum } from "./entities/module-payment-requests";
 import { modulePaymentRequestEvents } from "./entities/module-payment-request-events";
 import { plannerTasks } from "./entities/planner-tasks";
+import { flashcardDecks } from "./entities/flashcard-decks";
+import { flashcards } from "./entities/flashcards";
+import { deckTypeEnum } from "./entities/enums/flashcard-enums";
 import * as relations from "./relations";
 
 // This is for Drizzle kit to work
@@ -69,6 +72,9 @@ export {
 	modulePaymentRequestEvents,
 	paymentRequestStatusEnum,
 	plannerTasks,
+	flashcardDecks,
+	flashcards,
+	deckTypeEnum,
 };
 
 export const schema = {
@@ -104,6 +110,9 @@ export const schema = {
 	modulePaymentRequestEvents,
 	paymentRequestStatusEnum,
 	plannerTasks,
+	flashcardDecks,
+	flashcards,
+	deckTypeEnum,
 	...relations,
 };
 
