@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { getModuleNames } from "@/lib/api/materials";
 import { getOldExams } from "@/lib/api/old-exams";
-import { OldExamsFilters } from "@/components/qbank/OldExamsFilters";
+import { OldExamsFilters } from "@/components/shared/old-exams/old-exams-filters";
 import { ExamCard } from "@/components/qbank/ExamCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,9 +15,10 @@ import {
   EmptyMedia,
 } from "@/components/ui/empty";
 import { AlertTriangle, FileSearch } from "lucide-react";
-import type { OldExam, ExamType, SubjectType } from "@/lib/types/old-exams";
+import type { OldExam } from "@/lib/types/old-exams";
 import type { ModuleName } from "@/lib/types/materials";
 import { Separator } from "../ui/separator";
+import { useOldExamUrlFilters } from "@/hooks/use-old-exam-url-filters";
 
 // ── State machine ─────────────────────────────────────────────────────────────
 
@@ -44,20 +44,16 @@ function examsReducer(_: ExamsState, action: ExamsAction): ExamsState {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OldExamsContent() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { getToken } = useAuth();
-
-  // Parse filters from URL
-  // Note: the URL param is still "subjectType" (semantic) but maps to "moduleType" on the API
-  const moduleIdParam = searchParams.get("moduleId");
-  const subjectTypeParam = searchParams.get("subjectType") as SubjectType | null;
-  const examTypeParam = searchParams.get("examType") as ExamType | null;
-
-  const moduleId = moduleIdParam ? Number(moduleIdParam) : undefined;
-  const subjectType = subjectTypeParam ?? undefined;
-  const examType = examTypeParam ?? undefined;
+  const {
+    moduleId,
+    subjectType,
+    examType,
+    setModuleId,
+    setSubjectType,
+    setExamType,
+    resetFilters,
+  } = useOldExamUrlFilters();
 
   const [modules, setModules] = useReducer(
     (_: ModuleName[], next: ModuleName[]) => next,
@@ -90,34 +86,6 @@ export function OldExamsContent() {
     return () => { cancelled = true; };
   }, [moduleId, subjectType, examType, getToken]);
 
-  // ── URL-driven filter helpers ──────────────────────────────────────────────
-
-  const updateParam = useCallback(
-    (key: string, value: string | undefined) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value != null) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [searchParams, pathname, router],
-  );
-
-  const handleModuleChange = (id: number | undefined) =>
-    updateParam("moduleId", id != null ? String(id) : undefined);
-
-  const handleSubjectTypeChange = (type: SubjectType | undefined) =>
-    updateParam("subjectType", type);
-
-  const handleExamTypeChange = (type: ExamType | undefined) =>
-    updateParam("examType", type);
-
-  const handleReset = () => {
-    router.push(pathname);
-  };
-
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -128,10 +96,10 @@ export function OldExamsContent() {
         moduleId={moduleId}
         subjectType={subjectType}
         examType={examType}
-        onModuleChange={handleModuleChange}
-        onSubjectTypeChange={handleSubjectTypeChange}
-        onExamTypeChange={handleExamTypeChange}
-        onReset={handleReset}
+        onModuleChange={setModuleId}
+        onSubjectTypeChange={setSubjectType}
+        onExamTypeChange={setExamType}
+        onReset={resetFilters}
       />
 
       <Separator decorative />

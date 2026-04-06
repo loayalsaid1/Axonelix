@@ -14,7 +14,7 @@ export type { SubjectType };
 export const EXAM_TYPE_LABELS: Record<ExamType, string> = {
   final: "Final",
   midterm: "Midterm",
-  tpl: "TPL",
+  tpl: "TBL",
   flipped: "Flipped",
 };
 

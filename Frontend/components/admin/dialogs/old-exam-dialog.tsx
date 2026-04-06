@@ -132,7 +132,7 @@ export default function OldExamDialog({
               <SelectContent>
                 <SelectItem value="final">Final</SelectItem>
                 <SelectItem value="midterm">Midterm</SelectItem>
-                <SelectItem value="tpl">TPL</SelectItem>
+                <SelectItem value="tbl">TBL</SelectItem>
                 <SelectItem value="flipped">Flipped</SelectItem>
               </SelectContent>
             </Select>
