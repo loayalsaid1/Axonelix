@@ -105,7 +105,7 @@ export function OldExamForm({
           <SelectContent>
             <SelectItem value="final">Final</SelectItem>
             <SelectItem value="midterm">Mid-Term</SelectItem>
-            <SelectItem value="tpl">TPL</SelectItem>
+            <SelectItem value="tpl">TBL</SelectItem>
             <SelectItem value="flipped">Flipped</SelectItem>
           </SelectContent>
         </Select>

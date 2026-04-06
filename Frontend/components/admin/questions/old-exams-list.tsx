@@ -121,7 +121,7 @@ export function OldExamsList() {
             {exams.map((exam) => (
               <AdminResourceCard
                 key={exam.id}
-                title={`${exam.examType.toUpperCase()} ${exam.year}`}
+                title={`${(exam.examType === 'tpl' ? 'TBL' : exam.examType).toUpperCase()} ${exam.year}`}
                 description={`${exam.module?.name || 'Module'} - ${exam.university?.name || 'University'}`}
                 href={'/admin/questions/exams/' + exam.id}
                 onEdit={() => handleEdit(exam)}

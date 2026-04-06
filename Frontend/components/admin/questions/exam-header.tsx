@@ -84,7 +84,7 @@ export function ExamHeader({ examId, backHref = '/admin/questions?tab=exams', ba
               )}
 
               <MetaBadge className="text-sm font-semibold uppercase">
-                {exam.examType}
+                {exam.examType === 'tpl' ? 'TBL' : exam.examType}
               </MetaBadge>
 
               <MetaBadge className="text-sm font-semibold border-primary/20 bg-primary/5 text-primary">
