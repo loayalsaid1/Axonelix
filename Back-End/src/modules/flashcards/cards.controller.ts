@@ -1,12 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Req, ParseIntPipe, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ParseIntPipe, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { CardsService } from './cards.service';
 import { CreateCardsDto } from './dto/create-cards.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { UpdateCardsOrderDto } from './dto/update-cards-order.dto';
 import { Flashcard } from '../../database/entities/flashcards';
 import { FlashcardDeck } from '../../database/entities/flashcard-decks';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import type { UserRecord } from '../users/interfaces/user-record.interface';
 import { DeckMutationGuard } from './guards/deck-mutation.guard';
 import { CardMutationGuard } from './guards/card-mutation.guard';
 
@@ -32,12 +30,11 @@ export class CardsController {
 	@Put('decks/:deckId/cards/order')
 	@UseGuards(DeckMutationGuard)
 	@HttpCode(HttpStatus.NO_CONTENT)
-	updateOrder(
+	async updateOrder(
 		@Param('deckId', ParseIntPipe) deckId: number,
 		@Body() updateCardsOrderDto: UpdateCardsOrderDto
-	): undefined {
-		this.cardsService.updateOrder(deckId, updateCardsOrderDto);
-		return;
+	): Promise<void> {
+		await this.cardsService.updateOrder(deckId, updateCardsOrderDto);
 	}
 
 	@Get('cards/:id')
