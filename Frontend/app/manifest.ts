@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "Axonelix Medical Hub",
 		short_name: "Axonelix",
-		start_url: "/",
+		start_url: "/dashboard",
 		display: "standalone",
 		background_color: "#ffffff",
 		theme_color: "#000000",
