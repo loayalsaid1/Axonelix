@@ -5,7 +5,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { shadcn } from '@clerk/themes'
 import { AppThemeProvider, ColorThemeScript } from "@/components/theme-provider"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
-import Script from "next/script";
+import IconDark from '@/public/images/Icon.png';
+import IconLight from '@/public/images/Icon-light.png';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +21,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Axonelix",
   description: "Med-Edu platform for Medical Students",
+  icons: {
+    icon: [
+      {
+        media: '(prefers-color-scheme: light)',
+        url: IconLight.src,
+      },
+      {
+        media: '(prefers-color-scheme: dark)',
+        url: IconDark.src,
+      },
+    ],
+  }
 };
 
 export default function RootLayout({
@@ -43,19 +56,6 @@ export default function RootLayout({
             {children}
             <SonnerToaster />
           </AppThemeProvider>
-          <Script
-            id="register-sw"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                 if ('serviceWorker' in navigator) {
-                   window.addEventListener('load', function() {
-                     navigator.serviceWorker.register('/sw.js');
-                   });
-                 }
-               `,
-            }}
-          />
         </body>
       </html>
     </ClerkProvider>
