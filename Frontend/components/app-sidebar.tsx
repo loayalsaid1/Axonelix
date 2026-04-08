@@ -52,6 +52,7 @@ const data = {
           title: "QBank",
           url: "/qbank",
           icon: FileQuestion,
+          isActive: true,
           items: [
             {
               title: "Old Exams",
