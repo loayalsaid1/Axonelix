@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, BrainCircuit, FileQuestion, TrendingUp, ArrowRight, GraduationCap } from "lucide-react"
+import { BookOpen, BrainCircuit, FileQuestion, TrendingUp, ArrowRight } from "lucide-react"
+import { LogoIcon } from "@/components/logo-icon"
 
 const features = [
   {
@@ -36,7 +37,7 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <header className="top-0 z-50 sticky flex justify-between items-center bg-background/80 backdrop-blur px-6 md:px-10 border-border border-b h-16">
         <div className="flex items-center gap-2">
-          <GraduationCap className="size-6 text-primary" />
+          <LogoIcon className="size-8" />
           <span className="font-semibold text-lg tracking-tight">Axonelix</span>
         </div>
         <nav className="flex items-center gap-3">
