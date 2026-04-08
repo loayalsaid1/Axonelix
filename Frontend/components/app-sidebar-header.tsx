@@ -14,8 +14,8 @@ export function AppSidebarHeader() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton size="lg" className="cursor-default hover:bg-transparent">
-          <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
-            <LogoIcon className="size-8 [&_path.fill-primary]:fill-sidebar-primary-foreground/80" />
+          <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground ring-1 ring-sidebar-border/60 shadow-sm">
+            <LogoIcon className="size-7 [&_path.fill-primary]:fill-sidebar-primary" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">AxoneLix</span>
