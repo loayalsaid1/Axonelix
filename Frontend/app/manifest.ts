@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import Logo from '@/public/images/logo.png';
+import Logo from '@/public/images/logo.jpg';
 
 export default function manifest(): MetadataRoute.Manifest {
 	return {
@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
 		icons: [
 			{
 				src: Logo.src,
-				type: "image/png"
+				type: "image/jpeg"
 			}
 		]
 	};
