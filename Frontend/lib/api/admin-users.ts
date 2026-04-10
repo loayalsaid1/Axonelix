@@ -21,6 +21,13 @@ export function getAdminUsers(
 	);
 }
 
+export function getAdminUserById(id: number, opts?: FetchOptions): Promise<AdminUserProfile> {
+	return apiFetch<AdminUserProfile>(`/admin/users/${id}`, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
 export function deleteAdminUser(id: number, opts?: FetchOptions): Promise<void> {
 	return apiFetch<void>(`/admin/users/${id}`, { method: 'DELETE', ...opts });
 }

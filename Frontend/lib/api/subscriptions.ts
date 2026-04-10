@@ -1,8 +1,12 @@
 import { apiFetch, type FetchOptions } from './client';
 import type {
+	AdminUserModuleAccessPage,
 	CreatePaymentRequestDto,
 	GlobalModuleAccessDto,
 	GlobalModuleAccessMutationResult,
+	GrantUserModuleAccessDto,
+	GrantUserModuleAccessResult,
+	ListAdminUserModuleAccessParams,
 	ListAdminPaymentRequestsParams,
 	ListMyPaymentRequestsParams,
 	MyModuleAccessRecord,
@@ -10,6 +14,7 @@ import type {
 	PaymentRequestPage,
 	PaymentRequestRecord,
 	PaymentRequestStats,
+	RevokeUserModuleAccessResult,
 	ReviewPaymentRequestDto,
 } from '@/lib/types/subscriptions';
 
@@ -173,4 +178,46 @@ export function revokeGlobalModuleAccess(
 		cache: 'no-store',
 		...opts,
 	});
+}
+
+export function getAdminUserModuleAccess(
+	userId: number,
+	params: ListAdminUserModuleAccessParams = {},
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<AdminUserModuleAccessPage> {
+	const path = withQuery(`/admin/subscriptions/user-access/${userId}`, params);
+	return fetcher<AdminUserModuleAccessPage>(path, {
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function grantUserModuleAccess(
+	dto: GrantUserModuleAccessDto,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<GrantUserModuleAccessResult> {
+	return fetcher<GrantUserModuleAccessResult>('/admin/subscriptions/user-access/grant', {
+		method: 'POST',
+		body: dto,
+		cache: 'no-store',
+		...opts,
+	});
+}
+
+export function revokeUserModuleAccess(
+	userId: number,
+	moduleId: number,
+	fetcher: ApiFetcher = apiFetch,
+	opts?: FetchOptions,
+): Promise<RevokeUserModuleAccessResult> {
+	return fetcher<RevokeUserModuleAccessResult>(
+		`/admin/subscriptions/user-access/${userId}/${moduleId}`,
+		{
+			method: 'DELETE',
+			cache: 'no-store',
+			...opts,
+		},
+	);
 }
