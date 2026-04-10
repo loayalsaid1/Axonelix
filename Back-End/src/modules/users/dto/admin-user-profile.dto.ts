@@ -1,13 +1,15 @@
-import { Role } from '../../../common/enums';
+import { users } from '../../../database/entities/users';
+
+type UserRow = typeof users.$inferSelect;
 
 export class AdminUserProfileDto {
-  id: number;
-  clerkId: string;
-  email: string;
-  role: Role;
-  createdAt: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  imageUrl: string | null;
-  lastSignInAt: Date | null;
+  id!: UserRow['id'];
+  clerkId!: UserRow['clerkId'];
+  email!: UserRow['email'];
+  role!: UserRow['role'];
+  createdAt!: UserRow['createdAt'];
+  firstName!: string | null;
+  lastName!: string | null;
+  imageUrl!: string | null;
+  lastSignInAt!: Date | null;
 }
