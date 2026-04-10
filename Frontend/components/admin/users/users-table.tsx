@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
 	Table,
 	TableBody,
@@ -12,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Trash2 } from 'lucide-react';
+import { KeyRound, Trash2 } from 'lucide-react';
 import type { AdminUserProfile, Role } from '@/lib/types';
 
 interface UsersTableProps {
@@ -22,6 +23,7 @@ interface UsersTableProps {
 	onSelectToggle: (id: number) => void;
 	onSelectAll: (select: boolean) => void;
 	onDeleteUser: (user: AdminUserProfile) => void;
+	onManageAccess: (user: AdminUserProfile) => string;
 }
 
 const ROLE_VARIANT: Record<Role, 'default' | 'secondary'> = {
@@ -51,6 +53,7 @@ export function UsersTable({
 	onSelectToggle,
 	onSelectAll,
 	onDeleteUser,
+	onManageAccess,
 }: UsersTableProps) {
 	const allSelected = users.length > 0 && users.every((u) => selectedIds.has(u.id));
 
@@ -121,14 +124,21 @@ export function UsersTable({
 							{formatDate(user.lastSignInAt)}
 						</TableCell>
 						<TableCell>
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={() => onDeleteUser(user)}
-								aria-label={`Delete ${user.email}`}
-							>
-								<Trash2 className="h-4 w-4 text-destructive" />
-							</Button>
+							<div className="flex items-center justify-end gap-1">
+								<Button asChild variant="ghost" size="icon" aria-label={`Manage access for ${user.email}`}>
+									<Link href={onManageAccess(user)}>
+										<KeyRound className="h-4 w-4" />
+									</Link>
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={() => onDeleteUser(user)}
+									aria-label={`Delete ${user.email}`}
+								>
+									<Trash2 className="h-4 w-4 text-destructive" />
+								</Button>
+							</div>
 						</TableCell>
 					</TableRow>
 				))}
