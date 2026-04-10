@@ -35,6 +35,7 @@ import {
 	GrantUserModuleAccessDto,
 	ListMyPaymentRequestsDto,
 	ListPaymentRequestsDto,
+	ListUserModuleAccessDto,
 	PaymentReviewAction,
 	PaymentRequestStatsDto,
 	ReviewPaymentRequestDto,
@@ -227,6 +228,64 @@ export class SubscriptionsService {
 				},
 			},
 		});
+	}
+
+	async listUserModuleAccess(userId: number, filters: ListUserModuleAccessDto = {}) {
+		await this.assertUserExists(userId);
+
+		const page = filters.page ?? 1;
+		const limit = filters.limit ?? 20;
+		const offset = (page - 1) * limit;
+		const includeRevoked = filters.includeRevoked ?? false;
+
+		const conditions: SQL[] = [eq(userModuleAccess.userId, userId)];
+
+		if (!includeRevoked) {
+			conditions.push(isNull(userModuleAccess.revokedAt));
+		}
+
+		if (filters.moduleId != null) {
+			conditions.push(eq(userModuleAccess.moduleId, filters.moduleId));
+		}
+
+		const where = this.combineConditions(...conditions);
+
+		const [data, [{ value: total }]] = await Promise.all([
+			this.drizzleService.db.query.userModuleAccess.findMany({
+				where,
+				orderBy: (a, { desc }) => [desc(a.grantedAt)],
+				limit,
+				offset,
+				with: {
+					module: {
+						columns: {
+							id: true,
+							name: true,
+							description: true,
+							orderIndex: true,
+						},
+					},
+					grantedByUser: {
+						columns: {
+							id: true,
+							email: true,
+						},
+					},
+				},
+			}),
+			this.drizzleService.db
+				.select({ value: count() })
+				.from(userModuleAccess)
+				.where(where),
+		]);
+
+		return {
+			data,
+			total,
+			page,
+			limit,
+			totalPages: Math.ceil(total / limit),
+		};
 	}
 
 	async listPaymentRequests(filters: ListPaymentRequestsDto) {
