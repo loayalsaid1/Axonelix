@@ -1,9 +1,6 @@
 "use client"
-import { renderToReactElement } from '@tiptap/static-renderer/pm/react'
-
-
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
-import { type AnyExtension, EditorContent, EditorContext, Extension, type JSONContent, useEditor } from "@tiptap/react"
+import { EditorContent, EditorContext, type JSONContent, useEditor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
@@ -84,7 +81,7 @@ import { useCurrentEditor } from "@tiptap/react"
 import { Callout } from "@/components/tiptap-extension/callout-extension"
 import CalloutToolbarMenu from "@/components/tiptap-ui/custom-components/callout-toolbar-menu"
 import { TextColorPopover } from "@/components/tiptap-ui/text-color-popover"
-import { TextStyle, TextStyleKit } from "@tiptap/extension-text-style"
+import { TextStyleKit } from "@tiptap/extension-text-style"
 import FontSizeToolbarButtons from "@/components/tiptap-ui/custom-components/FontSizeToolbarButtons"
 import FontSize from "@tiptap/extension-text-style/font-size"
 import ExtraFontSizeCommands from "@/components/tiptap-extension/extra-font-size-commands-extension"
@@ -98,6 +95,7 @@ import TableRowMenu from "@/components/tiptap-ui/custom-components/table-row-men
 import TableColumnMenu from "@/components/tiptap-ui/custom-components/table-column-menu"
 import TableCellMenu from "@/components/tiptap-ui/custom-components/table-cell-menu"
 import HtmlAssistantCard, { type HtmlInsertMode } from "@/components/tiptap-ui/custom-components/html-assistant-card"
+import { normalizeIncomingHtml, stripWhitespaceTextNodes } from "@/components/tiptap-templates/simple/html-import-utils"
 
 
 const extensions = [
@@ -151,110 +149,6 @@ const extensions = [
     },
   }),
 ]
-
-const headingIconMap: Record<number, string> = {
-  1: "📖",
-  2: "📝",
-  3: "✚",
-  4: "▶",
-}
-
-const calloutLabelMap: Record<string, string> = {
-  info: "Note",
-  warning: "Warning",
-  success: "Success",
-  error: "Error",
-  note: "Note",
-  clinical: "Clinical Correlation",
-}
-
-const calloutIconMap: Record<string, string> = {
-  info: "ℹ️",
-  warning: "⚠️",
-  success: "✅",
-  error: "❌",
-  note: "💡",
-  clinical: "🩺",
-}
-
-function stripWhitespaceTextNodes(html: string): string {
-  if (!html || typeof document === "undefined") return html
-
-  const container = document.createElement("div")
-  container.innerHTML = html
-
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
-  const nodesToRemove: Text[] = []
-
-  while (walker.nextNode()) {
-    const textNode = walker.currentNode as Text
-    if (textNode.textContent?.trim()) continue
-
-    const parentTag = textNode.parentElement?.tagName.toLowerCase()
-    if (parentTag === "pre" || parentTag === "code" || parentTag === "textarea") {
-      continue
-    }
-
-    nodesToRemove.push(textNode)
-  }
-
-  nodesToRemove.forEach((node) => node.remove())
-  return container.innerHTML
-}
-
-function normalizeIncomingHtml(rawHtml: string): string {
-  const html = rawHtml.trim()
-  if (!html || typeof document === "undefined") return html
-
-  const container = document.createElement("div")
-  container.innerHTML = stripWhitespaceTextNodes(html)
-
-  const headings = container.querySelectorAll("h1[data-custom-heading],h2[data-custom-heading],h3[data-custom-heading],h4[data-custom-heading]")
-  headings.forEach((heading) => {
-    const inferredLevel = Number(heading.tagName.replace("H", "")) || 1
-    const level = Number(heading.getAttribute("data-level") || inferredLevel)
-    heading.setAttribute("data-level", String(level))
-
-    const icon = headingIconMap[level] || headingIconMap[1]
-    let iconNode = heading.querySelector(":scope > span[data-custom-heading-icon]") as HTMLElement | null
-
-    if (!iconNode) {
-      iconNode = document.createElement("span")
-      iconNode.setAttribute("data-custom-heading-icon", "")
-      heading.insertBefore(iconNode, heading.firstChild)
-    }
-
-    iconNode.setAttribute("data-level", String(level))
-    if (!iconNode.getAttribute("data-icon")) {
-      iconNode.setAttribute("data-icon", icon)
-    }
-  })
-
-  const callouts = container.querySelectorAll("blockquote[data-callout]")
-  callouts.forEach((callout) => {
-    const type = callout.getAttribute("data-type") || "info"
-    callout.setAttribute("data-type", type)
-
-    let headerNode = callout.querySelector(":scope > div[data-callout-header]") as HTMLElement | null
-    if (!headerNode) {
-      headerNode = document.createElement("div")
-      headerNode.setAttribute("data-callout-header", "")
-      callout.insertBefore(headerNode, callout.firstChild)
-    }
-
-    const icon = calloutIconMap[type] || calloutIconMap.info
-    const label = calloutLabelMap[type] || calloutLabelMap.info
-    headerNode.setAttribute("data-type", type)
-    headerNode.setAttribute("data-icon", headerNode.getAttribute("data-icon") || icon)
-    headerNode.setAttribute("data-label", headerNode.getAttribute("data-label") || label)
-
-    if (!headerNode.textContent?.trim()) {
-      headerNode.textContent = `${icon} ${label}`
-    }
-  })
-  return container.innerHTML
-}
-
 const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
