@@ -5,3 +5,4 @@ export { GrantUserModuleAccessDto } from './grant-user-module-access.dto';
 export { ListMyPaymentRequestsDto } from './list-my-payment-requests.dto';
 export { PaymentRequestStatsDto } from './payment-request-stats.dto';
 export { GlobalModuleAccessDto } from './global-module-access.dto';
+export { ListUserModuleAccessDto } from './list-user-module-access.dto';
