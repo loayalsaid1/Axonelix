@@ -56,6 +56,29 @@ export class AdminUsersService {
     return this.findAllWithProfile({ role: Role.Student }, pagination);
   }
 
+  async findByIdWithProfile(id: number): Promise<AdminUserProfileDto> {
+    const dbUser = await this.usersService.findById(id);
+
+    let clerkUser: Awaited<ReturnType<typeof this.clerkClient.users.getUser>> | null = null;
+    try {
+      clerkUser = await this.clerkClient.users.getUser(dbUser.clerkId);
+    } catch (err: any) {
+      if (err?.status !== 404) throw err;
+    }
+
+    return {
+      id: dbUser.id,
+      clerkId: dbUser.clerkId,
+      email: dbUser.email,
+      role: dbUser.role,
+      createdAt: dbUser.createdAt,
+      firstName: clerkUser?.firstName ?? null,
+      lastName: clerkUser?.lastName ?? null,
+      imageUrl: clerkUser?.imageUrl ?? null,
+      lastSignInAt: clerkUser?.lastSignInAt ? new Date(clerkUser.lastSignInAt) : null,
+    };
+  }
+
   async deleteUser(id: number): Promise<void> {
     const user = await this.usersService.findById(id);
     try {

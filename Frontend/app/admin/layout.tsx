@@ -6,7 +6,12 @@ import { getCurrentUser } from '@/lib/api/users'
 import { Role } from '@/lib/types'
 import { Separator } from '@/components/ui/separator'
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+interface AdminLayoutProps {
+  children: React.ReactNode
+  modal?: React.ReactNode
+}
+
+export default async function AdminLayout({ children, modal }: AdminLayoutProps) {
   const user = await getCurrentUser()
 
   if (!user || user.role !== Role.Admin) {
@@ -25,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </header>
         <TooltipProvider>
           {children}
+          {modal}
         </TooltipProvider>
       </SidebarInset>
     </SidebarProvider>

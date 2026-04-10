@@ -43,6 +43,12 @@ export class AdminUsersController {
     return this.adminUsersService.deleteUser(id);
   }
 
+  /** GET /admin/users/:id */
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<AdminUserProfileDto> {
+    return this.adminUsersService.findByIdWithProfile(id);
+  }
+
   /** DELETE /admin/users — body: { ids: number[] } */
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)

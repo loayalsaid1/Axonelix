@@ -94,6 +94,7 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 				onSelectToggle={handleSelectToggle}
 				onSelectAll={handleSelectAll}
 				onDeleteUser={(user) => setUserToDelete(user)}
+				onManageAccess={(user) => `/admin/users/${user.id}/access`}
 			/>
 
 			{totalPages > 1 && (
