@@ -102,11 +102,18 @@ export function PaymentRequestsTable({ requests, loading }: PaymentRequestsTable
 								)}
 							</TableCell>
 							<TableCell className="text-right">
-								<Button asChild size="sm" variant="outline">
-									<Link href={`/admin/subscriptions/${request.id}`}>
-										{request.status === 'pending' ? 'Review' : 'View'}
-									</Link>
-								</Button>
+								<div className="flex justify-end gap-2">
+									<Button asChild size="sm" variant="outline">
+										<Link href={`/admin/subscriptions/${request.id}`}>
+											{request.status === 'pending' ? 'Review' : 'View'}
+										</Link>
+									</Button>
+									<Button asChild size="sm" variant="ghost">
+										<Link href={`/admin/users/${request.userId}/access`}>
+											Access
+										</Link>
+									</Button>
+								</div>
 							</TableCell>
 						</TableRow>
 					))}
