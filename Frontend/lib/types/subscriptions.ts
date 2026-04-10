@@ -129,3 +129,36 @@ export interface GlobalModuleAccessMutationResult {
 }
 
 export type PaymentRequestPage = PaginatedResponse<PaymentRequestRecord>;
+
+export interface ListAdminUserModuleAccessParams {
+	includeRevoked?: boolean;
+	moduleId?: number;
+	page?: number;
+	limit?: number;
+}
+
+export interface AdminUserModuleAccessRecord extends MyModuleAccessRecord {
+	grantedByUser?: PaymentRequestUserSummary;
+}
+
+export type AdminUserModuleAccessPage = PaginatedResponse<AdminUserModuleAccessRecord>;
+
+export interface GrantUserModuleAccessDto {
+	userId: number;
+	moduleId: number;
+	source?: string;
+}
+
+export type GrantUserModuleAccessResult =
+	| {
+			granted: false;
+			reason: 'already_active';
+	  }
+	| {
+			granted: true;
+			access: AdminUserModuleAccessRecord;
+	  };
+
+export interface RevokeUserModuleAccessResult {
+	revoked: number;
+}
