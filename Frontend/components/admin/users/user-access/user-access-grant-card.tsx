@@ -26,6 +26,7 @@ export function UserAccessGrantCard({
 	onModuleChange,
 	onGrant,
 }: UserAccessGrantCardProps) {
+	const hasGrantableModules = grantableModules.length > 0;
 	const selectedGrantModule = grantableModules.find(
 		(module) => String(module.id) === selectedModuleId,
 	);
@@ -41,28 +42,28 @@ export function UserAccessGrantCard({
 			<CardContent className="flex flex-col gap-3 md:flex-row md:items-end">
 				<div className="w-full space-y-2">
 					<Label>Module</Label>
-					<Select
-						value={selectedModuleId || undefined}
-						onValueChange={onModuleChange}
-						disabled={submitting || !grantableModules.length}
-					>
-						<SelectTrigger>
-							<SelectValue
-								placeholder={
-									grantableModules.length
-										? 'Select module'
-										: 'No more modules available to grant'
-								}
-							/>
-						</SelectTrigger>
-						<SelectContent>
-							{grantableModules.map((module) => (
-								<SelectItem key={module.id} value={String(module.id)}>
-									{module.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					{hasGrantableModules ? (
+						<Select
+							value={selectedModuleId || undefined}
+							onValueChange={onModuleChange}
+							disabled={submitting}
+						>
+							<SelectTrigger>
+								<SelectValue placeholder="Select module" />
+							</SelectTrigger>
+							<SelectContent>
+								{grantableModules.map((module) => (
+									<SelectItem key={module.id} value={String(module.id)}>
+										{module.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					) : (
+						<div className="flex h-10 w-fit items-center rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground">
+							No more modules available to grant
+						</div>
+					)}
 				</div>
 				<Button className="gap-2" onClick={onGrant} disabled={submitting || !selectedGrantModule}>
 					<ShieldPlus className="h-4 w-4" />
