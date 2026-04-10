@@ -9,7 +9,7 @@ export default async function AdminUsersPage() {
 
 	try {
 		initialData = await apiFetch<PaginatedResponse<AdminUserProfile>>(
-			'/admin/users?page=1&limit=20',
+			'/admin/users?page=1&limit=20&sortCreatedAt=desc',
 			{ cache: 'no-store', ...opts },
 		);
 	} catch {

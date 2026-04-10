@@ -16,23 +16,26 @@ import { Role } from '../../common/enums';
 import { AdminUsersService } from './admin-users.service';
 import { AdminUserProfileDto } from './dto/admin-user-profile.dto';
 import { PaginatedResult } from './users.service';
+import { AdminUsersQueryDto } from './dto';
 
 @UseGuards(RolesGuard)
 @Roles([Role.Admin])
 @Controller('admin/users')
 export class AdminUsersController {
-  constructor(private readonly adminUsersService: AdminUsersService) { }
+  constructor(private readonly adminUsersService: AdminUsersService) {}
 
   /** GET /admin/users?role=student&page=1&limit=20 */
   @Get()
   findAll(
-    @Query('role') role?: Role,
-    @Query('page') page = '1',
-    @Query('limit') limit = '20',
+    @Query() query: AdminUsersQueryDto,
   ): Promise<PaginatedResult<AdminUserProfileDto>> {
     return this.adminUsersService.findAllWithProfile(
-      role ? { role } : undefined,
-      { page: Number(page), limit: Number(limit) },
+      {
+        role: query.role,
+        searchEmail: query.search,
+        sortCreatedAt: query.sortCreatedAt,
+      },
+      { page: query.page, limit: query.limit },
     );
   }
 
