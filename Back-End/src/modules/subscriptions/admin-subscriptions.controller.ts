@@ -20,6 +20,7 @@ import {
 	GlobalModuleAccessDto,
 	GrantUserModuleAccessDto,
 	ListPaymentRequestsDto,
+	ListUserModuleAccessDto,
 	PaymentRequestStatsDto,
 	ReviewPaymentRequestDto,
 } from './dto';
@@ -42,6 +43,14 @@ export class AdminSubscriptionsController {
 	@Get('payment-requests/:id')
 	getPaymentRequest(@paramIntId() id: number) {
 		return this.subscriptionsService.getPaymentRequestById(id);
+	}
+
+	@Get('user-access/:userId')
+	listUserAccess(
+		@Param('userId', ParseIntPipe) userId: number,
+		@Query() filters: ListUserModuleAccessDto,
+	) {
+		return this.subscriptionsService.listUserModuleAccess(userId, filters);
 	}
 
 	@Patch('payment-requests/:id/review')
