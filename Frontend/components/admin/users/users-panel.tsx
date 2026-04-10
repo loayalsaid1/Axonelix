@@ -29,8 +29,12 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 		loading,
 		error,
 		roleFilter,
+		searchTerm,
+		sortCreatedAt,
 		setPage,
 		setRoleFilter,
+		setSearchTerm,
+		setSortCreatedAt,
 		deleteUser,
 		bulkDelete,
 	} = useAdminUsers(initialData ?? undefined);
@@ -42,7 +46,11 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 	const handleSelectToggle = (id: number) => {
 		setSelectedIds((prev) => {
 			const next = new Set(prev);
-			next.has(id) ? next.delete(id) : next.add(id);
+			if (next.has(id)) {
+				next.delete(id);
+			} else {
+				next.add(id);
+			}
 			return next;
 		});
 	};
@@ -76,6 +84,18 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 				roleFilter={roleFilter}
 				onRoleFilterChange={(role) => {
 					setRoleFilter(role);
+					setPage(1);
+					setSelectedIds(new Set());
+				}}
+				searchTerm={searchTerm}
+				onSearchTermChange={(value) => {
+					setSearchTerm(value);
+					setPage(1);
+					setSelectedIds(new Set());
+				}}
+				sortCreatedAt={sortCreatedAt}
+				onSortCreatedAtChange={(value) => {
+					setSortCreatedAt(value);
 					setPage(1);
 					setSelectedIds(new Set());
 				}}

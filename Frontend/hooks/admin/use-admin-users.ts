@@ -19,8 +19,18 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 	const [error, setError] = useState<Error | null>(null);
 	const [page, setPage] = useState(1);
 	const [roleFilter, setRoleFilter] = useState<Role | undefined>(undefined);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+	const [sortCreatedAt, setSortCreatedAt] = useState<'asc' | 'desc'>('desc');
 	// Track whether we need to re-fetch (skip on first render when initialData was provided)
 	const [hasFetched, setHasFetched] = useState(!!initialData);
+
+	useEffect(() => {
+		const timeoutId = window.setTimeout(() => {
+			setDebouncedSearchTerm(searchTerm.trim());
+		}, 350);
+		return () => window.clearTimeout(timeoutId);
+	}, [searchTerm]);
 
 	useEffect(() => {
 		// On first mount with initialData, skip the fetch — data is already loaded.
@@ -36,6 +46,8 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 				setError(null);
 				const qs = new URLSearchParams({ page: String(page), limit: String(DEFAULT_LIMIT) });
 				if (roleFilter) qs.set('role', roleFilter);
+				if (debouncedSearchTerm) qs.set('search', debouncedSearchTerm);
+				qs.set('sortCreatedAt', sortCreatedAt);
 				const data = await authFetch<PaginatedResponse<AdminUserProfile>>(
 					`/admin/users?${qs}`,
 					{ cache: 'no-store' } as RequestInit,
@@ -48,7 +60,7 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 			}
 		};
 		run();
-	}, [page, roleFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [page, roleFilter, debouncedSearchTerm, sortCreatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const deleteUser = useCallback(
 		async (id: number) => {
@@ -86,8 +98,12 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 		loading,
 		error,
 		roleFilter,
+		searchTerm,
+		sortCreatedAt,
 		setPage,
 		setRoleFilter,
+		setSearchTerm,
+		setSortCreatedAt,
 		deleteUser,
 		bulkDelete,
 	};

@@ -5,6 +5,8 @@ export interface AdminUsersParams {
 	page?: number;
 	limit?: number;
 	role?: Role;
+	search?: string;
+	sortCreatedAt?: 'asc' | 'desc';
 }
 
 export function getAdminUsers(
@@ -15,6 +17,8 @@ export function getAdminUsers(
 	if (params.page) qs.set('page', String(params.page));
 	if (params.limit) qs.set('limit', String(params.limit));
 	if (params.role) qs.set('role', params.role);
+	if (params.search) qs.set('search', params.search);
+	if (params.sortCreatedAt) qs.set('sortCreatedAt', params.sortCreatedAt);
 	return apiFetch<PaginatedResponse<AdminUserProfile>>(
 		`/admin/users?${qs}`,
 		{ cache: 'no-store', ...opts },

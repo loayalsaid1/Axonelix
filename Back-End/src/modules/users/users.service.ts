@@ -1,14 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { and, count, eq } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  type SQL,
+} from 'drizzle-orm';
 import { DrizzleService } from '../../database/drizzle.service';
 import { users } from '../../database/entities/users';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRecord } from './interfaces/user-record.interface';
 import { Role } from '../../common/enums';
+import { CreatedAtSortOrder } from './dto';
 
 export interface UserFilters {
   role?: Role;
+  searchEmail?: string;
+  clerkIdMatches?: string[];
+  sortCreatedAt?: CreatedAtSortOrder;
 }
 
 export interface PaginationParams {
@@ -26,15 +39,30 @@ export interface PaginatedResult<T> {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly drizzleService: DrizzleService) { }
+  constructor(private readonly drizzleService: DrizzleService) {}
 
   async findAll(
     filters?: UserFilters,
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<UserRecord>> {
-    const conditions: ReturnType<typeof eq>[] = [];
+    const conditions: SQL[] = [];
     if (filters?.role) {
       conditions.push(eq(users.role, filters.role));
+    }
+    if (filters?.searchEmail) {
+      conditions.push(ilike(users.email, `%${filters.searchEmail}%`));
+    }
+    if (filters?.clerkIdMatches) {
+      if (filters.clerkIdMatches.length === 0) {
+        return {
+          data: [],
+          total: 0,
+          page: pagination?.page ?? 1,
+          limit: pagination?.limit ?? 20,
+          totalPages: 0,
+        };
+      }
+      conditions.push(inArray(users.clerkId, filters.clerkIdMatches));
     }
     const where = conditions.length ? and(...conditions) : undefined;
 
@@ -47,6 +75,11 @@ export class UsersService {
         .select()
         .from(users)
         .where(where)
+        .orderBy(
+          filters?.sortCreatedAt === CreatedAtSortOrder.Asc
+            ? asc(users.createdAt)
+            : desc(users.createdAt),
+        )
         .limit(limit)
         .offset(offset),
       this.drizzleService.db
