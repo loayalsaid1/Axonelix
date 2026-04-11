@@ -10,14 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "./ResponsiveModal";
 
 const EditorPreview = lazy(
   () => import("@/components/editor-preview/EditorPreview"),
@@ -180,8 +173,9 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
           )}
 
         {question.explanation && (
-          <Dialog>
-            <DialogTrigger asChild>
+          <ResponsiveModal
+            title="Explanation"
+            trigger={
               <Button
                 variant="ghost"
                 size="sm"
@@ -189,33 +183,26 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
               >
                 View Explanation
               </Button>
-            </DialogTrigger>
-
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Explanation</DialogTitle>
-              </DialogHeader>
-              <DialogDescription className="overflow-auto">
-                <div className="overflow-auto max-h-[70vh]">
-                  {question.explanation ? (
-                    <Suspense
-                      fallback={
-                        <div className="pt-2">
-                          <div className="bg-muted/40 rounded-xl w-full h-40" />
-                        </div>
-                      }
-                    >
-                      <EditorPreview content={question.explanation} />
-                    </Suspense>
-                  ) : (
-                    <p className="text-sm whitespace-pre-wrap">
-                      No explanation available.
-                    </p>
-                  )}
-                </div>
-              </DialogDescription>
-            </DialogContent>
-          </Dialog>
+            }
+          >
+            <div >
+              {question.explanation ? (
+                <Suspense
+                  fallback={
+                    <div className="pt-2">
+                      <div className="bg-muted/40 rounded-xl w-full h-40" />
+                    </div>
+                  }
+                >
+                  <EditorPreview content={question.explanation} />
+                </Suspense>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">
+                  No explanation available.
+                </p>
+              )}
+            </div>
+          </ResponsiveModal>
         )}
       </CardFooter>
     </Card>
