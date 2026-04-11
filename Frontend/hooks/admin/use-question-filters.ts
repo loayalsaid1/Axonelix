@@ -35,6 +35,13 @@ export interface QuestionFilters {
   isMisc?: boolean;
 }
 
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface FilterOptions {
   modules: Module[];
   subjects: Subject[];
@@ -61,6 +68,13 @@ export function useQuestionFilters() {
     chapterIds: [],
     lessonIds: [],
     isMisc: undefined,
+  });
+
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
   });
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -165,36 +179,69 @@ export function useQuestionFilters() {
     });
   }, [fetchSubjectsForModule, fetchChaptersForSubjects, fetchLessonsForChapters]);
 
-  const fetchQuestions = useCallback(async () => {
-    try {
-      setLoading(true);
+  const fetchQuestions = useCallback(
+    async (pageOverride?: number, limitOverride?: number) => {
+      try {
+        setLoading(true);
 
-      const body: Record<string, any> = {};
-      if (filters.search) body.searchQuery = filters.search;
-      if (filters.moduleId) body.moduleIds = [Number(filters.moduleId)];
-      if (filters.subjectIds?.length) body.subjectIds = filters.subjectIds.map(Number);
-      if (filters.chapterIds?.length) body.chapterIds = filters.chapterIds.map(Number);
-      if (filters.lessonIds?.length) body.lessonIds = filters.lessonIds.map(Number);
-      if (filters.isMisc !== undefined) body.isMisc = filters.isMisc;
+        const targetPage = pageOverride ?? pagination.page;
+        const targetLimit = limitOverride ?? pagination.limit;
 
-      const data = await authFetch<{ data: any[]; total: number }>('/questions/filter', {
-        method: 'POST',
-        body,
-      });
-      setQuestions(
-        (data.data || []).map((q) => ({
-          ...q,
-          id: String(q.id),
-          questionOptions: (q.questionOptions || q.options || []).map((o: any) => ({ ...o, id: String(o.id) })),
-        }))
-      );
-    } catch (error) {
-      console.error('Failed to fetch questions:', error);
-      setQuestions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, authFetch]);
+        const body: Record<string, any> = {};
+        if (filters.search) body.searchQuery = filters.search;
+        if (filters.moduleId) body.moduleIds = [Number(filters.moduleId)];
+        if (filters.subjectIds?.length) body.subjectIds = filters.subjectIds.map(Number);
+        if (filters.chapterIds?.length) body.chapterIds = filters.chapterIds.map(Number);
+        if (filters.lessonIds?.length) body.lessonIds = filters.lessonIds.map(Number);
+        if (filters.isMisc !== undefined) body.isMisc = filters.isMisc;
+
+        const data = await authFetch<{ data: any[]; total: number }>(
+          `/questions/filter?page=${targetPage}&limit=${targetLimit}`,
+          {
+            method: 'POST',
+            body,
+          },
+        );
+        setQuestions(
+          (data.data || []).map((q) => ({
+            ...q,
+            id: String(q.id),
+            questionOptions: (q.questionOptions || q.options || []).map((o: any) => ({
+              ...o,
+              id: String(o.id),
+            })),
+          })),
+        );
+
+        setPagination({
+          page: targetPage,
+          limit: targetLimit,
+          total: data.total || 0,
+          totalPages: Math.ceil((data.total || 0) / targetLimit),
+        });
+      } catch (error) {
+        console.error('Failed to fetch questions:', error);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters, pagination.page, pagination.limit, authFetch],
+  );
+
+  const goToPage = useCallback(
+    (page: number) => {
+      fetchQuestions(page);
+    },
+    [fetchQuestions],
+  );
+
+  const setLimit = useCallback(
+    (limit: number) => {
+      fetchQuestions(1, limit);
+    },
+    [fetchQuestions],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters({
@@ -205,6 +252,7 @@ export function useQuestionFilters() {
       lessonIds: [],
       isMisc: undefined,
     });
+    setPagination((prev) => ({ ...prev, page: 1 }));
     setFilterOptions((prev) => ({ ...prev, subjects: [], chapters: [], lessons: [] }));
   }, []);
 
@@ -229,6 +277,11 @@ export function useQuestionFilters() {
     updateFilter,
     clearFilters,
     hasActiveFilters: hasActiveFilters(),
+
+    // Pagination
+    pagination,
+    goToPage,
+    setLimit,
 
     // Cascading filter helpers
     getFilteredSubjects,

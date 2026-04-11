@@ -20,35 +20,77 @@ interface PaginatedQuestions {
   totalPages: number;
 }
 
+interface PaginationState {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export function useExamQuestions(examId: string) {
   const authFetch = useApiFetch();
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
-  const fetchQuestions = useCallback(async () => {
-    if (!examId) return;
+  const fetchQuestions = useCallback(
+    async (pageOverride?: number, limitOverride?: number) => {
+      if (!examId) return;
 
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await authFetch<PaginatedQuestions>(`/questions?oldExamId=${examId}&limit=100`);
-      setQuestions(
-        (data.data || []).map((q: any) => ({
-          ...q,
-          id: String(q.id),
-          lessonId: q.lessonId,
-          chapterId: q.chapterId,
-          questionOptions: (q.questionOptions || []).map((o: any) => ({ ...o, id: o.id })),
-        }))
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch exam questions'));
-      console.error('Failed to fetch exam questions:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [examId, authFetch]);
+      try {
+        setLoading(true);
+        setError(null);
+
+        const targetPage = pageOverride ?? pagination.page;
+        const targetLimit = limitOverride ?? pagination.limit;
+
+        const data = await authFetch<PaginatedQuestions>(
+          `/questions?oldExamId=${examId}&page=${targetPage}&limit=${targetLimit}`,
+        );
+        setQuestions(
+          (data.data || []).map((q: any) => ({
+            ...q,
+            id: String(q.id),
+            lessonId: q.lessonId,
+            chapterId: q.chapterId,
+            questionOptions: (q.questionOptions || []).map((o: any) => ({ ...o, id: String(o.id) })),
+          })),
+        );
+        setPagination({
+          page: data.page ?? targetPage,
+          limit: data.limit ?? targetLimit,
+          total: data.total ?? 0,
+          totalPages: data.totalPages ?? Math.ceil((data.total ?? 0) / targetLimit),
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch exam questions'));
+        console.error('Failed to fetch exam questions:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [examId, authFetch, pagination.page, pagination.limit],
+  );
+
+  const goToPage = useCallback(
+    (page: number) => {
+      fetchQuestions(page);
+    },
+    [fetchQuestions],
+  );
+
+  const setLimit = useCallback(
+    (limit: number) => {
+      fetchQuestions(1, limit);
+    },
+    [fetchQuestions],
+  );
 
   const removeQuestion = useCallback(
     async (questionId: string) => {
@@ -56,14 +98,17 @@ export function useExamQuestions(examId: string) {
         await authFetch(`/questions/${questionId}/old-exam`, {
           method: 'DELETE',
         });
-        setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+        const nextTotal = Math.max(0, pagination.total - 1);
+        const maxPageAfterDelete = Math.max(1, Math.ceil(nextTotal / pagination.limit));
+        const nextPage = Math.min(pagination.page, maxPageAfterDelete);
+        await fetchQuestions(nextPage, pagination.limit);
         return true;
       } catch (err) {
         console.error('Failed to remove question:', err);
         return false;
       }
     },
-    [authFetch]
+    [authFetch, fetchQuestions, pagination.total, pagination.limit, pagination.page],
   );
 
   useEffect(() => {
@@ -74,6 +119,9 @@ export function useExamQuestions(examId: string) {
     questions,
     loading,
     error,
+    pagination,
+    goToPage,
+    setLimit,
     refetch: fetchQuestions,
     removeQuestion,
   };

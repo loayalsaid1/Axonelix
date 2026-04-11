@@ -10,6 +10,7 @@ import { AdminEmptyState } from '@/components/admin/shared/admin-empty-state';
 import { AdminLoadingGrid } from '@/components/admin/shared/admin-loading-grid';
 import { AdminQuestionCard } from '@/components/admin/questions/admin-question-card';
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
+import { QuestionsPagination } from '@/components/library/QuestionsPagination';
 import CreateQuestionDialog from '@/components/admin/dialogs/create-question-dialog';
 import EditQuestionDialog from '@/components/admin/dialogs/edit-question-dialog';
 import { useApiFetch } from '@/hooks/use-api-fetch';
@@ -38,6 +39,9 @@ export function QuestionsList() {
     getFilteredLessons,
     questions,
     loading,
+    pagination,
+    goToPage,
+    setLimit,
     fetchQuestions,
     refetch,
   } = useQuestionFilters();
@@ -191,7 +195,7 @@ export function QuestionsList() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Found {questions.length} {questions.length === 1 ? 'question' : 'questions'}
+              Found {pagination.total} {pagination.total === 1 ? 'question' : 'questions'}
             </p>
           </div>
           {questions.map((question) => (
@@ -208,6 +212,15 @@ export function QuestionsList() {
               onEdit={() => setEditingQuestionId(question.id)}
             />
           ))}
+
+          <QuestionsPagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            limit={pagination.limit}
+            total={pagination.total}
+            onPageChange={goToPage}
+            onLimitChange={setLimit}
+          />
         </div>
       )}
     </div>

@@ -11,6 +11,7 @@ import { ExamQuestionCard } from '@/components/admin/questions/exam-question-car
 import AddQuestionToExamDialog from '@/components/admin/dialogs/add-question-to-exam-dialog';
 import CreateQuestionDialog from '@/components/admin/dialogs/create-question-dialog';
 import EditQuestionDialog from '@/components/admin/dialogs/edit-question-dialog';
+import { QuestionsPagination } from '@/components/library/QuestionsPagination';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface ExamQuestionsListProps {
@@ -18,7 +19,7 @@ interface ExamQuestionsListProps {
 }
 
 export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
-  const { questions, loading, removeQuestion, refetch } = useExamQuestions(examId);
+  const { questions, loading, removeQuestion, refetch, pagination, goToPage, setLimit } = useExamQuestions(examId);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [questionToEdit, setQuestionToEdit] = useState<ExamQuestion | null>(null);
@@ -49,7 +50,7 @@ export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
   return (
     <>
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground">Questions ({questions.length})</h2>
+        <h2 className="text-2xl font-bold text-foreground">Questions ({pagination.total})</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="gap-2">
@@ -96,7 +97,7 @@ export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
 
       {loading ? (
         <AdminLoadingGrid count={3} className="space-y-4" />
-      ) : questions.length === 0 ? (
+      ) : pagination.total === 0 ? (
         <AdminEmptyState
           title="No questions in this exam yet"
           description="Add questions from your question bank or create new ones"
@@ -112,6 +113,15 @@ export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
               onEdit={() => setQuestionToEdit(question)}
             />
           ))}
+
+          <QuestionsPagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            limit={pagination.limit}
+            total={pagination.total}
+            onPageChange={goToPage}
+            onLimitChange={setLimit}
+          />
         </div>
       )}
     </>
