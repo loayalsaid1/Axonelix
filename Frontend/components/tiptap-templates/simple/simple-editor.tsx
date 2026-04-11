@@ -1,9 +1,6 @@
 "use client"
-import { renderToReactElement } from '@tiptap/static-renderer/pm/react'
-
-
-import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
-import { type AnyExtension, EditorContent, EditorContext, Extension, type JSONContent, useEditor } from "@tiptap/react"
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
+import { EditorContent, EditorContext, type JSONContent, useEditor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
@@ -14,7 +11,7 @@ import { Typography } from "@tiptap/extension-typography"
 import { Highlight } from "@tiptap/extension-highlight"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
-import { Selection } from "@tiptap/extensions"
+import { generateJSON } from "@tiptap/core"
 import Youtube from "@tiptap/extension-youtube"
 
 // --- UI Primitives ---
@@ -84,7 +81,7 @@ import { useCurrentEditor } from "@tiptap/react"
 import { Callout } from "@/components/tiptap-extension/callout-extension"
 import CalloutToolbarMenu from "@/components/tiptap-ui/custom-components/callout-toolbar-menu"
 import { TextColorPopover } from "@/components/tiptap-ui/text-color-popover"
-import { TextStyle, TextStyleKit } from "@tiptap/extension-text-style"
+import { TextStyleKit } from "@tiptap/extension-text-style"
 import FontSizeToolbarButtons from "@/components/tiptap-ui/custom-components/FontSizeToolbarButtons"
 import FontSize from "@tiptap/extension-text-style/font-size"
 import ExtraFontSizeCommands from "@/components/tiptap-extension/extra-font-size-commands-extension"
@@ -97,7 +94,7 @@ import TableInsertMenu from "@/components/tiptap-ui/custom-components/table-inse
 import TableRowMenu from "@/components/tiptap-ui/custom-components/table-row-menu"
 import TableColumnMenu from "@/components/tiptap-ui/custom-components/table-column-menu"
 import TableCellMenu from "@/components/tiptap-ui/custom-components/table-cell-menu"
-
+import HtmlAssistantCard, { type HtmlInsertMode } from "@/components/tiptap-ui/custom-components/html-assistant-card"
 
 const extensions = [
   StarterKit.configure({
@@ -124,7 +121,6 @@ const extensions = [
   Typography,
   Superscript,
   Subscript,
-  Selection,
   ImageUploadNode.configure({
     accept: "image/*",
     maxSize: MAX_FILE_SIZE,
@@ -329,14 +325,21 @@ const MobileToolbarContent = ({
 
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null
+  insertHTML?: (html: string, mode?: HtmlInsertMode) => boolean
 }
 
 interface SimpleEditorProps {
   ref?: React.Ref<SimpleEditorRefHandler>,
   initialContent?: JSONContent,
   showPreviewContent?: boolean
+  showHtmlAssistant?: boolean
 }
-export function SimpleEditor({ ref, showPreviewContent = false, initialContent = undefined }: SimpleEditorProps) {
+export function SimpleEditor({
+  ref,
+  showPreviewContent = false,
+  initialContent = undefined,
+  showHtmlAssistant = true,
+}: SimpleEditorProps) {
   const isMobile = useIsBreakpoint()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
@@ -373,9 +376,36 @@ export function SimpleEditor({ ref, showPreviewContent = false, initialContent =
     }
   }, [isMobile, mobileView])
 
+  const insertHTML = useCallback((html: string, mode: HtmlInsertMode = "append") => {
+    if (!editor) return false
+
+    const rawHtml = html.trim()
+    if (!rawHtml) return false
+    // const cleanedHtml = stripWhitespaceTextNodes(rawHtml)
+    // const normalizedHtml = normalizeIncomingHtml(cleanedHtml)
+
+    const json = generateJSON(rawHtml, extensions)
+
+    if (mode === "replace") {
+      return editor
+        .chain()
+        .focus()
+        .setContent(json)
+        .run()
+    }
+
+    const position = mode === "prepend" ? 0 : editor.state.doc.content.size
+    return editor
+      .chain()
+      .focus()
+      .insertContentAt(position, json)
+      .run()
+  }, [editor])
+
   useImperativeHandle(ref, () => ({
-    getJSON: () => editor?.getJSON() ?? null
-  }), [editor])
+    getJSON: () => editor?.getJSON() ?? null,
+    insertHTML,
+  }), [editor, insertHTML])
 
   return (
     <EditorContext.Provider value={{ editor }}>
@@ -403,6 +433,12 @@ export function SimpleEditor({ ref, showPreviewContent = false, initialContent =
           />
         </div>
       </div>
+
+      {showHtmlAssistant && (
+        <div className="editor-wrapper  m-x-4 mt-4">
+          <HtmlAssistantCard onInsert={insertHTML} />
+        </div>
+      )}
     </EditorContext.Provider>
   )
 }
