@@ -7,13 +7,7 @@ import { UsersTableToolbar } from '@/components/admin/users/users-table-toolbar'
 import { UsersTable } from '@/components/admin/users/users-table';
 import { DeleteUserDialog } from '@/components/admin/dialogs/delete-user-dialog';
 import { BulkDeleteUsersDialog } from '@/components/admin/dialogs/bulk-delete-users-dialog';
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationNext,
-	PaginationPrevious,
-} from '@/components/ui/pagination';
+import { QuestionsPagination } from '@/components/library/QuestionsPagination';
 import type { AdminUserProfile, PaginatedResponse } from '@/lib/types';
 
 interface UsersPanelProps {
@@ -25,6 +19,7 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 		users,
 		total,
 		page,
+		limit,
 		totalPages,
 		loading,
 		error,
@@ -32,6 +27,7 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 		searchTerm,
 		sortCreatedAt,
 		setPage,
+		setLimit,
 		setRoleFilter,
 		setSearchTerm,
 		setSortCreatedAt,
@@ -118,27 +114,17 @@ export function UsersPanel({ initialData }: UsersPanelProps) {
 			/>
 
 			{totalPages > 1 && (
-				<Pagination>
-					<PaginationContent>
-						<PaginationItem>
-							<PaginationPrevious
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
-								aria-disabled={page === 1}
-								className={page === 1 ? 'pointer-events-none opacity-50' : ''}
-							/>
-						</PaginationItem>
-						<PaginationItem className="text-sm text-muted-foreground px-4 flex items-center">
-							Page {page} of {totalPages}
-						</PaginationItem>
-						<PaginationItem>
-							<PaginationNext
-								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-								aria-disabled={page === totalPages}
-								className={page === totalPages ? 'pointer-events-none opacity-50' : ''}
-							/>
-						</PaginationItem>
-					</PaginationContent>
-				</Pagination>
+				<QuestionsPagination
+					currentPage={page}
+					totalPages={totalPages}
+					limit={limit}
+					total={total}
+					onPageChange={setPage}
+					onLimitChange={(newLimit) => {
+						setLimit(newLimit);
+						setPage(1);
+					}}
+				/>
 			)}
 
 			<DeleteUserDialog
