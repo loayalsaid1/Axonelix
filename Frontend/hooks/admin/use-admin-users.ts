@@ -18,6 +18,7 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 	const [loading, setLoading] = useState(!initialData);
 	const [error, setError] = useState<Error | null>(null);
 	const [page, setPage] = useState(1);
+	const [limit, setLimit] = useState(initialData?.limit ?? DEFAULT_LIMIT);
 	const [roleFilter, setRoleFilter] = useState<Role | undefined>(undefined);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -44,7 +45,7 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 			try {
 				setLoading(true);
 				setError(null);
-				const qs = new URLSearchParams({ page: String(page), limit: String(DEFAULT_LIMIT) });
+				const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
 				if (roleFilter) qs.set('role', roleFilter);
 				if (debouncedSearchTerm) qs.set('search', debouncedSearchTerm);
 				qs.set('sortCreatedAt', sortCreatedAt);
@@ -60,7 +61,7 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 			}
 		};
 		run();
-	}, [page, roleFilter, debouncedSearchTerm, sortCreatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [page, limit, roleFilter, debouncedSearchTerm, sortCreatedAt]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const deleteUser = useCallback(
 		async (id: number) => {
@@ -101,6 +102,7 @@ export function useAdminUsers(initialData?: PaginatedResponse<AdminUserProfile>)
 		searchTerm,
 		sortCreatedAt,
 		setPage,
+		setLimit,
 		setRoleFilter,
 		setSearchTerm,
 		setSortCreatedAt,
