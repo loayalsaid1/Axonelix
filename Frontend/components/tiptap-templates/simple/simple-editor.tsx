@@ -11,7 +11,7 @@ import { Typography } from "@tiptap/extension-typography"
 import { Highlight } from "@tiptap/extension-highlight"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
-import { Selection } from "@tiptap/extensions"
+import { generateJSON } from "@tiptap/core"
 import Youtube from "@tiptap/extension-youtube"
 
 // --- UI Primitives ---
@@ -95,8 +95,6 @@ import TableRowMenu from "@/components/tiptap-ui/custom-components/table-row-men
 import TableColumnMenu from "@/components/tiptap-ui/custom-components/table-column-menu"
 import TableCellMenu from "@/components/tiptap-ui/custom-components/table-cell-menu"
 import HtmlAssistantCard, { type HtmlInsertMode } from "@/components/tiptap-ui/custom-components/html-assistant-card"
-import { normalizeIncomingHtml, stripWhitespaceTextNodes } from "@/components/tiptap-templates/simple/html-import-utils"
-
 
 const extensions = [
   StarterKit.configure({
@@ -123,7 +121,6 @@ const extensions = [
   Typography,
   Superscript,
   Subscript,
-  Selection,
   ImageUploadNode.configure({
     accept: "image/*",
     maxSize: MAX_FILE_SIZE,
@@ -149,6 +146,7 @@ const extensions = [
     },
   }),
 ]
+
 const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
@@ -383,33 +381,25 @@ export function SimpleEditor({
 
     const rawHtml = html.trim()
     if (!rawHtml) return false
-    const cleanedHtml = stripWhitespaceTextNodes(rawHtml)
-    const normalizedHtml = normalizeIncomingHtml(cleanedHtml)
+    // const cleanedHtml = stripWhitespaceTextNodes(rawHtml)
+    // const normalizedHtml = normalizeIncomingHtml(cleanedHtml)
 
-    const applyInsert = (payload: string) => {
-      if (mode === "replace") {
-        return editor
-          .chain()
-          .focus()
-          .clearContent()
-          .insertContent(payload)
-          .run()
-      }
+    const json = generateJSON(rawHtml, extensions)
 
-      const position = mode === "prepend" ? 0 : editor.state.doc.content.size
+    if (mode === "replace") {
       return editor
         .chain()
         .focus()
-        .insertContentAt(position, payload)
+        .setContent(json)
         .run()
     }
 
-    // First path: native parser on cleaned HTML to avoid whitespace-only gap nodes.
-    const insertedRaw = applyInsert(cleanedHtml)
-    if (insertedRaw) return true
-
-    // Fallback path: normalize custom-node HTML markers and remove noisy gaps.
-    return applyInsert(normalizedHtml)
+    const position = mode === "prepend" ? 0 : editor.state.doc.content.size
+    return editor
+      .chain()
+      .focus()
+      .insertContentAt(position, json)
+      .run()
   }, [editor])
 
   useImperativeHandle(ref, () => ({
@@ -436,12 +426,6 @@ export function SimpleEditor({
             )}
           </Toolbar>
 
-          {showHtmlAssistant && (
-            <div className="px-4 pb-4">
-              <HtmlAssistantCard onInsert={insertHTML} />
-            </div>
-          )}
-
           <EditorContent
             editor={editor}
             role="presentation"
@@ -449,6 +433,12 @@ export function SimpleEditor({
           />
         </div>
       </div>
+
+      {showHtmlAssistant && (
+        <div className="editor-wrapper  m-x-4 mt-4">
+          <HtmlAssistantCard onInsert={insertHTML} />
+        </div>
+      )}
     </EditorContext.Provider>
   )
 }
