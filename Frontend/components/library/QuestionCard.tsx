@@ -2,7 +2,12 @@
 
 import { useState, Suspense, lazy } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +19,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
+const EditorPreview = lazy(
+  () => import("@/components/editor-preview/EditorPreview"),
+);
 import { cn } from "@/lib/utils";
 import type { Question } from "@/lib/types/questions";
 
@@ -42,7 +49,9 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
               Q{index}
             </Badge>
             <Badge
-              variant={question.questionType === "mcq" ? "default" : "secondary"}
+              variant={
+                question.questionType === "mcq" ? "default" : "secondary"
+              }
               className="text-xs"
             >
               {question.questionType === "mcq" ? "Multiple Choice" : "Written"}
@@ -53,7 +62,9 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
               </Badge>
             )}
           </div>
-          <Badge variant="outline" className="shadow">#{question.id}</Badge>
+          <Badge variant="outline" className="shadow">
+            #{question.id}
+          </Badge>
         </div>
       </CardHeader>
 
@@ -64,107 +75,118 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
         </p>
 
         {/* Options (MCQ only) */}
-        {question.questionType === "mcq" && question.questionOptions.length > 0 && (
-          <ol className="space-y-2 mt-4" style={{ listStyleType: "upper-alpha" }}>
-            {question.questionOptions.map((opt) => {
-              const isSelected = selectedOptionId === opt.id;
-              const isCorrect = opt.isCorrect;
-              const showFeedback = showAnswer && isSelected;
+        {question.questionType === "mcq" &&
+          question.questionOptions.length > 0 && (
+            <ol
+              className="space-y-2 mt-4"
+              style={{ listStyleType: "upper-alpha" }}
+            >
+              {question.questionOptions.map((opt) => {
+                const isSelected = selectedOptionId === opt.id;
+                const isCorrect = opt.isCorrect;
+                const showFeedback = showAnswer && isSelected;
 
-              return (
-                <li
-                  key={opt.id}
-                  onClick={() => handleOptionClick(opt.id)}
-                  className={cn(
-                    "flex items-start gap-3 px-3 py-2.5 border rounded-lg text-sm transition-all cursor-pointer",
-                    showAnswer && isCorrect
-                      ? "border-green-300 bg-green-50/60 dark:border-green-800 dark:bg-green-900/10"
-                      : isSelected && showFeedback && !isCorrect
-                        ? "border-red-300 bg-red-50/60 dark:border-red-800 dark:bg-red-900/10"
-                        : isSelected
-                          ? "border-blue-300 bg-blue-50/60 dark:border-blue-800 dark:bg-blue-900/10"
-                          : "border-transparent bg-muted/40 hover:bg-muted/60",
-                  )}
-                >
-                  <div
+                return (
+                  <li
+                    key={opt.id}
+                    onClick={() => handleOptionClick(opt.id)}
                     className={cn(
-                      "flex justify-center items-center mt-0.5 border rounded-full w-4 h-4 transition-colors shrink-0",
+                      "flex items-start gap-3 px-3 py-2.5 border rounded-lg text-sm transition-all cursor-pointer",
                       showAnswer && isCorrect
-                        ? "border-green-500 bg-green-500 text-white"
+                        ? "border-green-300 bg-green-50/60 dark:border-green-800 dark:bg-green-900/10"
                         : isSelected && showFeedback && !isCorrect
-                          ? "border-red-500 bg-red-500 text-white"
+                          ? "border-red-300 bg-red-50/60 dark:border-red-800 dark:bg-red-900/10"
                           : isSelected
-                            ? "border-blue-500 bg-blue-500 text-white"
-                            : "border-muted-foreground/30",
+                            ? "border-blue-300 bg-blue-50/60 dark:border-blue-800 dark:bg-blue-900/10"
+                            : "border-transparent bg-muted/40 hover:bg-muted/60",
                     )}
                   >
-                    {(showAnswer && isCorrect) && <CheckCircle2 className="w-3 h-3" />}
-                  </div>
-                  <div className="flex-1">
-                    <span
+                    <div
                       className={cn(
-                        "transition-colors",
+                        "flex justify-center items-center mt-0.5 border rounded-full w-4 h-4 transition-colors shrink-0",
                         showAnswer && isCorrect
-                          ? "font-medium text-green-700 dark:text-green-400"
+                          ? "border-green-500 bg-green-500 text-white"
                           : isSelected && showFeedback && !isCorrect
-                            ? "font-medium text-red-700 dark:text-red-400"
+                            ? "border-red-500 bg-red-500 text-white"
                             : isSelected
-                              ? "font-medium text-blue-700 dark:text-blue-400"
-                              : "",
+                              ? "border-blue-500 bg-blue-500 text-white"
+                              : "border-muted-foreground/30",
                       )}
                     >
-                      {opt.optionText}
-                    </span>
-                    {isSelected && showFeedback && !isCorrect && (
-                      <p className="mt-1 text-red-600 dark:text-red-400 text-xs">
-                        Incorrect
-                      </p>
-                    )}
-                    {showAnswer && isCorrect && selectedOptionId !== opt.id && (
-                      <p className="mt-1 text-green-600 dark:text-green-400 text-xs">
-                        Correct Answer
-                      </p>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-
+                      {showAnswer && isCorrect && (
+                        <CheckCircle2 className="w-3 h-3" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <span
+                        className={cn(
+                          "transition-colors",
+                          showAnswer && isCorrect
+                            ? "font-medium text-green-700 dark:text-green-400"
+                            : isSelected && showFeedback && !isCorrect
+                              ? "font-medium text-red-700 dark:text-red-400"
+                              : isSelected
+                                ? "font-medium text-blue-700 dark:text-blue-400"
+                                : "",
+                        )}
+                      >
+                        {opt.optionText}
+                      </span>
+                      {isSelected && showFeedback && !isCorrect && (
+                        <p className="mt-1 text-red-600 dark:text-red-400 text-xs">
+                          Incorrect
+                        </p>
+                      )}
+                      {showAnswer &&
+                        isCorrect &&
+                        selectedOptionId !== opt.id && (
+                          <p className="mt-1 text-green-600 dark:text-green-400 text-xs">
+                            Correct Answer
+                          </p>
+                        )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
       </CardContent>
       <CardFooter className="flex justify-between items-center border-t border-dashed">
-        {question.questionType === "mcq" && question.questionOptions.length > 0 && (
-
-          <div className="flex gap-2">
-            <Button
-              // variant="ghost"
-              size="sm"
-              onClick={() => setShowAnswer((v) => !v)}
-            // className="text-muted-foreground hover:text-primary"
-            >
-              {showAnswer ? "Hide Answer" : "Show Answer"}
-            </Button>
-            {selectedOptionId && (
+        {question.questionType === "mcq" &&
+          question.questionOptions.length > 0 && (
+            <div className="flex gap-2">
               <Button
-                variant="ghost"
+                // variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setSelectedOptionId(null);
-                  setShowAnswer(false);
-                }}
-                className="text-muted-foreground hover:text-primary"
+                onClick={() => setShowAnswer((v) => !v)}
+                // className="text-muted-foreground hover:text-primary"
               >
-                Reset
+                {showAnswer ? "Hide Answer" : "Show Answer"}
               </Button>
-            )}
-          </div>
-        )}
+              {selectedOptionId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedOptionId(null);
+                    setShowAnswer(false);
+                  }}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
+          )}
 
         {question.explanation && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary"
+              >
                 View Explanation
               </Button>
             </DialogTrigger>
@@ -173,14 +195,24 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
               <DialogHeader>
                 <DialogTitle>Explanation</DialogTitle>
               </DialogHeader>
-              <DialogDescription>
-                {question.explanation ? (
-                  <Suspense fallback={<div className="pt-2"><div className="bg-muted/40 rounded-xl w-full h-40" /></div>}>
-                    <EditorPreview content={question.explanation} />
-                  </Suspense>
-                ) : (
-                  <p className="text-sm whitespace-pre-wrap">No explanation available.</p>
-                )}
+              <DialogDescription className="overflow-auto">
+                <div className="overflow-auto max-h-[70vh]">
+                  {question.explanation ? (
+                    <Suspense
+                      fallback={
+                        <div className="pt-2">
+                          <div className="bg-muted/40 rounded-xl w-full h-40" />
+                        </div>
+                      }
+                    >
+                      <EditorPreview content={question.explanation} />
+                    </Suspense>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">
+                      No explanation available.
+                    </p>
+                  )}
+                </div>
               </DialogDescription>
             </DialogContent>
           </Dialog>
