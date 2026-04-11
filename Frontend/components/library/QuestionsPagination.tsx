@@ -27,6 +27,8 @@ interface QuestionsPaginationProps {
   totalPages: number;
   limit: number;
   total: number;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
 }
 
 export function QuestionsPagination({
@@ -34,6 +36,8 @@ export function QuestionsPagination({
   totalPages,
   limit,
   total,
+  onPageChange,
+  onLimitChange,
 }: QuestionsPaginationProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -45,6 +49,22 @@ export function QuestionsPagination({
     params.set("limit", String(newLimit ?? limit));
     return `${pathname}?${params.toString()}`;
   }
+
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      router.push(buildHref(page));
+    }
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    if (onLimitChange) {
+      onLimitChange(newLimit);
+    } else {
+      router.push(buildHref(1, newLimit));
+    }
+  };
 
   /** Produce the page numbers to show, with undefined gaps represented by null */
   function getPageItems(): (number | null)[] {
@@ -67,15 +87,45 @@ export function QuestionsPagination({
   const to = Math.min(currentPage * limit, total);
 
   return (
-    <div className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-3 pt-4 border-t">
-      {/* Count label */}
-      <p className="text-muted-foreground text-xs">
-        Showing {from}–{to} of {total} question{total !== 1 ? "s" : ""}
-      </p>
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
+      <div className="flex justify-between items-center w-full sm:w-auto gap-4">
+        {/* Count label */}
+        <p className="text-muted-foreground text-xs">
+          Showing {from}–{to} of {total} question{total !== 1 ? "s" : ""}
+        </p>
 
-      <div className="flex items-center gap-3">
-        {/* Per-page selector */}
-        <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+        {/* Per-page selector (Mobile only) */}
+        <div className="flex sm:hidden items-center gap-1.5 text-muted-foreground text-xs">
+          <span>Per page:</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs px-2">
+                {limit}
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-22.5">
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <DropdownMenuItem
+                  key={size}
+                  onSelect={() => handleLimitChange(size)}
+                  className={cn(
+                    "flex justify-between items-center",
+                    limit === size && "bg-accent font-medium",
+                  )}
+                >
+                  {size}
+                  {limit === size && <CheckCircle2 className="ml-2 w-3 h-3" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
+        {/* Per-page selector (Desktop only) */}
+        <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs">
           <span>Per page:</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -84,11 +134,11 @@ export function QuestionsPagination({
                 <ChevronDown className="w-3 h-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[90px]">
+            <DropdownMenuContent align="end" className="min-w-22.5">
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <DropdownMenuItem
                   key={size}
-                  onSelect={() => router.push(buildHref(1, size))}
+                  onSelect={() => handleLimitChange(size)}
                   className={cn(
                     "flex justify-between items-center",
                     limit === size && "bg-accent font-medium",
@@ -105,26 +155,29 @@ export function QuestionsPagination({
         {/* Page navigation */}
         {totalPages > 1 && (
           <Pagination className="mx-0 w-auto">
-            <PaginationContent>
+            <PaginationContent className="gap-0.5 sm:gap-1">
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => router.push(buildHref(Math.max(1, currentPage - 1)))}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   aria-disabled={currentPage === 1}
-                  className={cn(currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer")}
+                  className={cn(
+                    "h-8 w-8 sm:h-9 sm:w-auto sm:px-4",
+                    currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  )}
                 />
               </PaginationItem>
 
               {pageItems.map((page, i) =>
                 page === null ? (
                   <PaginationItem key={`ellipsis-${i}`}>
-                    <PaginationEllipsis />
+                    <PaginationEllipsis className="h-8 w-8 sm:h-9 sm:w-9" />
                   </PaginationItem>
                 ) : (
                   <PaginationItem key={page}>
                     <PaginationLink
-                      onClick={() => router.push(buildHref(page))}
+                      onClick={() => handlePageChange(page)}
                       isActive={page === currentPage}
-                      className="cursor-pointer"
+                      className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer text-xs sm:text-sm"
                     >
                       {page}
                     </PaginationLink>
@@ -134,9 +187,10 @@ export function QuestionsPagination({
 
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => router.push(buildHref(Math.min(totalPages, currentPage + 1)))}
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   aria-disabled={currentPage === totalPages}
                   className={cn(
+                    "h-8 w-8 sm:h-9 sm:w-auto sm:px-4",
                     currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer",
                   )}
                 />
