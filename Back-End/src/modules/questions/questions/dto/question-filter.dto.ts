@@ -73,4 +73,8 @@ export class QuestionFilterDto {
   @IsOptional()
   @Type(() => Number)
   referenceId?: number;
+
+  @IsEnum(['asc', 'desc'])
+  @IsOptional()
+  sortOrder?: 'asc' | 'desc';
 }
