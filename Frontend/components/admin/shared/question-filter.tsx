@@ -264,17 +264,23 @@ function MultiSelectFilter({ label, items, selectedIds, onToggle }: MultiSelectF
       <Label>{label}</Label>
       <div className="space-y-2 max-h-52 overflow-y-auto border rounded-md p-3 bg-background">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center space-x-2">
+          <div key={item.id} className="flex items-start space-x-2 py-1">
             <Checkbox
               id={`item-${item.id}`}
               checked={selectedIds.includes(item.id)}
               onCheckedChange={() => onToggle(item.id)}
+              className="mt-0.5 shrink-0"
             />
             <Label
               htmlFor={`item-${item.id}`}
-              className="text-sm font-normal cursor-pointer flex-1"
+              className="text-sm font-normal cursor-pointer flex-1 break-words leading-tight"
             >
-              {item.name} {item.badge && `(${item.badge})`}
+              {item.name}
+              {item.badge && (
+                <span className="text-muted-foreground whitespace-nowrap ml-1">
+                  ({item.badge})
+                </span>
+              )}
             </Label>
           </div>
         ))}
@@ -290,11 +296,11 @@ function MultiSelectFilter({ label, items, selectedIds, onToggle }: MultiSelectF
               <Badge
                 key={id}
                 variant="secondary"
-                className="text-xs cursor-pointer hover:bg-secondary/80 flex items-center"
+                className="text-xs cursor-pointer hover:bg-secondary/80 flex items-center max-w-full overflow-hidden"
                 onClick={() => onToggle(id)}
               >
-                {item.name}
-                <X className="h-3 w-3 ml-1" />
+                <span className="truncate">{item.name}</span>
+                <X className="h-3 w-3 ml-1 shrink-0" />
               </Badge>
             );
           })}
