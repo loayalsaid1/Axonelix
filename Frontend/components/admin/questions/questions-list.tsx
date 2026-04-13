@@ -161,6 +161,8 @@ export function QuestionsList() {
         chapterIds={filters.chapterIds || []}
         lessonIds={filters.lessonIds || []}
         isMisc={filters.isMisc}
+        questionType={filters.questionType}
+        sortOrder={filters.sortOrder || 'desc'}
         modules={filterOptions.modules}
         subjects={getFilteredSubjects()}
         chapters={getFilteredChapters()}
@@ -172,6 +174,8 @@ export function QuestionsList() {
         onChapterToggle={handleChapterToggle}
         onLessonToggle={handleLessonToggle}
         onIsMiscChange={(value) => updateFilter('isMisc', value)}
+        onQuestionTypeChange={(value) => updateFilter('questionType', value)}
+        onSortOrderChange={(value) => updateFilter('sortOrder', value)}
         onApplyFilters={handleApplyFilters}
         onClearFilters={handleClearFilters}
         showApplyButton={true}

@@ -24,6 +24,8 @@ interface QuestionFilterProps {
   chapterIds: string[];
   lessonIds?: string[];
   isMisc?: boolean;
+  questionType?: 'mcq' | 'written';
+  sortOrder?: 'asc' | 'desc';
   
   // Available options
   modules: Module[];
@@ -41,6 +43,8 @@ interface QuestionFilterProps {
   onChapterToggle: (chapterId: string) => void;
   onLessonToggle?: (lessonId: string) => void;
   onIsMiscChange?: (value: boolean) => void;
+  onQuestionTypeChange?: (value: 'mcq' | 'written' | undefined) => void;
+  onSortOrderChange?: (value: 'asc' | 'desc') => void;
   onApplyFilters: () => void;
   onClearFilters: () => void;
   
@@ -56,6 +60,8 @@ export function QuestionFilter({
   chapterIds = [],
   lessonIds = [],
   isMisc,
+  questionType,
+  sortOrder = 'desc',
   modules,
   subjects,
   chapters,
@@ -67,6 +73,8 @@ export function QuestionFilter({
   onChapterToggle,
   onLessonToggle,
   onIsMiscChange,
+  onQuestionTypeChange,
+  onSortOrderChange,
   onApplyFilters,
   onClearFilters,
   showApplyButton = true,
@@ -126,6 +134,42 @@ export function QuestionFilter({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Question Type */}
+      {onQuestionTypeChange && (
+        <div className="space-y-2">
+          <Label htmlFor="question_type">Question Type</Label>
+          <Select
+            value={questionType ?? 'all'}
+            onValueChange={(value) => onQuestionTypeChange(value === 'all' ? undefined : (value as 'mcq' | 'written'))}
+          >
+            <SelectTrigger id="question_type">
+              <SelectValue placeholder="All types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All types</SelectItem>
+              <SelectItem value="mcq">Multiple choice</SelectItem>
+              <SelectItem value="written">Written</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Sort Order */}
+      {onSortOrderChange && (
+        <div className="space-y-2">
+          <Label htmlFor="sort_order">Sort By</Label>
+          <Select value={sortOrder} onValueChange={(value) => onSortOrderChange(value as 'asc' | 'desc')}>
+            <SelectTrigger id="sort_order">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Newest first</SelectItem>
+              <SelectItem value="asc">Oldest first</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Subjects Multi-Select */}
       {moduleId && subjects.length > 0 && (
