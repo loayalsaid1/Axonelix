@@ -296,10 +296,11 @@ function MultiSelectFilter({ label, items, selectedIds, onToggle }: MultiSelectF
               <Badge
                 key={id}
                 variant="secondary"
-                className="text-xs cursor-pointer hover:bg-secondary/80 flex items-center max-w-full overflow-hidden"
+                className="text-xs cursor-pointer hover:bg-secondary/80 flex items-center max-w-full"
                 onClick={() => onToggle(id)}
+                title={item.name} // Show full name on hover
               >
-                <span className="truncate">{item.name}</span>
+                <span className="truncate max-w-44 sm:max-w-50 inline-block align-bottom">{item.name}</span>
                 <X className="h-3 w-3 ml-1 shrink-0" />
               </Badge>
             );
