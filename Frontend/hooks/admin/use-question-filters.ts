@@ -33,6 +33,8 @@ export interface QuestionFilters {
   chapterIds?: string[];
   lessonIds?: string[];
   isMisc?: boolean;
+  questionType?: 'mcq' | 'written';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface Pagination {
@@ -68,6 +70,8 @@ export function useQuestionFilters() {
     chapterIds: [],
     lessonIds: [],
     isMisc: undefined,
+    questionType: undefined,
+    sortOrder: 'desc',
   });
 
   const [pagination, setPagination] = useState<Pagination>({
@@ -194,6 +198,8 @@ export function useQuestionFilters() {
         if (filters.chapterIds?.length) body.chapterIds = filters.chapterIds.map(Number);
         if (filters.lessonIds?.length) body.lessonIds = filters.lessonIds.map(Number);
         if (filters.isMisc !== undefined) body.isMisc = filters.isMisc;
+        if (filters.questionType) body.questionType = filters.questionType;
+        if (filters.sortOrder) body.sortOrder = filters.sortOrder;
 
         const data = await authFetch<{ data: any[]; total: number }>(
           `/questions/filter?page=${targetPage}&limit=${targetLimit}`,
@@ -251,6 +257,8 @@ export function useQuestionFilters() {
       chapterIds: [],
       lessonIds: [],
       isMisc: undefined,
+      questionType: undefined,
+      sortOrder: 'desc',
     });
     setPagination((prev) => ({ ...prev, page: 1 }));
     setFilterOptions((prev) => ({ ...prev, subjects: [], chapters: [], lessons: [] }));
@@ -263,7 +271,10 @@ export function useQuestionFilters() {
       (filters.subjectIds && filters.subjectIds.length > 0) ||
       (filters.chapterIds && filters.chapterIds.length > 0) ||
       (filters.lessonIds && filters.lessonIds.length > 0) ||
-      filters.isMisc !== undefined
+      filters.isMisc !== undefined ||
+      filters.questionType !== undefined ||
+      // Hmm, sortOrder is technically a filter but since it defaults to 'desc' it doesn't feel like an "active" filter unless it's been changed to 'asc'
+      filters.sortOrder === 'asc'
     );
   }, [filters]);
 

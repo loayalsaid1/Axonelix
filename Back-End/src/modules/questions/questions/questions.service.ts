@@ -12,7 +12,7 @@ import { ImagesService } from '../../images/images.service';
 import { SubscriptionsAccessService } from '../../subscriptions/subscriptions-access.service';
 import { OldExamsService } from '../old-exams/old-exams.service';
 import { extractImageUrls } from '../../../common/utils/tiptap-utils';
-import { and, eq, ilike, inArray, or, SQL, count } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, or, SQL } from 'drizzle-orm';
 import {
   CreateQuestionDto,
   UpdateQuestionDto,
@@ -389,7 +389,10 @@ export class QuestionsService {
       where: inArray(questions.id, ids),
       columns: QUESTION_COLUMNS,
       with: { questionOptions: { columns: OPTION_COLUMNS } },
-      orderBy: (q, { asc }) => [asc(q.createdAt)],
+      orderBy: (q) => [
+        scopedFilter.sortOrder === 'desc' ? desc(q.createdAt) : asc(q.createdAt),
+        asc(q.id),
+      ],
     });
 
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
@@ -521,7 +524,10 @@ export class QuestionsService {
       query = query.where(and(...conditions));
     }
 
-    return query.orderBy(questions.createdAt, questions.id);
+    return query.orderBy(
+      filter.sortOrder === 'desc' ? desc(questions.createdAt) : asc(questions.createdAt),
+      asc(questions.id),
+    );
   }
 
   /** Shared pagination logic used by the simple `findAll` path */
