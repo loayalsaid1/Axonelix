@@ -95,6 +95,7 @@ import TableRowMenu from "@/components/tiptap-ui/custom-components/table-row-men
 import TableColumnMenu from "@/components/tiptap-ui/custom-components/table-column-menu"
 import TableCellMenu from "@/components/tiptap-ui/custom-components/table-cell-menu"
 import HtmlAssistantCard, { type HtmlInsertMode } from "@/components/tiptap-ui/custom-components/html-assistant-card"
+import TextDirectionMenu, { type TextDirectionValue } from "@/components/tiptap-ui/custom-components/text-direction-menu"
 
 const extensions = [
   StarterKit.configure({
@@ -151,10 +152,14 @@ const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
   isMobile,
+  globalDirection,
+  setGlobalDirection,
 }: {
   onHighlighterClick: () => void
   onLinkClick: () => void
   isMobile: boolean
+  globalDirection: TextDirectionValue
+  setGlobalDirection: (direction: TextDirectionValue) => void
 }) => {
   const { editor } = useCurrentEditor()
   return (
@@ -213,6 +218,16 @@ const MainToolbarContent = ({
         <TextAlignButton align="center" />
         <TextAlignButton align="right" />
         <TextAlignButton align="justify" />
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <TextDirectionMenu
+          globalDirection={globalDirection}
+          onGlobalDirectionChange={setGlobalDirection}
+          portal={isMobile}
+        />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -341,6 +356,7 @@ export function SimpleEditor({
   showHtmlAssistant = true,
 }: SimpleEditorProps) {
   const isMobile = useIsBreakpoint()
+  const [globalDirection, setGlobalDirection] = useState<TextDirectionValue>("auto")
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )
@@ -353,10 +369,11 @@ export function SimpleEditor({
     } else {
       return <p>Start Typing...</p>
     }
-  }, [initialContent, showPreviewContent, content])
+  }, [initialContent, showPreviewContent])
 
   const editor = useEditor({
     immediatelyRender: false,
+    textDirection: globalDirection,
     editorProps: {
       attributes: {
         autocomplete: "off",
@@ -371,10 +388,18 @@ export function SimpleEditor({
   })
 
   useEffect(() => {
-    if (!isMobile && mobileView !== "main") {
-      setMobileView("main")
+    if (!editor) return
+
+    const dom = editor.view.dom as HTMLElement
+    if (globalDirection) {
+      dom.setAttribute("dir", globalDirection)
+      return
     }
-  }, [isMobile, mobileView])
+
+    dom.removeAttribute("dir")
+  }, [editor, globalDirection])
+
+  const effectiveMobileView = isMobile ? mobileView : "main"
 
   const insertHTML = useCallback((html: string, mode: HtmlInsertMode = "append") => {
     if (!editor) return false
@@ -412,15 +437,17 @@ export function SimpleEditor({
       <div className="editor-wrapper  m-x-4 ">
         <div className="simple-editor-wrapper">
           <Toolbar ref={toolbarRef}>
-            {mobileView === "main" ? (
+            {effectiveMobileView === "main" ? (
               <MainToolbarContent
                 onHighlighterClick={() => setMobileView("highlighter")}
                 onLinkClick={() => setMobileView("link")}
                 isMobile={isMobile}
+                globalDirection={globalDirection}
+                setGlobalDirection={setGlobalDirection}
               />
             ) : (
               <MobileToolbarContent
-                type={mobileView === "highlighter" ? "highlighter" : "link"}
+                type={effectiveMobileView === "highlighter" ? "highlighter" : "link"}
                 onBack={() => setMobileView("main")}
               />
             )}
