@@ -217,13 +217,17 @@ export class QuestionsService {
     oldExamId: number,
     page = 1,
     limit = 40,
+    questionType?: 'mcq' | 'written',
     user?: UserRecord,
   ) {
     if (user && !this.subscriptionsAccessService.isAdmin(user)) {
       await this.oldExamsService.verifyAccess(oldExamId, user);
     }
 
-    const where = eq(questions.oldExamId, oldExamId);
+    const conditions: SQL[] = [eq(questions.oldExamId, oldExamId)];
+    if (questionType) conditions.push(eq(questions.questionType, questionType));
+
+    const where = and(...conditions);
     return this._paginateQuery(where, page, limit);
   }
 
