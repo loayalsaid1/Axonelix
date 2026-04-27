@@ -59,13 +59,12 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
                 Question {index + 1}: {question.statement}
               </CardTitle>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1 sm:gap-2">
               {question.explanation && (
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="sm" title="View Explanation">
                       <BookOpen className="h-4 w-4 text-primary" />
-                      View Explanation
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
