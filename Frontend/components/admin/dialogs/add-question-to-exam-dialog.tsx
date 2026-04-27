@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { QuestionFilter } from '@/components/admin/shared/question-filter';
 import { useQuestionFilters } from '@/hooks/admin/use-question-filters';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { QuestionsPagination } from '@/components/library/QuestionsPagination';
+import { Filter } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Question {
   id: string;
@@ -39,7 +42,16 @@ export default function AddQuestionToExamDialog({
   const authFetch = useApiFetch();
   const [submitting, setSubmitting] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(true);
+  const [filtersApplied, setFiltersApplied] = useState(false);
 
+  useEffect(() => {
+    if (!open) {
+      setFiltersApplied(false);
+      setShowFilters(true);
+      setSelectedQuestion('');
+    }
+  }, [open]);
 
   // Use the question filters hook
   const {
@@ -54,6 +66,9 @@ export default function AddQuestionToExamDialog({
     getFilteredLessons,
     questions,
     loading,
+    pagination,
+    goToPage,
+    setLimit,
     fetchQuestions,
   } = useQuestionFilters();
 
@@ -75,6 +90,23 @@ export default function AddQuestionToExamDialog({
       : [...currentChapterIds, chapterId];
 
     updateFilter('chapterIds', newChapterIds);
+  };
+
+  const handleApplyFilters = () => {
+    setSelectedQuestion('');
+    setShowFilters(false);
+    setFiltersApplied(true);
+    fetchQuestions(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setSelectedQuestion('');
+    goToPage(page);
+  };
+
+  const handleLimitChange = (limit: number) => {
+    setSelectedQuestion('');
+    setLimit(limit);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,9 +145,29 @@ export default function AddQuestionToExamDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto @lg/add-question-dialog:flex-row @lg/add-question-dialog:gap-6 @lg/add-question-dialog:overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto @xl/add-question-dialog:flex-row @xl/add-question-dialog:gap-6 @xl/add-question-dialog:overflow-hidden">
+          {/* Mobile Filters Toggle */}
+          {filtersApplied && (
+            <div className="@xl/add-question-dialog:hidden shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => setShowFilters((prev) => !prev)}
+              >
+                <Filter className="h-4 w-4" />
+                {showFilters ? 'Back to Questions' : 'Edit Filters'}
+              </Button>
+            </div>
+          )}
+
           {/* Filters sidebar */}
-          <div className="w-full @lg/add-question-dialog:w-75 @lg/add-question-dialog:shrink-0 @lg/add-question-dialog:overflow-y-auto">
+          <div
+            className={cn(
+              "w-full @xl/add-question-dialog:w-75 @xl/add-question-dialog:shrink-0 @xl/add-question-dialog:overflow-y-auto",
+              !showFilters && "hidden @xl/add-question-dialog:block"
+            )}
+          >
             {optionsLoading ? (
               <div className="space-y-4 p-4">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -141,7 +193,7 @@ export default function AddQuestionToExamDialog({
                 onChapterToggle={handleChapterToggle}
                 // onLessonChange={(value) => updateFilter('lessonId', value)}
                 onIsMiscChange={(value) => updateFilter('isMisc', value)}
-                onApplyFilters={fetchQuestions}
+                onApplyFilters={handleApplyFilters}
                 onClearFilters={clearFilters}
                 hasActiveFilters={hasActiveFilters}
               />
@@ -149,7 +201,12 @@ export default function AddQuestionToExamDialog({
           </div>
 
           {/* Questions list */}
-          <div className="flex min-h-0 flex-1 flex-col @lg/add-question-dialog:overflow-hidden">
+          <div
+            className={cn(
+              "flex flex-col min-h-0 flex-1 @xl/add-question-dialog:overflow-hidden",
+              showFilters && "hidden @xl/add-question-dialog:flex"
+            )}
+          >
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="space-y-3 pr-4">
@@ -202,6 +259,17 @@ export default function AddQuestionToExamDialog({
                   )}
                 </div>
               </div>
+
+              {!loading && pagination.total > 0 && (
+                <QuestionsPagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  limit={pagination.limit}
+                  total={pagination.total}
+                  onPageChange={handlePageChange}
+                  onLimitChange={handleLimitChange}
+                />
+              )}
 
               <div className="mt-4 flex flex-col-reverse gap-3 border-t pt-4 @md/add-question-dialog:flex-row @md/add-question-dialog:justify-end">
                 <Button
