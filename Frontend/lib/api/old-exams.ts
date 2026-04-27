@@ -1,6 +1,7 @@
 import { apiFetch } from "./client";
 import type { OldExam, OldExamFilters } from "@/lib/types/old-exams";
 import type { PaginatedQuestionsResponse } from "@/lib/types/questions";
+import type { QuestionType } from "@/lib/types/questions";
 
 // ─── Old Exams ────────────────────────────────────────────────────────────────
 
@@ -33,12 +34,18 @@ export function getOldExamQuestions(
   oldExamId: number,
   page = 1,
   limit = 10,
+  questionType?: QuestionType,
   opts?: RequestInit,
 ): Promise<PaginatedQuestionsResponse> {
   const qs = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
+
+  if (questionType) {
+    qs.set("qType", questionType);
+  }
+
   return apiFetch<PaginatedQuestionsResponse>(
     `/questions/old-exams/${oldExamId}/questions?${qs}`,
     {

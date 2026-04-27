@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import type { QuestionType } from '@/lib/types/questions';
 
 export interface ExamQuestion {
   id: string;
-  questionType: string;
+  questionType: QuestionType;
   statement: string;
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
   explanation?: any;
@@ -27,7 +28,10 @@ interface PaginationState {
   totalPages: number;
 }
 
-export function useExamQuestions(examId: string) {
+export function useExamQuestions(
+  examId: string,
+  questionType?: QuestionType,
+) {
   const authFetch = useApiFetch();
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +44,11 @@ export function useExamQuestions(examId: string) {
   });
 
   const fetchQuestions = useCallback(
-    async (pageOverride?: number, limitOverride?: number) => {
+    async (
+      pageOverride?: number,
+      limitOverride?: number,
+      questionTypeOverride?: QuestionType,
+    ) => {
       if (!examId) return;
 
       try {
@@ -50,8 +58,19 @@ export function useExamQuestions(examId: string) {
         const targetPage = pageOverride ?? pagination.page;
         const targetLimit = limitOverride ?? pagination.limit;
 
+        const query = new URLSearchParams({
+          oldExamId: examId,
+          page: String(targetPage),
+          limit: String(targetLimit),
+        });
+
+        const targetQuestionType = questionTypeOverride ?? questionType;
+        if (targetQuestionType) {
+          query.set('questionType', targetQuestionType);
+        }
+
         const data = await authFetch<PaginatedQuestions>(
-          `/questions?oldExamId=${examId}&page=${targetPage}&limit=${targetLimit}`,
+          `/questions?${query.toString()}`,
         );
         setQuestions(
           (data.data || []).map((q: any) => ({
@@ -75,21 +94,21 @@ export function useExamQuestions(examId: string) {
         setLoading(false);
       }
     },
-    [examId, authFetch, pagination.page, pagination.limit],
+    [examId, authFetch, pagination.page, pagination.limit, questionType],
   );
 
   const goToPage = useCallback(
     (page: number) => {
-      fetchQuestions(page);
+      setPagination((prev) => ({ ...prev, page }));
     },
-    [fetchQuestions],
+    [],
   );
 
   const setLimit = useCallback(
     (limit: number) => {
-      fetchQuestions(1, limit);
+      setPagination((prev) => ({ ...prev, page: 1, limit }));
     },
-    [fetchQuestions],
+    [],
   );
 
   const removeQuestion = useCallback(

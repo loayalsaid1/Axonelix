@@ -15,6 +15,8 @@ export interface OldExamFilters {
   moduleType?: ModuleType;
 }
 
+type QuestionType = 'mcq' | 'written';
+
 @Injectable()
 export class OldExamsService {
   constructor(
@@ -165,12 +167,13 @@ export class OldExamsService {
     id: number,
     page = 1,
     limit = 40,
+    questionType?: QuestionType,
     user?: UserRecord,
   ) {
     // 1. Fast existence and user access check
     await this.verifyAccess(id, user);
 
     // 2. Delegate to QuestionsService to get the questions
-    return this.questionsService.findByOldExamId(id, page, limit);
+    return this.questionsService.findByOldExamId(id, page, limit, questionType);
   }
 }

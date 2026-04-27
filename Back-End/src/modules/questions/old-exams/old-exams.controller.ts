@@ -7,6 +7,7 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  ParseEnumPipe,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -16,6 +17,11 @@ import { CreateOldExamDto } from './dto';
 import { CurrentUser, paramIntId, Roles } from '../../../common/decorators';
 import { Role } from '../../../common/enums';
 import type { UserRecord } from '../../users/interfaces/user-record.interface';
+
+enum OldExamQuestionType {
+  MCQ = 'mcq',
+  WRITTEN = 'written',
+}
 
 @Controller('questions/old-exams')
 export class OldExamsController {
@@ -54,8 +60,10 @@ export class OldExamsController {
     @CurrentUser() user: UserRecord,
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('qType', new ParseEnumPipe(OldExamQuestionType, { optional: true }))
+    qType?: OldExamQuestionType,
   ) {
-    return this.oldExamsService.findQuestions(id, page, limit, user);
+    return this.oldExamsService.findQuestions(id, page, limit, qType, user);
   }
 
   @Patch(':id')
