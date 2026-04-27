@@ -434,8 +434,8 @@ export function SimpleEditor({
 
   return (
     <EditorContext.Provider value={{ editor }}>
-      <div className="editor-wrapper  m-x-4 ">
-        <div className="simple-editor-wrapper">
+      <div className="editor-wrapper w-full min-w-0">
+        <div className="simple-editor-wrapper min-w-0">
           <Toolbar ref={toolbarRef}>
             {effectiveMobileView === "main" ? (
               <MainToolbarContent
@@ -456,13 +456,13 @@ export function SimpleEditor({
           <EditorContent
             editor={editor}
             role="presentation"
-            className="simple-editor-content max-h-[90vh]"
+            className="simple-editor-content max-h-[90vh] w-full"
           />
         </div>
       </div>
 
       {showHtmlAssistant && (
-        <div className="editor-wrapper  m-x-4 mt-4">
+        <div className="editor-wrapper w-full min-w-0 mt-4">
           <HtmlAssistantCard onInsert={insertHTML} />
         </div>
       )}
