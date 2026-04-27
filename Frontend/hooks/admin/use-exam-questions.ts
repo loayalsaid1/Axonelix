@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import type { QuestionType } from '@/lib/types/questions';
 
 export interface ExamQuestion {
   id: string;
-  questionType: string;
+  questionType: QuestionType;
   statement: string;
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
   explanation?: any;
@@ -29,7 +30,7 @@ interface PaginationState {
 
 export function useExamQuestions(
   examId: string,
-  questionType?: 'mcq' | 'written',
+  questionType?: QuestionType,
 ) {
   const authFetch = useApiFetch();
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
@@ -46,7 +47,7 @@ export function useExamQuestions(
     async (
       pageOverride?: number,
       limitOverride?: number,
-      questionTypeOverride?: 'mcq' | 'written',
+      questionTypeOverride?: QuestionType,
     ) => {
       if (!examId) return;
 
