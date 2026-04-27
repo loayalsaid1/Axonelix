@@ -105,7 +105,7 @@ export default function AddQuestionToExamDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] flex flex-col">
+      <DialogContent className="@container/add-question-dialog flex max-h-[90vh] flex-col sm:max-w-225">
         <DialogHeader>
           <DialogTitle>Add Question to Exam</DialogTitle>
           <DialogDescription>
@@ -113,9 +113,9 @@ export default function AddQuestionToExamDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-6 flex-1 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto @lg/add-question-dialog:flex-row @lg/add-question-dialog:gap-6 @lg/add-question-dialog:overflow-hidden">
           {/* Filters sidebar */}
-          <div className="w-[300px] flex-shrink-0 overflow-y-auto max-h-[calc(90vh-220px)]">
+          <div className="w-full @lg/add-question-dialog:w-75 @lg/add-question-dialog:shrink-0 @lg/add-question-dialog:overflow-y-auto">
             {optionsLoading ? (
               <div className="space-y-4 p-4">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -149,9 +149,9 @@ export default function AddQuestionToExamDialog({
           </div>
 
           {/* Questions list */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto max-h-[calc(90vh-220px)]">
+          <div className="flex min-h-0 flex-1 flex-col @lg/add-question-dialog:overflow-hidden">
+            <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="space-y-3 pr-4">
                   {loading ? (
                     <div className="space-y-3">
@@ -203,10 +203,11 @@ export default function AddQuestionToExamDialog({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+              <div className="mt-4 flex flex-col-reverse gap-3 border-t pt-4 @md/add-question-dialog:flex-row @md/add-question-dialog:justify-end">
                 <Button
                   type="button"
                   variant="outline"
+                  className="w-full @md/add-question-dialog:w-auto"
                   onClick={() => {
                     onOpenChange(false);
                     setSelectedQuestion('');
@@ -214,7 +215,11 @@ export default function AddQuestionToExamDialog({
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={submitting || !selectedQuestion}>
+                <Button
+                  type="submit"
+                  disabled={submitting || !selectedQuestion}
+                  className="w-full @md/add-question-dialog:w-auto"
+                >
                   {submitting ? 'Adding...' : 'Add Question'}
                 </Button>
               </div>
