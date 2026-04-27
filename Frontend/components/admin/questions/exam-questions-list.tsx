@@ -75,15 +75,15 @@ export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-8">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h2 className="text-2xl font-bold text-foreground">Questions ({pagination.total})</h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-col-reverse justify-between gap-3 md:w-auto md:flex-row md:items-center">
           <Select
             value={questionType ?? ALL_QUESTION_TYPES}
             onValueChange={handleQuestionTypeChange}
           >
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full md:w-44">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
             <SelectContent>
@@ -95,7 +95,7 @@ export function ExamQuestionsList({ examId }: ExamQuestionsListProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="gap-2">
+              <Button className="w-full justify-center gap-2 md:w-auto">
                 <Plus className="h-4 w-4" />
                 Add Question
               </Button>
