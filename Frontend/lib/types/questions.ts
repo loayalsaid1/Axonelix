@@ -6,7 +6,8 @@ export interface QuestionOption {
   isCorrect: boolean;
 }
 
-export type QuestionType = "mcq" | "written";
+export const QUESTION_TYPES = ["mcq", "written"] as const;
+export type QuestionType = (typeof QUESTION_TYPES)[number];
 export type StatementFormat = "text" | "tiptap_json";
 
 export interface Question {

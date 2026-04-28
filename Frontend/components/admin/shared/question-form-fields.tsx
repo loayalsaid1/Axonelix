@@ -78,7 +78,7 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
   return (
     <>
       {/* Question Type */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="questionType">Question Type</Label>
           <Select
@@ -112,7 +112,7 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
       {/* MCQ Options */}
       {data.questionType === 'mcq' && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2 sm:gap-none sm:flex-row sm:justify-between sm:items-center">
             <Label>Options</Label>
             <Button
               type="button"
@@ -131,9 +131,10 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
             onValueChange={(val) => handleCorrectChange(parseInt(val))}
           >
             {data.options.map((option, index) => (
-              <div key={index} className="flex items-center gap-3">
+              <div key={index} className="flex items-center gap-3 min-w-0">
                 <RadioGroupItem value={index.toString()} id={`opt-${index}`} />
                 <Input
+                  className="flex-1 min-w-0"
                   placeholder={`Option ${index + 1}`}
                   value={option.optionText}
                   onChange={(e) => handleOptionChange(index, e.target.value)}

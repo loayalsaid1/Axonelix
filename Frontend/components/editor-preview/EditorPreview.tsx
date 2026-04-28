@@ -18,6 +18,7 @@ import { FontSize, TextStyleKit } from "@tiptap/extension-text-style"
 import ExtraFontSizeCommands from "../tiptap-extension/extra-font-size-commands-extension"
 import QuestionTemplate from "../tiptap-extension/question-template-extension"
 import { TableKit } from "@tiptap/extension-table"
+import TextDirection from "tiptap-text-direction";
 
 import "@/styles/tiptap/_variables.scss";
 import "@/styles/tiptap/_keyframe-animations.scss";
@@ -37,6 +38,9 @@ const extensions: AnyExtension[] = [
       enableClickSelection: true,
     },
     heading: false,
+  }),
+  TextDirection.configure({
+    types: ["heading", "paragraph"],
   }),
   Heading,
   CustomHeading,

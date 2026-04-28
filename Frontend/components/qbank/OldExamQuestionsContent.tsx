@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { getOldExamQuestions } from "@/lib/api/old-exams";
 import { QuestionCard } from "@/components/library/QuestionCard";
 import { QuestionsPagination } from "@/components/library/QuestionsPagination";
-import type { PaginatedQuestionsResponse } from "@/lib/types/questions";
+import { OldExamQuestionTypeFilter } from "@/components/qbank/OldExamQuestionTypeFilter";
+import type { PaginatedQuestionsResponse, QuestionType } from "@/lib/types/questions";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Empty,
@@ -51,6 +52,10 @@ export function OldExamQuestionsContent({ examId }: OldExamQuestionsContentProps
   const limitParam = Number(searchParams.get("limit"));
   const limit = (VALID_LIMITS as readonly number[]).includes(limitParam) ? limitParam : 10;
 
+  const qTypeParam = searchParams.get("qType");
+  const questionType: QuestionType | undefined =
+    qTypeParam === "mcq" || qTypeParam === "written" ? qTypeParam : undefined;
+
   const [state, dispatch] = useReducer(reducer, { status: "loading" });
   const { getToken } = useAuth();
 
@@ -59,21 +64,30 @@ export function OldExamQuestionsContent({ examId }: OldExamQuestionsContentProps
     dispatch({ type: "FETCH" });
     getToken().then((token) => {
       const opts = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      getOldExamQuestions(examId, page, limit, opts)
+      getOldExamQuestions(examId, page, limit, questionType, opts)
         .then((result) => { if (!cancelled) dispatch({ type: "SUCCESS", result }); })
         .catch(() => { if (!cancelled) dispatch({ type: "ERROR" }); });
     });
     return () => { cancelled = true; };
-  }, [examId, page, limit, getToken]);
+  }, [examId, page, limit, questionType, getToken]);
 
   // ── Loading ────────────────────────────────────────────────────────────────
 
   if (state.status === "loading") {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="rounded-xl w-full h-36" />
-        ))}
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-end items-center">
+          <div className="space-y-2 w-full sm:w-56 min-w-0">
+            <Skeleton className="w-24 h-4" />
+            <Skeleton className="rounded-md w-full h-9" />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="rounded-xl w-full h-36" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -98,46 +112,48 @@ export function OldExamQuestionsContent({ examId }: OldExamQuestionsContentProps
 
   const { data: questions, total, totalPages } = state.result;
 
-  // ── Empty ──────────────────────────────────────────────────────────────────
-
-  if (questions.length === 0) {
-    return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <FileSearch className="text-muted-foreground" />
-          </EmptyMedia>
-          <EmptyTitle>No questions yet</EmptyTitle>
-          <EmptyDescription>
-            This exam has no questions attached yet.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    );
-  }
-
   // ── Success ────────────────────────────────────────────────────────────────
 
   const globalOffset = (page - 1) * limit;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Question list */}
-      <div className="space-y-4">
-        {questions.map((q, idx) => (
-          <QuestionCard key={q.id} question={q} index={globalOffset + idx + 1} />
-        ))}
-      </div>
+      <OldExamQuestionTypeFilter questionType={questionType} />
 
-      {/* Sticky pagination bar */}
-      <div className="bottom-0 sticky bg-background/90 backdrop-blur -mx-6 px-6 py-3 border-t">
-        <QuestionsPagination
-          currentPage={page}
-          totalPages={totalPages}
-          limit={limit}
-          total={total}
-        />
-      </div>
+      {questions.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileSearch className="text-muted-foreground" />
+            </EmptyMedia>
+            <EmptyTitle>No questions yet</EmptyTitle>
+            <EmptyDescription>
+              {questionType
+                ? `No ${questionType.toUpperCase()} questions match the selected filter.`
+                : "This exam has no questions attached yet."}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <>
+          {/* Question list */}
+          <div className="space-y-4">
+            {questions.map((q, idx) => (
+              <QuestionCard key={q.id} question={q} index={globalOffset + idx + 1} />
+            ))}
+          </div>
+
+          {/* Sticky pagination bar */}
+          <div className="bottom-0 sticky bg-background/90 backdrop-blur -mx-6 px-6 py-3 border-t">
+            <QuestionsPagination
+              currentPage={page}
+              totalPages={totalPages}
+              limit={limit}
+              total={total}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

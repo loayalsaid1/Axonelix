@@ -66,7 +66,7 @@ export function MaterialSelector({
   onIsMiscChange,
 }: MaterialSelectorProps) {
   return (
-    <div className="space-y-4 p-4 rounded-lg border bg-muted/50">
+    <div className="space-y-4 p-4 rounded-lg border bg-muted/50 min-w-0">
       <h3 className="text-sm font-semibold">Link to Material</h3>
 
       {/* Module Selection */}

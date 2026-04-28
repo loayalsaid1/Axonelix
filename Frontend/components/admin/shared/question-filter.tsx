@@ -87,7 +87,10 @@ export function QuestionFilter({
   };
 
   return (
-    <div className="space-y-6 p-4 rounded-lg border bg-muted/50" onKeyDown={handleKeyDown}>
+    <div
+      className="@container/question-filter space-y-6 rounded-lg border bg-muted/50 p-4"
+      onKeyDown={handleKeyDown}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4" />
@@ -108,9 +111,9 @@ export function QuestionFilter({
       </div>
 
       {/* Top Filters Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 @md/question-filter:grid-cols-2 @lg/question-filter:grid-cols-3">
         {/* Search */}
-        <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+        <div className="space-y-2 @md/question-filter:col-span-2 @lg/question-filter:col-span-3">
           <Label htmlFor="search">Search</Label>
           <Input
             id="search"
@@ -181,7 +184,7 @@ export function QuestionFilter({
 
       {/* Cascading Multi-Selects Grid */}
       {moduleId && subjects.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 border-t pt-6">
+        <div className="grid gap-4 border-t pt-6 @md/question-filter:grid-cols-2 @lg/question-filter:grid-cols-3">
           <MultiSelectFilter
             label="Subjects"
             items={subjects.map((s) => ({ id: s.id, name: s.name, badge: s.type }))}
@@ -210,7 +213,7 @@ export function QuestionFilter({
       )}
 
       {/* Bottom Actions Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t pt-4">
+      <div className="flex flex-col justify-between gap-4 border-t pt-4 @md/question-filter:flex-row @md/question-filter:items-center">
         <div className="flex items-center">
           {onIsMiscChange && (
             <div className="flex items-center space-x-2">
@@ -231,7 +234,7 @@ export function QuestionFilter({
             type="button"
             onClick={onApplyFilters}
             disabled={loading}
-            className="w-full sm:w-auto"
+            className="w-full @md/question-filter:w-auto"
           >
             {loading ? 'Loading...' : 'Apply Filters'}
           </Button>

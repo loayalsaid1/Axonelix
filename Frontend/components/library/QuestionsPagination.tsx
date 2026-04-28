@@ -87,15 +87,18 @@ export function QuestionsPagination({
   const to = Math.min(currentPage * limit, total);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
-      <div className="flex justify-between items-center w-full sm:w-auto gap-4">
+    // <div className="@container/x flex flex-col @sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t">
+    <div className="@container/x">
+
+    <div className="flex flex-col @lg/x:flex-row @lg/x:justify-between @lg/x:items-center gap-4 pt-4 border-t">
+      <div className="flex justify-between items-center w-full @lg/x:w-auto gap-4">
         {/* Count label */}
         <p className="text-muted-foreground text-xs">
           Showing {from}–{to} of {total} question{total !== 1 ? "s" : ""}
         </p>
 
         {/* Per-page selector (Mobile only) */}
-        <div className="flex sm:hidden items-center gap-1.5 text-muted-foreground text-xs">
+        <div className="flex @lg/x:hidden items-center gap-1.5 text-muted-foreground text-xs">
           <span>Per page:</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -123,9 +126,9 @@ export function QuestionsPagination({
         </div>
       </div>
 
-      <div className="flex items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
+      <div className="flex items-center justify-center @lg/x:justify-end gap-3 w-full @lg/x:w-auto">
         {/* Per-page selector (Desktop only) */}
-        <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground text-xs">
+        <div className="hidden @lg/x:flex items-center gap-1.5 text-muted-foreground text-xs">
           <span>Per page:</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -155,13 +158,13 @@ export function QuestionsPagination({
         {/* Page navigation */}
         {totalPages > 1 && (
           <Pagination className="mx-0 w-auto">
-            <PaginationContent className="gap-0.5 sm:gap-1">
+            <PaginationContent className="gap-0.5 @sm/x:gap-1">
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   aria-disabled={currentPage === 1}
                   className={cn(
-                    "h-8 w-8 sm:h-9 sm:w-auto sm:px-4",
+                    "h-8 w-8 @sm/x:h-9 @sm/x:w-auto @sm/x:px-4",
                     currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
                   )}
                 />
@@ -170,14 +173,14 @@ export function QuestionsPagination({
               {pageItems.map((page, i) =>
                 page === null ? (
                   <PaginationItem key={`ellipsis-${i}`}>
-                    <PaginationEllipsis className="h-8 w-8 sm:h-9 sm:w-9" />
+                    <PaginationEllipsis className="h-8 w-8 @sm/x:h-9 @sm/x:w-9" />
                   </PaginationItem>
                 ) : (
                   <PaginationItem key={page}>
                     <PaginationLink
                       onClick={() => handlePageChange(page)}
                       isActive={page === currentPage}
-                      className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer text-xs sm:text-sm"
+                      className="h-8 w-8 @sm/x:h-9 @sm/x:w-9 cursor-pointer text-xs @sm/x:text-sm"
                     >
                       {page}
                     </PaginationLink>
@@ -190,7 +193,7 @@ export function QuestionsPagination({
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   aria-disabled={currentPage === totalPages}
                   className={cn(
-                    "h-8 w-8 sm:h-9 sm:w-auto sm:px-4",
+                    "h-8 w-8 @sm/x:h-9 @sm/x:w-auto @sm/x:px-4",
                     currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer",
                   )}
                 />
@@ -200,5 +203,7 @@ export function QuestionsPagination({
         )}
       </div>
     </div>
+    </div>
+
   );
 }

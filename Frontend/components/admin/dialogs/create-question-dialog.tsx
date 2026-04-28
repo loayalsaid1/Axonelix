@@ -203,12 +203,12 @@ export default function CreateQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-lg md:max-w-[800px] max-h-[90dvh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Create New Question</DialogTitle>
           <DialogDescription>Add a question to the database</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 min-w-0">
           {/* Material Linking Section */}
           {!parentId && (
             <div className="space-y-4">
