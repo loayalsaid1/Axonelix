@@ -12,12 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Type, FileJson } from 'lucide-react';
 import {
   ReferenceSelector,
   ReferenceValue,
 } from '@/components/admin/shared/reference-selector';
 import { useQuestionReferences } from '@/hooks/admin/use-question-references';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import type { JSONContent } from '@tiptap/react';
 
 interface QuestionOption {
   optionText: string;
@@ -27,6 +30,7 @@ interface QuestionOption {
 interface QuestionFormData {
   questionType: 'mcq' | 'written';
   statement: string;
+  statementFormat?: 'text' | 'tiptap_json';
   explanation: string;
   options: QuestionOption[];
   reference?: ReferenceValue;
@@ -35,9 +39,21 @@ interface QuestionFormData {
 interface QuestionFormFieldsProps {
   data: QuestionFormData;
   onChange: (data: Partial<QuestionFormData>) => void;
+  // State for the two statement buffers handled by the parent
+  statementText: string;
+  statementRich: JSONContent | null;
+  onStatementTextChange: (text: string) => void;
+  statementEditorRef: React.RefObject<any>;
 }
 
-export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) {
+export function QuestionFormFields({ 
+  data, 
+  onChange,
+  statementText,
+  statementRich,
+  onStatementTextChange,
+  statementEditorRef
+}: QuestionFormFieldsProps) {
   const { references, loading } = useQuestionReferences();
 
   const updateField = <K extends keyof QuestionFormData>(
@@ -45,6 +61,23 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
     value: QuestionFormData[K]
   ) => {
     onChange({ [field]: value });
+  };
+
+  const currentFormat = data.statementFormat || 'text';
+
+  const handleTabChange = (value: string) => {
+    const nextFormat = value as 'text' | 'tiptap_json';
+    
+    // If switching FROM rich TO text, we grab the layout from the editor and save it
+    if (currentFormat === 'tiptap_json' && nextFormat === 'text') {
+      const json = statementEditorRef.current?.getJSON() || null;
+      onChange({ statementFormat: nextFormat });
+      // We don't update statementRich state directly here to avoid sync issues,
+      // the parent should handle the switch logic if it wants to keep things separate.
+      // But for Option A simplicity, the parent handles the "pull" on switch.
+    } else {
+      updateField('statementFormat', nextFormat);
+    }
   };
 
   const handleOptionChange = (index: number, value: string) => {
@@ -97,16 +130,48 @@ export function QuestionFormFields({ data, onChange }: QuestionFormFieldsProps) 
       </div>
 
       {/* Question Statement */}
-      <div className="space-y-2">
-        <Label htmlFor="statement">Question Statement</Label>
-        <Textarea
-          id="statement"
-          placeholder="Enter the question statement..."
-          value={data.statement}
-          onChange={(e) => updateField('statement', e.target.value)}
-          required
-          rows={4}
-        />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="statement">Question Statement</Label>
+        </div>
+        
+        <Tabs 
+          value={currentFormat} 
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <TabsList className="grid w-64 grid-cols-2 mb-2">
+            <TabsTrigger value="text" className="gap-2">
+              <Type className="h-4 w-4" />
+              Plain Text
+            </TabsTrigger>
+            <TabsTrigger value="tiptap_json" className="gap-2">
+              <FileJson className="h-4 w-4" />
+              Rich Text
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="text" className="mt-0 space-y-2">
+            <Textarea
+              id="statement"
+              placeholder="Enter the question statement in plain text..."
+              value={statementText}
+              onChange={(e) => onStatementTextChange(e.target.value)}
+              required={currentFormat === 'text'}
+              rows={4}
+            />
+          </TabsContent>
+
+          <TabsContent value="tiptap_json" className="mt-0">
+            <div className="border rounded-lg overflow-hidden bg-background">
+              <SimpleEditor 
+                ref={statementEditorRef} 
+                initialContent={statementRich || undefined}
+                key={`statement-editor-${data.statementFormat}`} // Force re-mount on format toggle if needed
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* MCQ Options */}
