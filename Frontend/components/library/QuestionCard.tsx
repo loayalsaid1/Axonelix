@@ -17,6 +17,7 @@ const EditorPreview = lazy(
 );
 import { cn } from "@/lib/utils";
 import type { Question } from "@/lib/types/questions";
+import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 
 interface QuestionCardProps {
   question: Question;
@@ -63,9 +64,12 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
 
       <CardContent>
         {/* Statement */}
-        <p className="text-sm leading-relaxed whitespace-pre-wrap">
-          {question.statement}
-        </p>
+        <QuestionStatementPreview
+          statement={question.statement}
+          statementFormat={question.statementFormat}
+          richContainerClassName="rounded-lg border bg-muted/10 p-3"
+          plainClassName="text-sm leading-relaxed"
+        />
 
         {/* Options (MCQ only) */}
         {question.questionType === "mcq" &&

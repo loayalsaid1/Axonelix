@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import EditorPreview from '@/components/editor-preview/EditorPreview';
 import { MCQReviewOptions } from './MCQReviewOptions';
 import type { ReviewEntry } from '@/lib/types/quizzes';
+import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 
 // ─── Result badge ─────────────────────────────────────────────────────────────
 
@@ -74,13 +75,12 @@ export function ReviewQuestionCard({ entry }: ReviewQuestionCardProps) {
 
       {/* Statement — identical rendering to QuestionDisplay */}
       <CardContent className="pt-6 pb-4">
-        {question.statementFormat === 'tiptap_json' ? (
-          <EditorPreview content={JSON.parse(question.statement)} />
-        ) : (
-          <p className="text-foreground text-base leading-relaxed whitespace-pre-wrap">
-            {question.statement}
-          </p>
-        )}
+        <QuestionStatementPreview
+          statement={question.statement}
+          statementFormat={question.statementFormat}
+          richContainerClassName="rounded-lg border bg-muted/10 p-3"
+          plainClassName="text-foreground text-base leading-relaxed whitespace-pre-wrap"
+        />
       </CardContent>
 
       {/* Answer area */}
