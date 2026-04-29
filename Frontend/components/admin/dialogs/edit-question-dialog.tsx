@@ -41,7 +41,7 @@ interface QuestionData {
   id: string;
   questionType: 'mcq' | 'written';
   statement: string;
-  statementFormat: string;
+  statementFormat: 'text' | 'tiptap_json';
   explanation: string | null;
   lessonId: number | null;
   chapterId: number | null;
