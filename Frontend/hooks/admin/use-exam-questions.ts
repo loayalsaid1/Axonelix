@@ -6,6 +6,7 @@ export interface ExamQuestion {
   id: string;
   questionType: QuestionType;
   statement: string;
+  statementFormat: 'text' | 'tiptap_json';
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
   explanation?: any;
   lessonId?: string | null;
