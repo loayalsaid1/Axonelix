@@ -45,7 +45,11 @@ export default function CreateQuestionDialog({
   const authFetch = useApiFetch();
   const [loading, setLoading] = useState(false);
   const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
+  const statementEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [editorKey, setEditorKey] = useState(0);
+
+  // Buffer for rich text content
+  const [statementRich, setStatementRich] = useState<JSONContent | null>(null);
 
   // Use custom hooks
   const { modules } = useModules();
@@ -104,11 +108,30 @@ export default function CreateQuestionDialog({
     }
   };
 
+  const handleFormDataChange = (updates: Partial<typeof formData>) => {
+    // If we're switching format, pull the current rich text if leaving rich mode
+    if (updates.statementFormat && updates.statementFormat !== formData.statementFormat) {
+      if (formData.statementFormat === 'tiptap_json') {
+        const currentJson = statementEditorRef.current?.getJSON() || null;
+        setStatementRich(currentJson);
+      }
+    }
+    setFormData((prev) => ({ ...prev, ...updates }));
+  };
+
   // Form submission handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.statement) {
+    let finalStatement = formData.statement;
+    if (formData.statementFormat === 'tiptap_json') {
+      const currentJson = statementEditorRef.current?.getJSON() || null;
+      if (!currentJson || (currentJson.content?.length === 1 && !currentJson.content[0].content)) {
+        alert('Please enter a rich text statement');
+        return;
+      }
+      finalStatement = JSON.stringify(currentJson);
+    } else if (!formData.statement) {
       alert('Please fill in statement');
       return;
     }
@@ -161,7 +184,7 @@ export default function CreateQuestionDialog({
 
       const payload = {
         questionType: formData.questionType,
-        statement: formData.statement,
+        statement: finalStatement,
         statementFormat: formData.statementFormat,
         lessonId: formData.lessonId ? Number(formData.lessonId) : null,
         chapterId: formData.chapterId ? Number(formData.chapterId) : null,
@@ -189,6 +212,7 @@ export default function CreateQuestionDialog({
         ],
       }));
 
+      setStatementRich(null);
       setEditorKey(prev => prev + 1);
 
       // Keep selectedModule / selectedSubject / selectedChapter and
@@ -284,11 +308,16 @@ export default function CreateQuestionDialog({
             data={{
               questionType: formData.questionType,
               statement: formData.statement,
+              statementFormat: formData.statementFormat,
               explanation: formData.explanation,
               options: formData.options,
               reference: formData.reference,
             }}
-            onChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+            statementText={formData.statement}
+            statementRich={statementRich}
+            onStatementTextChange={(text) => setFormData((prev) => ({ ...prev, statement: text }))}
+            statementEditorRef={statementEditorRef}
+            onChange={handleFormDataChange}
           />
 
           {/* Explanation Editor */}
