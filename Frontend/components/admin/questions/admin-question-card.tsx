@@ -14,12 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 
 const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
 
 interface AdminQuestionCardProps {
   id: string;
   statement: string;
+  statementFormat?: 'text' | 'tiptap_json';
   questionType: 'mcq' | 'written';
   options: { id: string; optionText: string; isCorrect: boolean }[];
   isMisc: boolean;
@@ -32,6 +34,7 @@ interface AdminQuestionCardProps {
 export function AdminQuestionCard({
   id,
   statement,
+  statementFormat = 'text',
   questionType,
   options,
   isMisc,
@@ -54,8 +57,20 @@ export function AdminQuestionCard({
                   Misc
                 </Badge>
               )}
+              {statementFormat === 'tiptap_json' && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  Rich Text
+                </Badge>
+              )}
             </div>
-            <CardTitle className="text-lg line-clamp-2">{statement}</CardTitle>
+            
+            <QuestionStatementPreview
+              statement={statement}
+              statementFormat={statementFormat}
+              richContainerClassName="max-h-80 rounded-lg border bg-muted/10 p-3"
+              plainClassName="text-lg line-clamp-2"
+            />
+
             {questionType === 'mcq' && options.length > 0 && (
               <CardDescription className="mt-2">
                 {options.length} option{options.length !== 1 ? 's' : ''}
