@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 
 const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
 
@@ -30,6 +31,7 @@ interface ExamQuestionCardProps {
     id: string;
     questionType: string;
     statement: string;
+    statementFormat?: 'text' | 'tiptap_json';
     questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
     explanation?: any;
     lessonId?: string | null;
@@ -54,9 +56,14 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
                 <Badge variant="secondary">
                   {question.questionType.toUpperCase()}
                 </Badge>
+                {question.statementFormat === 'tiptap_json' && (
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                    Rich Text
+                  </Badge>
+                )}
               </div>
               <CardTitle className="text-lg">
-                Question {index + 1}: {question.statement}
+                Question {index + 1}
               </CardTitle>
             </div>
             <div className="flex gap-1 sm:gap-2">
@@ -98,8 +105,20 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
             </div>
           </div>
         </CardHeader>
-        {question.questionOptions && question.questionOptions.length > 0 && (
-          <CardContent>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Statement
+            </p>
+            <QuestionStatementPreview
+              statement={question.statement}
+              statementFormat={question.statementFormat}
+              richContainerClassName="rounded-lg border bg-muted/10 p-3"
+              plainClassName="whitespace-pre-wrap text-sm leading-relaxed text-foreground"
+            />
+          </div>
+
+          {question.questionOptions && question.questionOptions.length > 0 && (
             <div className="space-y-2">
               {question.questionOptions.map((option, optIndex) => (
                 <div
@@ -121,8 +140,8 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
                 </div>
               ))}
             </div>
-          </CardContent>
-        )}
+          )}
+        </CardContent>
       </Card>
 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
