@@ -62,7 +62,9 @@ export default function EditQuestionDialog({
   const [questionOldExamId, setQuestionOldExamId] = useState<number | null>(null);
 
   const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
+  const statementEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
+  const [initialStatementRich, setInitialStatementRich] = useState<JSONContent | null>(null);
 
   // Use custom hooks
   const { fetchMaterialAncestors, loadingAncestors } = useQuestionAncestors();
@@ -85,6 +87,7 @@ export default function EditQuestionDialog({
   const [formData, setFormData] = useState({
     questionType: 'mcq' as 'mcq' | 'written',
     statement: '',
+    statementFormat: 'text' as 'text' | 'tiptap_json',
     explanation: '',
     lessonId: '',
     chapterId: '',
@@ -101,9 +104,21 @@ export default function EditQuestionDialog({
       fetchQuestion();
     } else {
       setInitialExplanationContent(undefined);
+      setInitialStatementRich(null);
       setQuestionOldExamId(null);
     }
   }, [open, questionId]);
+
+  const handleFormDataChange = (updates: Partial<typeof formData>) => {
+    // If we're switching format, pull the current rich text if leaving rich mode
+    if (updates.statementFormat && updates.statementFormat !== formData.statementFormat) {
+      if (formData.statementFormat === 'tiptap_json') {
+        const currentJson = statementEditorRef.current?.getJSON() || null;
+        setInitialStatementRich(currentJson);
+      }
+    }
+    setFormData((prev) => ({ ...prev, ...updates }));
+  };
 
   const fetchQuestion = async () => {
     if (!questionId) return;
@@ -126,6 +141,22 @@ export default function EditQuestionDialog({
         }
       }
       setInitialExplanationContent(explanationContent);
+
+      let statementRichContent: JSONContent | null = null;
+      let statementText = '';
+      
+      if (question.statementFormat === 'tiptap_json') {
+        try {
+          statementRichContent = JSON.parse(question.statement);
+        } catch (e) {
+          console.error('Failed to parse rich statement', e);
+          statementText = question.statement;
+        }
+      } else {
+        statementText = question.statement;
+      }
+      
+      setInitialStatementRich(statementRichContent);
       setQuestionOldExamId(question.oldExamId ?? null);
 
       // Fetch ancestors for materials
@@ -140,7 +171,8 @@ export default function EditQuestionDialog({
 
       setFormData({
         questionType: question.questionType,
-        statement: question.statement,
+        statement: statementText,
+        statementFormat: (question.statementFormat as 'text' | 'tiptap_json') || 'text',
         explanation: '',
         lessonId: question.lessonId ? String(question.lessonId) : '',
         chapterId: question.chapterId ? String(question.chapterId) : '',
@@ -169,7 +201,15 @@ export default function EditQuestionDialog({
       return;
     }
 
-    if (!formData.statement.trim()) {
+    let finalStatement = formData.statement;
+    if (formData.statementFormat === 'tiptap_json') {
+      const currentJson = statementEditorRef.current?.getJSON() || null;
+      if (!currentJson || (currentJson.content?.length === 1 && !currentJson.content[0].content)) {
+        alert('Please enter a rich text statement');
+        return;
+      }
+      finalStatement = JSON.stringify(currentJson);
+    } else if (!formData.statement.trim()) {
       alert('Please fill in statement');
       return;
     }
@@ -207,8 +247,8 @@ export default function EditQuestionDialog({
 
       const payload = {
         questionType: formData.questionType,
-        statement: formData.statement,
-        statementFormat: 'text' as const,
+        statement: finalStatement,
+        statementFormat: formData.statementFormat,
         explanation: isExplanationEmpty ? null : explanationContent,
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
@@ -285,10 +325,15 @@ export default function EditQuestionDialog({
               data={{
                 questionType: formData.questionType,
                 statement: formData.statement,
+                statementFormat: formData.statementFormat,
                 explanation: formData.explanation,
                 options: formData.options,
               }}
-              onChange={(data) => setFormData({ ...formData, ...data })}
+              statementText={formData.statement}
+              statementRich={initialStatementRich}
+              onStatementTextChange={(text) => setFormData({ ...formData, statement: text })}
+              statementEditorRef={statementEditorRef}
+              onChange={handleFormDataChange}
             />
 
             {/* Explanation Editor */}
