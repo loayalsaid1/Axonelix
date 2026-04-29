@@ -207,6 +207,7 @@ export function QuestionsList() {
               key={question.id}
               id={question.id}
               statement={question.statement}
+              statementFormat={question.statementFormat}
               questionType={question.questionType}
               options={question.questionOptions}
               isMisc={question.isMisc}
