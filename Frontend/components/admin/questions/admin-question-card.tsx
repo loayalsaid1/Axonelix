@@ -15,13 +15,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
+import { StatementFormat } from '@/lib/types/questions';
 
 const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
 
 interface AdminQuestionCardProps {
   id: string;
   statement: string;
-  statementFormat?: 'text' | 'tiptap_json';
+  statementFormat?: StatementFormat;
   questionType: 'mcq' | 'written';
   options: { id: string; optionText: string; isCorrect: boolean }[];
   isMisc: boolean;

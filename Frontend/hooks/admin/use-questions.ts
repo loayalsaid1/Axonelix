@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { StatementFormat } from '@/lib/types/questions';
 
 export interface QuestionOption {
   id: string;
@@ -11,6 +12,7 @@ export interface Question {
   id: string;
   questionType: 'mcq' | 'written';
   statement: string;
+  statementFormat: StatementFormat;
   explanation: any;
   lessonId?: string | null;
   chapterId?: string | null;
