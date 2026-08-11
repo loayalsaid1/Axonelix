@@ -22,9 +22,13 @@ RUN corepack enable
 COPY --from=builder /app/dist ./dist
 COPY package.json pnpm-lock.yaml* ./
 
-# Install production dependencies and explicitly add drizzle-kit to run migrations
+# Install production dependencies
 RUN pnpm install --prod --frozen-lockfile
 RUN pnpm add drizzle-kit
+
+# Copy the migration folder and config
+COPY drizzle ./drizzle
+COPY drizzle.config.ts ./
 
 # Copy the migration folder and config
 COPY drizzle ./drizzle
