@@ -1,0 +1,2 @@
+ALTER TABLE "lessons" ADD COLUMN "is_legacy_format" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "questions" ADD COLUMN "explanation_is_legacy_format" boolean DEFAULT false NOT NULL;

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, integer, timestamp, index, foreignKey, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, integer, timestamp, index, foreignKey, boolean, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { chapters } from "./chapters";
 
@@ -8,6 +8,7 @@ export const lessons = pgTable("lessons", {
 	name: varchar({ length: 255 }).notNull(),
 	description: text(),
 	content: jsonb(),
+	isLegacyFormat: boolean("is_legacy_format").default(false).notNull(),
 	orderIndex: integer("order_index"),
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),

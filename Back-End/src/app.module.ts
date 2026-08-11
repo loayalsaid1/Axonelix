@@ -23,6 +23,7 @@ import { RolesGuard } from './common/guards/roles.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      // envFilePath: `.env.prod`,
       isGlobal: true,
     }),
     CacheModule.register({

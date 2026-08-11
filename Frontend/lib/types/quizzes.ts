@@ -20,7 +20,8 @@ export interface QuizQuestion {
   questionType: QuestionType;
   statement: string;
   statementFormat: 'text' | 'tiptap_json';
-  explanation: JSONContent | null;
+  explanation: JSONContent | string | null;
+  explanationIsLegacyFormat?: boolean;
   lessonId: number | null;
   chapterId: number | null;
   isMisc: boolean;

@@ -11,6 +11,7 @@ export const questions = pgTable("questions", {
 	statement: text().notNull(),
 	statementFormat: varchar("statement_format", { length: 20 }).default('text'),
 	explanation: jsonb(),
+	explanationIsLegacyFormat: boolean("explanation_is_legacy_format").default(false).notNull(),
 	lessonId: integer("lesson_id"),
 	chapterId: integer("chapter_id"),
 	isMisc: boolean("is_misc").default(false),

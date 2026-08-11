@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber, IsObject, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateLessonDto {
   @IsNumber()
@@ -20,9 +20,12 @@ export class CreateLessonDto {
   @IsOptional()
   description?: string;
 
-  @IsObject()
   @IsOptional()
   content?: any; // TipTap JSON content
+
+  @IsBoolean()
+  @IsOptional()
+  isLegacyFormat?: boolean;
 
   @IsNumber()
   @IsOptional()

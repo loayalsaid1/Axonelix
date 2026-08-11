@@ -61,7 +61,7 @@ export function QuestionsList() {
 
   const handleDeleteQuestion = async (questionId: string) => {
     try {
-      const response = await authFetch(`/questions/${questionId}`, { method: 'DELETE' });
+      await authFetch(`/questions/${questionId}`, { method: 'DELETE' });
       if (filtersApplied) {
         fetchQuestions();
       }
@@ -205,14 +205,13 @@ export function QuestionsList() {
           {questions.map((question) => (
             <AdminQuestionCard
               key={question.id}
-              id={question.id}
               statement={question.statement}
               statementFormat={question.statementFormat}
               questionType={question.questionType}
               options={question.questionOptions}
               isMisc={question.isMisc}
               explanation={question.explanation}
-              href={'/admin/questions/' + question.id}
+              explanationIsLegacyFormat={question.explanationIsLegacyFormat}
               onDelete={() => handleDeleteQuestion(question.id)}
               onEdit={() => setEditingQuestionId(question.id)}
             />

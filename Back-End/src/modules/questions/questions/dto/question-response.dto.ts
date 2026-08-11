@@ -18,6 +18,7 @@ export class QuestionResponseDto {
   statement!: QuestionRow['statement'];
   statementFormat!: QuestionRow['statementFormat'];
   explanation!: QuestionRow['explanation'];
+  explanationIsLegacyFormat!: QuestionRow['explanationIsLegacyFormat'];
   lessonId!: QuestionRow['lessonId'];
   chapterId!: QuestionRow['chapterId'];
   isMisc!: QuestionRow['isMisc'];

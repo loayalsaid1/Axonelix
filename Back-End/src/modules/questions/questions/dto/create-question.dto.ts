@@ -36,6 +36,10 @@ export class CreateQuestionDto {
   @IsOptional()
   explanation?: QuestionInsert['explanation'];
 
+  @IsBoolean()
+  @IsOptional()
+  explanationIsLegacyFormat?: QuestionInsert['explanationIsLegacyFormat'];
+
   /** ID of the lesson this question is attached to (mutually exclusive with chapterId for misc) */
   @IsNumber()
   @IsOptional()

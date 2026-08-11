@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, lazy, Suspense } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2, Edit2, BookOpen } from 'lucide-react';
@@ -23,8 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
-
-const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 interface ExamQuestionCardProps {
   question: {
@@ -33,7 +32,8 @@ interface ExamQuestionCardProps {
     statement: string;
     statementFormat?: 'text' | 'tiptap_json';
     questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
-    explanation?: any;
+    explanation?: string | Record<string, unknown> | null;
+    explanationIsLegacyFormat?: boolean;
     lessonId?: string | null;
     chapterId?: string | null;
   };
@@ -79,9 +79,12 @@ export function ExamQuestionCard({ question, index, onRemove, onEdit }: ExamQues
                       <DialogTitle>Question Explanation</DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
-                      <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse rounded-md" />}>
-                        <EditorPreview content={question.explanation} />
-                      </Suspense>
+                      <ContentRenderer
+                        content={question.explanation}
+                        isLegacyFormat={question.explanationIsLegacyFormat}
+                        className="prose dark:prose-invert max-w-none"
+                        loadingClassName="h-32 w-full bg-muted animate-pulse rounded-md"
+                      />
                     </div>
                   </DialogContent>
                 </Dialog>

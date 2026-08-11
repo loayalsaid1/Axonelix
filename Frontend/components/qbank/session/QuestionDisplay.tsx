@@ -7,10 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { MCQAnswerOptions } from './MCQAnswerOptions';
 import { WrittenAnswerInput } from './WrittenAnswerInput';
-import EditorPreview from '@/components/editor-preview/EditorPreview';
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 import type { QuizQuestion } from '@/lib/types/quizzes';
 import type { LocalAnswer } from '@/hooks/use-test-session';
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 interface QuestionDisplayProps {
   question: QuizQuestion;
@@ -114,9 +114,12 @@ export function QuestionDisplay({
       {showResult && question.explanation && (
         <div className="bg-muted/30 px-5 py-4 border-border border-t">
           <h4 className="mb-2 font-semibold text-sm">Explanation</h4>
-          <div className="text-muted-foreground text-sm prose dark:prose-invert max-w-none">
-            <EditorPreview content={question.explanation} />
-          </div>
+          <ContentRenderer
+            content={question.explanation}
+            isLegacyFormat={question.explanationIsLegacyFormat}
+            className="text-muted-foreground text-sm prose dark:prose-invert max-w-none"
+            loadingClassName="h-20 w-full rounded-md bg-muted animate-pulse"
+          />
         </div>
       )}
     </Card>

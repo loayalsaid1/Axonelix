@@ -1,26 +1,21 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, AlertCircle, Zap, HelpCircle, Layers } from "lucide-react";
-import type { JSONContent } from "@tiptap/core";
-import { Suspense, lazy } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { FileText, AlertCircle, HelpCircle, Layers } from "lucide-react";
+import type { JSONContent } from '@tiptap/core';
+import { ContentRenderer } from "@/components/shared/content-renderer";
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { LessonQuestionsContent } from "@/components/library/LessonQuestionsContent";
 import { LessonFlashcardsTab } from "@/components/flashcards/LessonFlashcardsTab";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 
-// Lazy-load the heavy TipTap renderer to avoid its SCSS & styles on initial parse
-const EditorPreview = lazy(
-  () => import("@/components/editor-preview/EditorPreview")
-);
-
 interface LessonTabsProps {
-  content: JSONContent | null;
+  content: JSONContent | Record<string, unknown> | string | null;
+  isLegacyFormat?: boolean;
 }
 
 
-export function LessonTabs({ content }: LessonTabsProps) {
+export function LessonTabs({ content, isLegacyFormat }: LessonTabsProps) {
   const params = useParams();
   const lessonIdParam = params?.lessonId;
   const lessonId = lessonIdParam ? Number(lessonIdParam) : NaN;
@@ -61,9 +56,12 @@ export function LessonTabs({ content }: LessonTabsProps) {
       {/* Content tab */}
       <TabsContent value="content">
         {content ? (
-          <Suspense fallback={<Skeleton className="rounded-xl w-full h-64" />}>
-            <EditorPreview content={content} />
-          </Suspense>
+          <ContentRenderer
+            content={content}
+            isLegacyFormat={isLegacyFormat}
+            className="rounded-xl"
+            loadingClassName="rounded-xl w-full h-64"
+          />
         ) : (
           <Empty>
             <EmptyHeader>

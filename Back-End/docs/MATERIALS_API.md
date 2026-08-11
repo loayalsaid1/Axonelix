@@ -141,7 +141,7 @@ POST /api/materials/chapters
 
 ## Lessons
 
-Lessons within chapters, containing TipTap JSON content
+Lessons within chapters. The `content` field is TipTap JSON for modern lessons, or raw HTML when `isLegacyFormat` is `true`.
 
 ### Endpoints
 
@@ -163,7 +163,8 @@ Lessons within chapters, containing TipTap JSON content
 | `subjectId` | number | Conditional | Required when `isMisc` is `true` |
 | `isMisc` | boolean | ❌ | When `true` and no `chapterId` provided, the lesson is placed in the subject's misc chapter (created automatically if it doesn't exist) |
 | `description` | string | ❌ | Short description |
-| `content` | object | ❌ | TipTap JSON content |
+| `content` | object \| string | ❌ | TipTap JSON content, or raw HTML when `isLegacyFormat` is `true` |
+| `isLegacyFormat` | boolean | ❌ | Marks the lesson as legacy HTML content |
 | `orderIndex` | number | ❌ | Display order within the chapter |
 
 ### Request/Response Examples
@@ -286,4 +287,4 @@ Common status codes:
 - Each subject has at most **one** Misc chapter (`isMiscellaneous: true`). It is created automatically on the first misc lesson creation and reused for all subsequent ones
 - Misc lessons are created by sending `isMisc: true` + `subjectId` without a `chapterId` — the API resolves the chapter automatically
 - Deleting a parent entity cascades to children (e.g., deleting a module deletes all its subjects)
-- The `content` field in lessons stores TipTap JSON format
+- The `content` field in lessons stores TipTap JSON by default, but legacy lessons may store raw HTML when `isLegacyFormat` is `true`

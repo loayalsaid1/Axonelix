@@ -39,6 +39,7 @@ export class LessonsService {
       name: createLessonDto.name,
       description: createLessonDto.description,
       content: createLessonDto.content,
+      isLegacyFormat: createLessonDto.isLegacyFormat ?? false,
       orderIndex: createLessonDto.orderIndex,
     };
 
@@ -48,8 +49,8 @@ export class LessonsService {
         .values(payload)
         .returning();
 
-      // Commit images from content
-      if (createLessonDto.content) {
+      // Commit images only for structured TipTap content.
+      if (!createLessonDto.isLegacyFormat && createLessonDto.content) {
         const urls = extractImageUrls(createLessonDto.content);
         if (urls.length > 0) {
           await this.imagesService.commitImages('lesson', newLesson.id, urls, tx);
@@ -222,14 +223,27 @@ export class LessonsService {
   }
 
   async update(id: number, updateLessonDto: UpdateLessonDto) {
+    const existingLesson = await this.findOne(id);
+
     const updatedLesson = await this.drizzleService.db.transaction(async (tx) => {
+      const effectiveLegacyFormat = updateLessonDto.isLegacyFormat ?? existingLesson.isLegacyFormat ?? false;
+      const legacyFormatChanged =
+        updateLessonDto.isLegacyFormat !== undefined &&
+        updateLessonDto.isLegacyFormat !== existingLesson.isLegacyFormat;
+
       if (updateLessonDto.content !== undefined) {
-        // Process image diff even if content is intentionally cleared.
-        const newUrls = extractImageUrls(updateLessonDto.content);
-        await this.imagesService.markDeletedByDiff('lesson', id, newUrls, tx);
-        if (newUrls.length > 0) {
-          await this.imagesService.commitImages('lesson', id, newUrls, tx);
+        if (effectiveLegacyFormat) {
+          await this.imagesService.deleteAllForEntity('lesson', id, tx);
+        } else {
+          // Process image diff even if content is intentionally cleared.
+          const newUrls = extractImageUrls(updateLessonDto.content);
+          await this.imagesService.markDeletedByDiff('lesson', id, newUrls, tx);
+          if (newUrls.length > 0) {
+            await this.imagesService.commitImages('lesson', id, newUrls, tx);
+          }
         }
+      } else if (effectiveLegacyFormat && legacyFormatChanged) {
+        await this.imagesService.deleteAllForEntity('lesson', id, tx);
       }
 
       await tx

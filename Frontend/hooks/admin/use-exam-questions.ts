@@ -9,6 +9,7 @@ export interface ExamQuestion {
   statementFormat: 'text' | 'tiptap_json';
   questionOptions: { id: string; optionText: string; isCorrect: boolean }[];
   explanation?: any;
+  explanationIsLegacyFormat?: boolean;
   lessonId?: string | null;
   chapterId?: string | null;
   createdAt: string;
