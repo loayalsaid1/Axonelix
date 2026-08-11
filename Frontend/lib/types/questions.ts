@@ -15,7 +15,8 @@ export interface Question {
   questionType: QuestionType;
   statement: string;
   statementFormat: StatementFormat;
-  explanation: JSONContent | null; // TipTap JSON content
+  explanation: JSONContent | string | null; // TipTap JSON or legacy HTML
+  explanationIsLegacyFormat?: boolean;
   isMisc: boolean;
   questionOptions: QuestionOption[];
 }

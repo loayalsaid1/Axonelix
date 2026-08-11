@@ -46,7 +46,8 @@ export interface Lesson {
   chapterId: number;
   name: string;
   description: string | null;
-  content: Record<string, unknown> | null;
+  content: Record<string, unknown> | string | null;
+  isLegacyFormat?: boolean;
   orderIndex: number | null;
   createdAt: string;
   updatedAt: string;

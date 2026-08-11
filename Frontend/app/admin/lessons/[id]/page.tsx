@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
 import { useApiFetch } from '@/hooks/use-api-fetch';
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null;
@@ -25,6 +26,7 @@ interface LessonWithHierarchy {
   name: string;
   description: string;
   content: JSONContent;
+  isLegacyFormat?: boolean;
   orderIndex: number;
   isMisc?: boolean;
   createdAt: string;
@@ -46,7 +48,6 @@ interface LessonWithHierarchy {
 
 export default function LessonEditPage() {
   const params = useParams();
-  const router = useRouter();
   const authFetch = useApiFetch();
   const editorRef = useRef<SimpleEditorRefHandler>(null);
 
@@ -62,6 +63,7 @@ export default function LessonEditPage() {
   const [subjectId, setSubjectId] = useState('');
   const [chapterId, setChapterId] = useState('');
   const [isMisc, setIsMisc] = useState(false);
+  const [legacyContent, setLegacyContent] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -69,9 +71,24 @@ export default function LessonEditPage() {
         setIsLoading(true);
         const lessonData = await authFetch<LessonWithHierarchy>(`/materials/lessons/${lessonId}`);
 
-        // Parse content if it's a string
-        if (typeof lessonData.content === 'string') {
-          lessonData.content = JSON.parse(lessonData.content);
+        const rawContent = lessonData.content;
+        let parsedContent: JSONContent | null = null;
+
+        if (typeof rawContent === 'string') {
+          try {
+            parsedContent = JSON.parse(rawContent);
+          } catch {
+            parsedContent = null;
+          }
+        } else {
+          parsedContent = rawContent;
+        }
+
+        if (lessonData.isLegacyFormat || (typeof rawContent === 'string' && parsedContent === null)) {
+          setLegacyContent(typeof rawContent === 'string' ? rawContent : rawContent ? JSON.stringify(rawContent) : null);
+        } else {
+          lessonData.content = parsedContent as JSONContent;
+          setLegacyContent(null);
         }
 
         setLesson(lessonData);
@@ -91,14 +108,14 @@ export default function LessonEditPage() {
     };
 
     fetchLesson();
-  }, [lessonId]);
+  }, [lessonId, authFetch]);
 
   const handleSave = async () => {
     try {
       setIsSaving(true);
 
       // Get content from editor
-      const content = editorRef.current?.getJSON();
+      const content = legacyContent ?? editorRef.current?.getJSON();
 
       if (!name.trim()) {
         toast.error('Lesson name is required');
@@ -269,16 +286,28 @@ export default function LessonEditPage() {
           <Card>
             <CardHeader>
               <CardTitle>Lesson Content</CardTitle>
-              <CardDescription>Edit the lesson content using the rich text editor</CardDescription>
+              <CardDescription>
+                {lesson.isLegacyFormat ? 'Legacy HTML content is shown read-only here.' : 'Edit the lesson content using the rich text editor'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {lesson.content ? (
+                {lesson.content || legacyContent ? (
                 <div className="border rounded-lg overflow-hidden">
-                  <SimpleEditor
-                    key={lesson.id}
-                    ref={editorRef}
-                    initialContent={lesson.content}
-                  />
+                    {lesson.isLegacyFormat ? (
+                      <div className="p-4">
+                        <ContentRenderer
+                          content={legacyContent}
+                          isLegacyFormat
+                          className="prose dark:prose-invert max-w-none"
+                        />
+                      </div>
+                    ) : (
+                      <SimpleEditor
+                        key={lesson.id}
+                        ref={editorRef}
+                        initialContent={lesson.content}
+                      />
+                    )}
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-8">

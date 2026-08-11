@@ -14,6 +14,7 @@ export interface Question {
   statement: string;
   statementFormat: StatementFormat;
   explanation: any;
+  explanationIsLegacyFormat?: boolean;
   lessonId?: string | null;
   chapterId?: string | null;
   oldExamId?: string | null;

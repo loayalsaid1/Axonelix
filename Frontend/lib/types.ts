@@ -74,6 +74,7 @@ export interface Lesson {
   name: string;
   description?: string;
   content?: any;
+  isLegacyFormat?: boolean;
   order_index?: number;
   created_at?: string;
   updated_at?: string;
@@ -105,6 +106,7 @@ export interface Question {
   statement: string;
   statement_format: StatementFormat;
   explanation?: any;
+  explanationIsLegacyFormat?: boolean;
   lesson_id?: string;
   chapter_id?: string;
   is_misc: boolean;

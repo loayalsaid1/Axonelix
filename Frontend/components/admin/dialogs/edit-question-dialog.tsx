@@ -14,6 +14,7 @@ import { QuestionFormFields } from '@/components/admin/shared/question-form-fiel
 import { useApiFetch } from '@/hooks/use-api-fetch';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 // New Imports
 import { MaterialSelector } from '@/components/admin/shared/material-selector';
@@ -43,6 +44,7 @@ interface QuestionData {
   statement: string;
   statementFormat: 'text' | 'tiptap_json';
   explanation: string | null;
+  explanationIsLegacyFormat?: boolean;
   lessonId: number | null;
   chapterId: number | null;
   oldExamId: number | null;
@@ -64,6 +66,7 @@ export default function EditQuestionDialog({
   const explanationEditorRef = useRef<SimpleEditorRefHandler>(null);
   const statementEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
+  const [legacyExplanation, setLegacyExplanation] = useState<string | null>(null);
   const [initialStatementRich, setInitialStatementRich] = useState<JSONContent | null>(null);
 
   // Use custom hooks
@@ -104,6 +107,7 @@ export default function EditQuestionDialog({
       fetchQuestion();
     } else {
       setInitialExplanationContent(undefined);
+      setLegacyExplanation(null);
       setInitialStatementRich(null);
       setQuestionOldExamId(null);
     }
@@ -128,19 +132,26 @@ export default function EditQuestionDialog({
       const question = await authFetch<QuestionData>(`/questions/${questionId}`);
 
       let explanationContent: JSONContent | undefined = undefined;
+      let legacyHtml: string | null = null;
       if (question.explanation) {
-        try {
-          explanationContent = typeof question.explanation === 'string'
-            ? JSON.parse(question.explanation)
-            : question.explanation;
-        } catch (e) {
-          explanationContent = {
-            type: 'doc',
-            content: [{ type: 'paragraph', content: [{ type: 'text', text: String(question.explanation) }] }]
-          };
+        if (question.explanationIsLegacyFormat) {
+          legacyHtml = typeof question.explanation === 'string'
+            ? question.explanation
+            : JSON.stringify(question.explanation);
+        } else {
+          try {
+            explanationContent = typeof question.explanation === 'string'
+              ? JSON.parse(question.explanation)
+              : question.explanation;
+          } catch {
+            legacyHtml = typeof question.explanation === 'string'
+              ? question.explanation
+              : JSON.stringify(question.explanation);
+          }
         }
       }
       setInitialExplanationContent(explanationContent);
+      setLegacyExplanation(legacyHtml);
 
       let statementRichContent: JSONContent | null = null;
       let statementText = '';
@@ -239,17 +250,18 @@ export default function EditQuestionDialog({
 
     try {
       const explanationContent = explanationEditorRef.current?.getJSON() || null;
+      const explanation = legacyExplanation ?? explanationContent;
       // Check if it's empty
-      const isExplanationEmpty = !explanationContent ||
-        (explanationContent.content?.length === 1 &&
-          !explanationContent.content[0].content &&
-          explanationContent.content[0].type === 'paragraph');
+      const isExplanationEmpty = !explanation ||
+        (typeof explanation !== 'string' && explanation.content?.length === 1 &&
+          !explanation.content[0].content &&
+          explanation.content[0].type === 'paragraph');
 
       const payload = {
         questionType: formData.questionType,
         statement: finalStatement,
         statementFormat: formData.statementFormat,
-        explanation: isExplanationEmpty ? null : explanationContent,
+        explanation: isExplanationEmpty ? null : explanation,
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
@@ -274,7 +286,7 @@ export default function EditQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-200 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>Update the question content and options</DialogDescription>
@@ -340,11 +352,21 @@ export default function EditQuestionDialog({
             <div className="space-y-2">
               <Label>Explanation (Optional)</Label>
               <div className="border rounded-lg overflow-hidden">
-                <SimpleEditor
-                  ref={explanationEditorRef}
-                  initialContent={initialExplanationContent}
-                  key={questionId || 'new'}
-                />
+                {legacyExplanation ? (
+                  <div className="p-4">
+                    <ContentRenderer
+                      content={legacyExplanation}
+                      isLegacyFormat
+                      className="prose dark:prose-invert max-w-none"
+                    />
+                  </div>
+                ) : (
+                  <SimpleEditor
+                    ref={explanationEditorRef}
+                    initialContent={initialExplanationContent}
+                    key={questionId || 'new'}
+                  />
+                )}
               </div>
             </div>
 

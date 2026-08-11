@@ -31,6 +31,7 @@ const QUESTION_COLUMNS = {
   statement: true,
   statementFormat: true,
   explanation: true,
+  explanationIsLegacyFormat: true,
   lessonId: true,
   chapterId: true,
   isMisc: true,
@@ -78,6 +79,7 @@ export class QuestionsService {
         statement: q.statement,
         statementFormat: q.statementFormat ?? 'text',
         explanation: q.explanation ?? null,
+        explanationIsLegacyFormat: q.explanationIsLegacyFormat ?? false,
         lessonId: q.lessonId ?? null,
         chapterId: q.chapterId ?? null,
         isMisc: q.isMisc ?? false,
@@ -127,6 +129,7 @@ export class QuestionsService {
         statement: dto.statement,
         statementFormat: dto.statementFormat ?? 'text',
         explanation: dto.explanation,
+        explanationIsLegacyFormat: dto.explanationIsLegacyFormat ?? false,
         lessonId: dto.lessonId ?? null,
         chapterId: dto.chapterId ?? null,
         isMisc: dto.isMisc ?? false,
@@ -148,9 +151,9 @@ export class QuestionsService {
         await tx.insert(questionOptions).values(optionPayloads);
       }
 
-      // Collect images from both statement and explanation
+      // Collect images from both statement and explanation only for TipTap JSON.
       const statementUrls = dto.statementFormat === 'tiptap_json' ? extractImageUrls(dto.statement) : [];
-      const explanationUrls = dto.explanation ? extractImageUrls(dto.explanation) : [];
+      const explanationUrls = !dto.explanationIsLegacyFormat && dto.explanation ? extractImageUrls(dto.explanation) : [];
 
       if (statementUrls.length > 0) {
         await this.imagesService.commitImages('question', question.id, statementUrls, tx);
@@ -263,12 +266,18 @@ export class QuestionsService {
     if (questionFields.statement !== undefined) updatePayload.statement = questionFields.statement;
     if (questionFields.statementFormat !== undefined) updatePayload.statementFormat = questionFields.statementFormat;
     if (questionFields.explanation !== undefined) updatePayload.explanation = questionFields.explanation;
+    if (questionFields.explanationIsLegacyFormat !== undefined) updatePayload.explanationIsLegacyFormat = questionFields.explanationIsLegacyFormat;
     if (questionFields.lessonId !== undefined) updatePayload.lessonId = questionFields.lessonId;
     if (questionFields.chapterId !== undefined) updatePayload.chapterId = questionFields.chapterId;
     if (questionFields.isMisc !== undefined) updatePayload.isMisc = questionFields.isMisc;
     if (questionFields.oldExamId !== undefined) updatePayload.oldExamId = questionFields.oldExamId;
 
     await this.drizzleService.db.transaction(async (tx) => {
+      const effectiveLegacyFormat = questionFields.explanationIsLegacyFormat ?? existingQuestion.explanationIsLegacyFormat ?? false;
+      const legacyFormatChanged =
+        questionFields.explanationIsLegacyFormat !== undefined &&
+        questionFields.explanationIsLegacyFormat !== existingQuestion.explanationIsLegacyFormat;
+
       if (Object.keys(updatePayload).length) {
         await tx
           .update(questions)
@@ -289,11 +298,17 @@ export class QuestionsService {
       }
 
       if (questionFields.explanation !== undefined) {
-        const newUrls = extractImageUrls(questionFields.explanation);
-        await this.imagesService.markDeletedByDiff('explanation', id, newUrls, tx);
-        if (newUrls.length > 0) {
-          await this.imagesService.commitImages('explanation', id, newUrls, tx);
+        if (effectiveLegacyFormat) {
+          await this.imagesService.deleteAllForEntity('explanation', id, tx);
+        } else {
+          const newUrls = extractImageUrls(questionFields.explanation);
+          await this.imagesService.markDeletedByDiff('explanation', id, newUrls, tx);
+          if (newUrls.length > 0) {
+            await this.imagesService.commitImages('explanation', id, newUrls, tx);
+          }
         }
+      } else if (effectiveLegacyFormat && legacyFormatChanged) {
+        await this.imagesService.deleteAllForEntity('explanation', id, tx);
       }
 
       // Replace options if provided

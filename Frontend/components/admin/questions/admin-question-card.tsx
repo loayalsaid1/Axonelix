@@ -1,46 +1,40 @@
 'use client';
 
-import { useState, lazy, Suspense } from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, ExternalLink, Pencil, BookOpen } from 'lucide-react';
+import { Trash2, Pencil, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
 import { StatementFormat } from '@/lib/types/questions';
-
-const EditorPreview = lazy(() => import("@/components/editor-preview/EditorPreview"));
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 interface AdminQuestionCardProps {
-  id: string;
   statement: string;
   statementFormat?: StatementFormat;
   questionType: 'mcq' | 'written';
   options: { id: string; optionText: string; isCorrect: boolean }[];
   isMisc: boolean;
-  explanation?: any;
-  href: string;
+  explanation?: string | Record<string, unknown> | null;
+  explanationIsLegacyFormat?: boolean;
   onDelete: () => void;
   onEdit: () => void;
 }
 
 export function AdminQuestionCard({
-  id,
   statement,
   statementFormat = 'text',
   questionType,
   options,
   isMisc,
   explanation,
-  href,
+  explanationIsLegacyFormat,
   onDelete,
   onEdit,
 }: AdminQuestionCardProps) {
@@ -93,9 +87,12 @@ export function AdminQuestionCard({
                     <DialogTitle>Question Explanation</DialogTitle>
                   </DialogHeader>
                   <div className="py-4">
-                    <Suspense fallback={<div className="h-32 w-full bg-muted animate-pulse rounded-md" />}>
-                      <EditorPreview content={explanation} />
-                    </Suspense>
+                    <ContentRenderer
+                      content={explanation}
+                      isLegacyFormat={explanationIsLegacyFormat}
+                      className="prose dark:prose-invert max-w-none"
+                      loadingClassName="h-32 w-full bg-muted animate-pulse rounded-md"
+                    />
                   </div>
                 </DialogContent>
               </Dialog>

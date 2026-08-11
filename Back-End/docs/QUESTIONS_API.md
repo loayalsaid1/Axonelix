@@ -68,7 +68,8 @@ For a **misc** question attached directly to a chapter (not a lesson):
 | `questionType` | `"mcq"` \| `"written"` | ✅ | |
 | `statement` | `string` | ✅ | |
 | `statementFormat` | `"text"` \| `"tiptap_json"` | — | defaults to `"text"` |
-| `explanation` | `object` (TipTap JSON) | — | |
+| `explanation` | `object` \| `string` | — | TipTap JSON by default, or raw HTML when `explanationIsLegacyFormat` is `true` |
+| `explanationIsLegacyFormat` | `boolean` | — | Marks the explanation as legacy HTML content |
 | `lessonId` | `number` | — | Required if not misc / not old exam |
 | `chapterId` | `number` | — | Required for misc questions |
 | `isMisc` | `boolean` | — | defaults to `false` |

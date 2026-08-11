@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsOptional, IsDate, IsObject } from 'class-validator';
+import { IsNumber, IsString, IsOptional, IsDate, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { lessons } from '../../../../database/entities/lessons';
 import { chapters } from '../../../../database/entities/chapters';
@@ -32,9 +32,12 @@ export class LessonResponseDto {
   @IsOptional()
   description: LessonRow['description'];
 
-  @IsObject()
   @IsOptional()
   content: LessonRow['content'];
+
+  @IsBoolean()
+  @IsOptional()
+  isLegacyFormat: LessonRow['isLegacyFormat'];
 
   @IsNumber()
   @IsOptional()

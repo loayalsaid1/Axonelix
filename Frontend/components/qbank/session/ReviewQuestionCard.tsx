@@ -4,10 +4,10 @@ import { CheckCircle2, XCircle, MinusCircle, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import EditorPreview from '@/components/editor-preview/EditorPreview';
 import { MCQReviewOptions } from './MCQReviewOptions';
 import type { ReviewEntry } from '@/lib/types/quizzes';
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 // ─── Result badge ─────────────────────────────────────────────────────────────
 
@@ -111,9 +111,12 @@ export function ReviewQuestionCard({ entry }: ReviewQuestionCardProps) {
             <Lightbulb className="size-4 shrink-0" />
             <span className="font-semibold text-sm">Explanation</span>
           </div>
-          <div className="text-muted-foreground text-sm leading-relaxed">
-            <EditorPreview content={question.explanation} />
-          </div>
+          <ContentRenderer
+            content={question.explanation}
+            isLegacyFormat={question.explanationIsLegacyFormat}
+            className="text-muted-foreground text-sm leading-relaxed prose dark:prose-invert max-w-none"
+            loadingClassName="h-20 w-full rounded-md bg-muted animate-pulse"
+          />
         </CardContent>
       )}
     </Card>

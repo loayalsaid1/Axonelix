@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, Suspense, lazy } from "react";
+import { useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import {
   Card,
@@ -11,13 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "./ResponsiveModal";
-
-const EditorPreview = lazy(
-  () => import("@/components/editor-preview/EditorPreview"),
-);
 import { cn } from "@/lib/utils";
 import type { Question } from "@/lib/types/questions";
 import { QuestionStatementPreview } from '@/components/shared/question-statement-preview';
+import { ContentRenderer } from '@/components/shared/content-renderer';
 
 interface QuestionCardProps {
   question: Question;
@@ -156,7 +153,7 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
                 // variant="ghost"
                 size="sm"
                 onClick={() => setShowAnswer((v) => !v)}
-                // className="text-muted-foreground hover:text-primary"
+              // className="text-muted-foreground hover:text-primary"
               >
                 {showAnswer ? "Hide Answer" : "Show Answer"}
               </Button>
@@ -191,15 +188,13 @@ export function QuestionCard({ question, index }: QuestionCardProps) {
           >
             <div >
               {question.explanation ? (
-                <Suspense
-                  fallback={
-                    <div className="pt-2">
-                      <div className="bg-muted/40 rounded-xl w-full h-40" />
-                    </div>
-                  }
-                >
-                  <EditorPreview content={question.explanation} />
-                </Suspense>
+
+                <ContentRenderer
+                  content={question.explanation}
+                  isLegacyFormat={question.explanationIsLegacyFormat}
+                  className="text-sm prose dark:prose-invert max-w-none"
+                  loadingClassName="pt-2 bg-muted/40 rounded-xl w-full h-40"
+                />
               ) : (
                 <p className="text-sm whitespace-pre-wrap">
                   No explanation available.
