@@ -45,7 +45,7 @@ interface CKEditorWrapperProps {
 
 export default function CKEditorWrapper({ data, onChange }: CKEditorWrapperProps) {
   return (
-    <div className="ckeditor-container border rounded-md overflow-hidden bg-background prose dark:prose-invert max-w-none [&_.ck-editor\_\_editable]:min-h-60 [&_.ck-editor\_\_editable]:p-4 [&_.ck-content_img]:max-w-full [&_.ck-content_img]:h-auto">
+    <div className="ckeditor-container w-full min-w-0 max-w-full border rounded-md bg-background prose dark:prose-invert max-w-none [&_.ck-editor]:w-full [&_.ck-editor]:max-w-full [&_.ck-toolbar]:flex-wrap [&_.ck-toolbar\_\_items]:flex-wrap [&_.ck-toolbar]:max-w-full [&_.ck-editor\_\_editable]:min-h-60 [&_.ck-editor\_\_editable]:p-4 [&_.ck-editor\_\_editable]:max-w-full [&_.ck-content]:max-w-full [&_.ck-content]:break-words [&_.ck-content_img]:max-w-full [&_.ck-content_img]:h-auto [&_.ck-content_table]:max-w-full [&_.ck-content_table]:overflow-x-auto">
       <CKEditor
         editor={ClassicEditor}
         config={{
@@ -82,17 +82,20 @@ export default function CKEditorWrapper({ data, onChange }: CKEditorWrapperProps
             MediaEmbed,
             HtmlEmbed,
           ],
-          toolbar: [
-            'undo', 'redo', '|',
-            'heading', '|',
-            'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', '|',
-            'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-            'alignment', '|',
-            'bulletedList', 'numberedList', '|',
-            'link', 'insertTable', 'insertImage', 'blockQuote', '|',
-            'mediaEmbed', 'htmlEmbed', '|',
-            'sourceEditing',
-          ],
+          toolbar: {
+            items: [
+              'undo', 'redo', '|',
+              'heading', '|',
+              'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', '|',
+              'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+              'alignment', '|',
+              'bulletedList', 'numberedList', '|',
+              'link', 'insertTable', 'insertImage', 'blockQuote', '|',
+              'mediaEmbed', 'htmlEmbed', '|',
+              'sourceEditing',
+            ],
+            shouldNotGroupWhenFull: true,
+          },
           htmlSupport: {
             allow: [
               {

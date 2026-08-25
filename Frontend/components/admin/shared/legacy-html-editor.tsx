@@ -51,7 +51,7 @@ export function LegacyHtmlEditor({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0 max-w-full">
       <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30">

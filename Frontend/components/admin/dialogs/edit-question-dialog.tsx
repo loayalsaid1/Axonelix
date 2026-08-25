@@ -178,6 +178,8 @@ export default function EditQuestionDialog({
       setInitialStatementRich(statementRichContent);
       setQuestionOldExamId(question.oldExamId ?? null);
 
+      let resolvedChapterId = question.chapterId ? String(question.chapterId) : '';
+
       // Fetch ancestors for materials
       if (question.lessonId || question.chapterId) {
         const ancestors = await fetchMaterialAncestors(question.lessonId, question.chapterId);
@@ -185,6 +187,9 @@ export default function EditQuestionDialog({
           setSelectedModule(ancestors.moduleId);
           setSelectedSubject(ancestors.subjectId);
           setSelectedChapter(ancestors.chapterId);
+          if (!resolvedChapterId && ancestors.chapterId) {
+            resolvedChapterId = ancestors.chapterId;
+          }
         }
       }
 
@@ -194,7 +199,7 @@ export default function EditQuestionDialog({
         statementFormat: (question.statementFormat as 'text' | 'tiptap_json') || 'text',
         explanation: '',
         lessonId: question.lessonId ? String(question.lessonId) : '',
-        chapterId: question.chapterId ? String(question.chapterId) : '',
+        chapterId: resolvedChapterId,
         isMisc: question.isMisc ?? false,
         options: question.questionOptions?.length > 0
           ? question.questionOptions
@@ -232,13 +237,10 @@ export default function EditQuestionDialog({
       alert('Please fill in statement');
       return;
     }
-
-    // A question can be linked by material chapter, old exam, or both.
     if (!formData.chapterId && !questionOldExamId) {
       alert('Please select a chapter, or keep this question linked to an old exam');
       return;
     }
-
     if (formData.questionType === 'mcq') {
       if (formData.options.length < 2) {
         alert('MCQ must have at least 2 options');
@@ -304,7 +306,7 @@ export default function EditQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-200 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-[95vw] md:max-w-[800px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 min-w-0">
         <DialogHeader>
           <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>Update the question content and options</DialogDescription>
@@ -315,7 +317,7 @@ export default function EditQuestionDialog({
             Loading question data...
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 w-full min-w-0 max-w-full">
 
             <MaterialSelector
               modules={modules}
