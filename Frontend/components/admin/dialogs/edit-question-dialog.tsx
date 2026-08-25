@@ -14,7 +14,7 @@ import { QuestionFormFields } from '@/components/admin/shared/question-form-fiel
 import { useApiFetch } from '@/hooks/use-api-fetch';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import type { JSONContent } from '@tiptap/react';
-import { ContentRenderer } from '@/components/shared/content-renderer';
+import { LegacyHtmlEditor } from '@/components/admin/shared/legacy-html-editor';
 
 // New Imports
 import { MaterialSelector } from '@/components/admin/shared/material-selector';
@@ -67,6 +67,7 @@ export default function EditQuestionDialog({
   const statementEditorRef = useRef<SimpleEditorRefHandler>(null);
   const [initialExplanationContent, setInitialExplanationContent] = useState<JSONContent | undefined>(undefined);
   const [legacyExplanation, setLegacyExplanation] = useState<string | null>(null);
+  const [isEditingLegacyExplanation, setIsEditingLegacyExplanation] = useState<boolean>(false);
   const [initialStatementRich, setInitialStatementRich] = useState<JSONContent | null>(null);
 
   // Use custom hooks
@@ -108,6 +109,7 @@ export default function EditQuestionDialog({
     } else {
       setInitialExplanationContent(undefined);
       setLegacyExplanation(null);
+      setIsEditingLegacyExplanation(false);
       setInitialStatementRich(null);
       setQuestionOldExamId(null);
     }
@@ -133,8 +135,11 @@ export default function EditQuestionDialog({
 
       let explanationContent: JSONContent | undefined = undefined;
       let legacyHtml: string | null = null;
+      let isLegacy = false;
+
       if (question.explanation) {
         if (question.explanationIsLegacyFormat) {
+          isLegacy = true;
           legacyHtml = typeof question.explanation === 'string'
             ? question.explanation
             : JSON.stringify(question.explanation);
@@ -144,14 +149,17 @@ export default function EditQuestionDialog({
               ? JSON.parse(question.explanation)
               : question.explanation;
           } catch {
+            isLegacy = true;
             legacyHtml = typeof question.explanation === 'string'
               ? question.explanation
               : JSON.stringify(question.explanation);
           }
         }
       }
+
       setInitialExplanationContent(explanationContent);
       setLegacyExplanation(legacyHtml);
+      setIsEditingLegacyExplanation(isLegacy);
 
       let statementRichContent: JSONContent | null = null;
       let statementText = '';
@@ -170,6 +178,8 @@ export default function EditQuestionDialog({
       setInitialStatementRich(statementRichContent);
       setQuestionOldExamId(question.oldExamId ?? null);
 
+      let resolvedChapterId = question.chapterId ? String(question.chapterId) : '';
+
       // Fetch ancestors for materials
       if (question.lessonId || question.chapterId) {
         const ancestors = await fetchMaterialAncestors(question.lessonId, question.chapterId);
@@ -177,6 +187,9 @@ export default function EditQuestionDialog({
           setSelectedModule(ancestors.moduleId);
           setSelectedSubject(ancestors.subjectId);
           setSelectedChapter(ancestors.chapterId);
+          if (!resolvedChapterId && ancestors.chapterId) {
+            resolvedChapterId = ancestors.chapterId;
+          }
         }
       }
 
@@ -186,7 +199,7 @@ export default function EditQuestionDialog({
         statementFormat: (question.statementFormat as 'text' | 'tiptap_json') || 'text',
         explanation: '',
         lessonId: question.lessonId ? String(question.lessonId) : '',
-        chapterId: question.chapterId ? String(question.chapterId) : '',
+        chapterId: resolvedChapterId,
         isMisc: question.isMisc ?? false,
         options: question.questionOptions?.length > 0
           ? question.questionOptions
@@ -224,13 +237,10 @@ export default function EditQuestionDialog({
       alert('Please fill in statement');
       return;
     }
-
-    // A question can be linked by material chapter, old exam, or both.
     if (!formData.chapterId && !questionOldExamId) {
       alert('Please select a chapter, or keep this question linked to an old exam');
       return;
     }
-
     if (formData.questionType === 'mcq') {
       if (formData.options.length < 2) {
         alert('MCQ must have at least 2 options');
@@ -249,19 +259,29 @@ export default function EditQuestionDialog({
     setLoading(true);
 
     try {
-      const explanationContent = explanationEditorRef.current?.getJSON() || null;
-      const explanation = legacyExplanation ?? explanationContent;
-      // Check if it's empty
-      const isExplanationEmpty = !explanation ||
-        (typeof explanation !== 'string' && explanation.content?.length === 1 &&
-          !explanation.content[0].content &&
-          explanation.content[0].type === 'paragraph');
+      let finalExplanation: any = null;
+      let finalExplanationIsLegacy = false;
+
+      if (isEditingLegacyExplanation) {
+        finalExplanation = legacyExplanation || null;
+        finalExplanationIsLegacy = true;
+      } else {
+        const explanationContent = explanationEditorRef.current?.getJSON() || null;
+        const isExplanationEmpty = !explanationContent ||
+          (explanationContent.content?.length === 1 &&
+            !explanationContent.content[0].content &&
+            explanationContent.content[0].type === 'paragraph');
+
+        finalExplanation = isExplanationEmpty ? null : explanationContent;
+        finalExplanationIsLegacy = false;
+      }
 
       const payload = {
         questionType: formData.questionType,
         statement: finalStatement,
         statementFormat: formData.statementFormat,
-        explanation: isExplanationEmpty ? null : explanation,
+        explanation: finalExplanation,
+        explanationIsLegacyFormat: finalExplanationIsLegacy,
         options: formData.questionType === 'mcq'
           ? formData.options.map((o) => ({ optionText: o.optionText, isCorrect: o.isCorrect }))
           : [],
@@ -286,7 +306,7 @@ export default function EditQuestionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-200 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-[95vw] md:max-w-[800px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 min-w-0">
         <DialogHeader>
           <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>Update the question content and options</DialogDescription>
@@ -297,7 +317,7 @@ export default function EditQuestionDialog({
             Loading question data...
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 w-full min-w-0 max-w-full">
 
             <MaterialSelector
               modules={modules}
@@ -350,24 +370,37 @@ export default function EditQuestionDialog({
 
             {/* Explanation Editor */}
             <div className="space-y-2">
-              <Label>Explanation (Optional)</Label>
-              <div className="border rounded-lg overflow-hidden">
-                {legacyExplanation ? (
-                  <div className="p-4">
-                    <ContentRenderer
-                      content={legacyExplanation}
-                      isLegacyFormat
-                      className="prose dark:prose-invert max-w-none"
-                    />
-                  </div>
-                ) : (
+              <div className="flex items-center justify-between">
+                <Label>Explanation (Optional)</Label>
+                {legacyExplanation && !isEditingLegacyExplanation && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingLegacyExplanation(true)}
+                    className="h-7 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                  >
+                    ← Switch back to CKEditor 5
+                  </Button>
+                )}
+              </div>
+              {isEditingLegacyExplanation ? (
+                <LegacyHtmlEditor
+                  value={legacyExplanation || ''}
+                  onChange={(val) => setLegacyExplanation(val)}
+                  onSwitchToTipTap={() => setIsEditingLegacyExplanation(false)}
+                  title="Legacy Explanation (CKEditor 5)"
+                />
+              ) : (
+                <div className="border rounded-lg overflow-hidden">
                   <SimpleEditor
                     ref={explanationEditorRef}
                     initialContent={initialExplanationContent}
                     key={questionId || 'new'}
+                    showHtmlAssistant={true}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}

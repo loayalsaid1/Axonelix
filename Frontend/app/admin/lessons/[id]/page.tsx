@@ -14,7 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner';
 import MaterialHierarchySelect from '@/components/admin/dialogs/material-hierarchy-select';
 import { useApiFetch } from '@/hooks/use-api-fetch';
-import { ContentRenderer } from '@/components/shared/content-renderer';
+
+import { LegacyHtmlEditor } from '@/components/admin/shared/legacy-html-editor';
 
 interface SimpleEditorRefHandler {
   getJSON: () => JSONContent | null;
@@ -64,6 +65,7 @@ export default function LessonEditPage() {
   const [chapterId, setChapterId] = useState('');
   const [isMisc, setIsMisc] = useState(false);
   const [legacyContent, setLegacyContent] = useState<string | null>(null);
+  const [isEditingLegacyFormat, setIsEditingLegacyFormat] = useState(false);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -84,11 +86,14 @@ export default function LessonEditPage() {
           parsedContent = rawContent;
         }
 
-        if (lessonData.isLegacyFormat || (typeof rawContent === 'string' && parsedContent === null)) {
-          setLegacyContent(typeof rawContent === 'string' ? rawContent : rawContent ? JSON.stringify(rawContent) : null);
+        const isLegacy = Boolean(lessonData.isLegacyFormat || (typeof rawContent === 'string' && parsedContent === null));
+        if (isLegacy) {
+          setLegacyContent(typeof rawContent === 'string' ? rawContent : rawContent ? JSON.stringify(rawContent) : '');
+          setIsEditingLegacyFormat(true);
         } else {
           lessonData.content = parsedContent as JSONContent;
           setLegacyContent(null);
+          setIsEditingLegacyFormat(false);
         }
 
         setLesson(lessonData);
@@ -114,12 +119,20 @@ export default function LessonEditPage() {
     try {
       setIsSaving(true);
 
-      // Get content from editor
-      const content = legacyContent ?? editorRef.current?.getJSON();
-
       if (!name.trim()) {
         toast.error('Lesson name is required');
         return;
+      }
+
+      let contentPayload: any = null;
+      let finalIsLegacyFormat = false;
+
+      if (isEditingLegacyFormat) {
+        contentPayload = legacyContent || '';
+        finalIsLegacyFormat = true;
+      } else {
+        contentPayload = editorRef.current?.getJSON() || null;
+        finalIsLegacyFormat = false;
       }
 
       const actualChapterId = isMisc ? null : Number(chapterId || lesson?.chapterId);
@@ -129,7 +142,8 @@ export default function LessonEditPage() {
         body: {
           name,
           description,
-          content,
+          content: contentPayload,
+          isLegacyFormat: finalIsLegacyFormat,
           orderIndex: parseInt(orderIndex) || 0,
           chapterId: actualChapterId,
           subjectId: Number(subjectId),
@@ -284,31 +298,49 @@ export default function LessonEditPage() {
 
           {/* Editor Card */}
           <Card>
-            <CardHeader>
-              <CardTitle>Lesson Content</CardTitle>
-              <CardDescription>
-                {lesson.isLegacyFormat ? 'Legacy HTML content is shown read-only here.' : 'Edit the lesson content using the rich text editor'}
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>
+                  {isEditingLegacyFormat ? 'Legacy Lesson Content (CKEditor 5)' : 'Lesson Content (TipTap)'}
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  {isEditingLegacyFormat
+                    ? 'Edit directly in CKEditor 5, or copy HTML to convert using AI / TipTap.'
+                    : 'Edit the lesson content using the rich text editor'}
+                </CardDescription>
+              </div>
+
+              {legacyContent !== null && !isEditingLegacyFormat && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditingLegacyFormat(true)}
+                  className="text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                >
+                  ← Switch back to CKEditor 5
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
-                {lesson.content || legacyContent ? (
-                <div className="border rounded-lg overflow-hidden">
-                    {lesson.isLegacyFormat ? (
-                      <div className="p-4">
-                        <ContentRenderer
-                          content={legacyContent}
-                          isLegacyFormat
-                          className="prose dark:prose-invert max-w-none"
-                        />
-                      </div>
-                    ) : (
-                      <SimpleEditor
-                        key={lesson.id}
-                        ref={editorRef}
-                        initialContent={lesson.content}
-                      />
-                    )}
-                </div>
+              {lesson ? (
+                isEditingLegacyFormat ? (
+                  <LegacyHtmlEditor
+                    value={legacyContent || ''}
+                    onChange={(val) => setLegacyContent(val)}
+                    onSwitchToTipTap={() => setIsEditingLegacyFormat(false)}
+                    title="Legacy Lesson (CKEditor 5)"
+                  />
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <SimpleEditor
+                      key={lesson.id}
+                      ref={editorRef}
+                      initialContent={lesson.content}
+                      showHtmlAssistant={true}
+                    />
+                  </div>
+                )
               ) : (
                 <div className="flex items-center justify-center p-8">
                   <Loader2 className="h-6 w-6 animate-spin" />

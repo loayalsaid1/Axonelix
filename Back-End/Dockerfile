@@ -34,5 +34,9 @@ COPY drizzle.config.ts ./
 COPY drizzle ./drizzle
 COPY drizzle.config.ts ./
 
+# Copy the migration folder and config
+COPY drizzle ./drizzle
+COPY drizzle.config.ts ./
+
 EXPOSE 3000
 CMD ["sh", "-c", "pnpm run db:migrate && pnpm run start:prod"]

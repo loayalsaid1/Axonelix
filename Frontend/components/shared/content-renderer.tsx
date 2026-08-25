@@ -34,10 +34,11 @@ export function ContentRenderer({
   }
 
   if (isLegacyFormat) {
+    const rawHtml = typeof content === 'string' ? content : '';
     return (
       <div
         className={cn('prose dark:prose-invert max-w-none', className)}
-        dangerouslySetInnerHTML={{ __html: typeof content === 'string' ? content : '' }}
+        dangerouslySetInnerHTML={{ __html: rawHtml }}
       />
     );
   }

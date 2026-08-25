@@ -166,7 +166,7 @@ export function QuestionFormFields({
             <div className="border rounded-lg overflow-hidden bg-background">
               <SimpleEditor 
                 ref={statementEditorRef} 
-                initialContent={statementRich || undefined}
+                initialContent={statementRich ?? (statementText || undefined)}
                 key={`statement-editor-${data.statementFormat}`} // Force re-mount on format toggle if needed
               />
             </div>

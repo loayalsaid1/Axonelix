@@ -345,7 +345,7 @@ interface SimpleEditorRefHandler {
 
 interface SimpleEditorProps {
   ref?: React.Ref<SimpleEditorRefHandler>,
-  initialContent?: JSONContent,
+  initialContent?: JSONContent | string,
   showPreviewContent?: boolean
   showHtmlAssistant?: boolean
 }
