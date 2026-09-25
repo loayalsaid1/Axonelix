@@ -37,7 +37,10 @@ async function bootstrap() {
   // Global interceptor
   app.useGlobalInterceptors(new LoggerInterceptor());
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 3000;
+  
+  // '0.0.0.0' allows external connections from Heroku's router
+  await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
