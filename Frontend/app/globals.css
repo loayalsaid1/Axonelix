@@ -130,3 +130,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    translate: 0 2rem;
+  }
+}
+
+@keyframes float {
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@utility reveal {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+  }
+}
+
+@utility animate-float {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: float 6s ease-in-out infinite;
+  }
+}
