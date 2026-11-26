@@ -8,7 +8,7 @@ export function HowItWorksSection() {
         <SectionHeading eyebrow="How it works" title="Start practicing in three steps" />
         <ol className="gap-8 grid md:grid-cols-3">
           {STEPS.map(({ title, description }, index) => (
-            <li key={title} className="relative flex flex-col items-center gap-3 text-center">
+            <li key={title} className="relative flex flex-col items-center gap-3 text-center reveal">
               <span className="flex justify-center items-center bg-primary shadow-md rounded-full ring-4 ring-primary/15 size-12 font-bold text-primary-foreground text-lg">
                 {index + 1}
               </span>

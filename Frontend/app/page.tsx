@@ -1,5 +1,6 @@
 import { LandingHeader } from "@/components/landing/landing-header"
 import { HeroSection } from "@/components/landing/hero-section"
+import { CurriculumSection } from "@/components/landing/curriculum-section"
 import { FeaturesSection } from "@/components/landing/features-section"
 import { HowItWorksSection } from "@/components/landing/how-it-works-section"
 import { RoadmapSection } from "@/components/landing/roadmap-section"
@@ -13,6 +14,7 @@ export default function LandingPage() {
       <LandingHeader />
       <main className="flex-1">
         <HeroSection />
+        <CurriculumSection />
         <FeaturesSection />
         <HowItWorksSection />
         <RoadmapSection />

@@ -19,14 +19,14 @@ const OPTION_STYLES: Record<OptionState, string> = {
 
 export function QuestionPreview() {
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full max-w-md animate-float">
       <div className="-z-10 absolute -inset-6 bg-primary/15 blur-3xl rounded-full" aria-hidden />
       <div className="flex flex-col gap-4 bg-card shadow-xl p-5 border border-border rounded-2xl text-left">
         <div className="flex justify-between items-center gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge variant="secondary">Old Exam</Badge>
-            <Badge variant="outline">Final</Badge>
-            <Badge variant="outline">Theoretical</Badge>
+            <Badge variant="secondary">Cardiovascular Module</Badge>
+            <Badge variant="outline">Arrhythmias</Badge>
+            <Badge variant="outline">MCQ</Badge>
           </div>
           <span className="flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400 text-xs">
             <Flag className="size-3.5" /> Marked

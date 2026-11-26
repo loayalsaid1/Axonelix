@@ -5,17 +5,17 @@ import { SectionHeading } from "./section-heading"
 export function RoadmapSection() {
   return (
     <section id="whats-next" className="bg-muted/50 px-6 py-20 md:py-24 border-border border-y scroll-mt-16">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-4xl">
         <SectionHeading
           eyebrow="What's next"
           title="Growing with every module"
           description="Axonelix is actively expanding. Here's what's on the way."
         />
-        <div className="gap-6 grid md:grid-cols-3">
+        <div className="gap-6 grid md:grid-cols-2">
           {ROADMAP.map(({ icon: Icon, title, status, description }) => (
             <div
               key={title}
-              className="flex flex-col gap-3 bg-card/60 p-6 border border-border border-dashed rounded-2xl"
+              className="reveal flex flex-col gap-3 bg-card/60 p-6 border border-border border-dashed rounded-2xl"
             >
               <div className="flex justify-between items-center">
                 <div className="flex justify-center items-center bg-muted rounded-xl size-11 text-primary">
